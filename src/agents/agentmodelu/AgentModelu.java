@@ -3,7 +3,7 @@ package agents.agentmodelu;
 import OSPABA.*;
 import simulation.*;
 
-//meta! id="1"
+//meta! id="2"
 public class AgentModelu extends OSPABA.Agent
 {
 	public AgentModelu(int id, Simulation mySim, Agent parent)
@@ -23,8 +23,8 @@ public class AgentModelu extends OSPABA.Agent
 	private void init()
 	{
 		new ManagerModelu(Id.managerModelu, mySim(), this);
-		addOwnMessage(Mc.pacientPrisiel);
-		addOwnMessage(Mc.spracovatPacienta);
+		addOwnMessage(Mc.pacientOdisiel);
+		addOwnMessage(Mc.spracovaniePacienta);
 	}
 	//meta! tag="end"
 }

@@ -5,7 +5,7 @@ import simulation.*;
 import agents.agenturgentprijmu.*;
 import OSPABA.Process;
 
-//meta! id="54"
+//meta! id="29"
 public class ProcesPresunu extends OSPABA.Process
 {
 	public ProcesPresunu(int id, Simulation mySim, CommonAgent myAgent)
@@ -20,7 +20,7 @@ public class ProcesPresunu extends OSPABA.Process
 		// Setup component for the next replication
 	}
 
-	//meta! sender="AgentUrgentPrijmu", id="55", type="Start"
+	//meta! sender="AgentUrgentPrijmu", id="30", type="Start"
 	public void processStart(MessageForm message)
 	{
 	}

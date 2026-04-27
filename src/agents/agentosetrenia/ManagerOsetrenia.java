@@ -24,12 +24,12 @@ public class ManagerOsetrenia extends OSPABA.Manager
 		}
 	}
 
-	//meta! sender="AgentUrgentPrijmu", id="36", type="Request"
+	//meta! sender="AgentUrgentPrijmu", id="18", type="Request"
 	public void processVykonatOsetrenie(MessageForm message)
 	{
 	}
 
-	//meta! sender="ProcesOsetrenia", id="18", type="Finish"
+	//meta! sender="ProcesOsetrenia", id="37", type="Finish"
 	public void processFinish(MessageForm message)
 	{
 	}
@@ -52,12 +52,12 @@ public class ManagerOsetrenia extends OSPABA.Manager
 	{
 		switch (message.code())
 		{
-		case Mc.vykonatOsetrenie:
-			processVykonatOsetrenie(message);
-		break;
-
 		case Mc.finish:
 			processFinish(message);
+		break;
+
+		case Mc.vykonatOsetrenie:
+			processVykonatOsetrenie(message);
 		break;
 
 		default:

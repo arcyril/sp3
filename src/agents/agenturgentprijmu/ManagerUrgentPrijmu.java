@@ -24,23 +24,23 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 		}
 	}
 
-	//meta! sender="AgentVstupVysetrenia", id="34", type="Response"
+	//meta! sender="AgentVstupVysetrenia", id="17", type="Response"
 	public void processVykonatVstupOsetrenie(MessageForm message)
 	{
 	}
 
-	//meta! sender="AgentOsetrenia", id="36", type="Response"
+	//meta! sender="AgentOsetrenia", id="18", type="Response"
 	public void processVykonatOsetrenie(MessageForm message)
 	{
 	}
 
-	//meta! sender="AgentModelu", id="28", type="Request"
-	public void processSpracovatPacienta(MessageForm message)
+	//meta! sender="ProcesPresunu", id="30", type="Finish"
+	public void processFinish(MessageForm message)
 	{
 	}
 
-	//meta! sender="ProcesPresunu", id="55", type="Finish"
-	public void processFinish(MessageForm message)
+	//meta! sender="AgentModelu", id="16", type="Request"
+	public void processSpracovaniePacienta(MessageForm message)
 	{
 	}
 
@@ -62,6 +62,10 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 	{
 		switch (message.code())
 		{
+		case Mc.spracovaniePacienta:
+			processSpracovaniePacienta(message);
+		break;
+
 		case Mc.vykonatOsetrenie:
 			processVykonatOsetrenie(message);
 		break;
@@ -72,10 +76,6 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 
 		case Mc.vykonatVstupOsetrenie:
 			processVykonatVstupOsetrenie(message);
-		break;
-
-		case Mc.spracovatPacienta:
-			processSpracovatPacienta(message);
 		break;
 
 		default:

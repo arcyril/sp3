@@ -27,7 +27,7 @@ public class AgentUrgentPrijmu extends OSPABA.Agent
 		new ProcesPresunu(Id.procesPresunu, mySim(), this);
 		addOwnMessage(Mc.vykonatVstupOsetrenie);
 		addOwnMessage(Mc.vykonatOsetrenie);
-		addOwnMessage(Mc.spracovatPacienta);
+		addOwnMessage(Mc.spracovaniePacienta);
 	}
 	//meta! tag="end"
 }

@@ -24,12 +24,12 @@ public class ManagerVstupVysetrenia extends OSPABA.Manager
 		}
 	}
 
-	//meta! sender="AgentUrgentPrijmu", id="34", type="Request"
+	//meta! sender="AgentUrgentPrijmu", id="17", type="Request"
 	public void processVykonatVstupOsetrenie(MessageForm message)
 	{
 	}
 
-	//meta! sender="ProcesVstupVysetrenia", id="16", type="Finish"
+	//meta! sender="ProcesVstupVysetrenia", id="35", type="Finish"
 	public void processFinish(MessageForm message)
 	{
 	}

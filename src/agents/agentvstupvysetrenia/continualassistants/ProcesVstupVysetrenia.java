@@ -5,7 +5,7 @@ import simulation.*;
 import agents.agentvstupvysetrenia.*;
 import OSPABA.Process;
 
-//meta! id="15"
+//meta! id="34"
 public class ProcesVstupVysetrenia extends OSPABA.Process
 {
 	public ProcesVstupVysetrenia(int id, Simulation mySim, CommonAgent myAgent)
@@ -20,7 +20,7 @@ public class ProcesVstupVysetrenia extends OSPABA.Process
 		// Setup component for the next replication
 	}
 
-	//meta! sender="AgentVstupVysetrenia", id="16", type="Start"
+	//meta! sender="AgentVstupVysetrenia", id="35", type="Start"
 	public void processStart(MessageForm message)
 	{
 	}

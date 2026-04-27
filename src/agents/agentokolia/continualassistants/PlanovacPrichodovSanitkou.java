@@ -4,7 +4,7 @@ import OSPABA.*;
 import agents.agentokolia.*;
 import simulation.*;
 
-//meta! id="11"
+//meta! id="22"
 public class PlanovacPrichodovSanitkou extends OSPABA.Scheduler
 {
 	public PlanovacPrichodovSanitkou(int id, Simulation mySim, CommonAgent myAgent)

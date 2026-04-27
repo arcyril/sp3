@@ -3,7 +3,7 @@ package agents.agentokolia;
 import OSPABA.*;
 import simulation.*;
 
-//meta! id="2"
+//meta! id="1"
 public class ManagerOkolia extends OSPABA.Manager
 {
 	public ManagerOkolia(int id, Simulation mySim, Agent myAgent)
@@ -24,18 +24,18 @@ public class ManagerOkolia extends OSPABA.Manager
 		}
 	}
 
-	//meta! sender="AgentModelu", id="26", type="Notice"
-	public void processPacientOdisiel(MessageForm message)
+	//meta! sender="AgentModelu", id="15", type="Notice"
+	public void processPacientPrisiel(MessageForm message)
 	{
 	}
 
-	//meta! sender="PlanovacPrichodovSamostatne", id="10", type="Notice"
-	public void processNoticePlanovacPrichodovSamostatne(MessageForm message)
+	//meta! sender="PlanovacPrichodovSamostatne", id="26", type="Notice"
+	public void processPrisielSamostatne(MessageForm message)
 	{
 	}
 
-	//meta! sender="PlanovacPrichodovSanitkou", id="12", type="Notice"
-	public void processNoticePlanovacPrichodovSanitkou(MessageForm message)
+	//meta! sender="PlanovacPrichodovSanitkou", id="27", type="Notice"
+	public void processPrisielSanitkou(MessageForm message)
 	{
 	}
 
@@ -57,21 +57,16 @@ public class ManagerOkolia extends OSPABA.Manager
 	{
 		switch (message.code())
 		{
-		case Mc.notice:
-			switch (message.sender().id())
-			{
-			case Id.planovacPrichodovSamostatne:
-				processNoticePlanovacPrichodovSamostatne(message);
-			break;
-
-			case Id.planovacPrichodovSanitkou:
-				processNoticePlanovacPrichodovSanitkou(message);
-			break;
-			}
+		case Mc.prisielSamostatne:
+			processPrisielSamostatne(message);
 		break;
 
-		case Mc.pacientOdisiel:
-			processPacientOdisiel(message);
+		case Mc.prisielSanitkou:
+			processPrisielSanitkou(message);
+		break;
+
+		case Mc.pacientPrisiel:
+			processPacientPrisiel(message);
 		break;
 
 		default:

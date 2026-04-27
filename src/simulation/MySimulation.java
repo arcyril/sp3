@@ -46,10 +46,10 @@ public class MySimulation extends OSPABA.Simulation
 	private void init()
 	{
 		setAgentModelu(new AgentModelu(Id.agentModelu, this, null));
-		setAgentOkolia(new AgentOkolia(Id.agentOkolia, this, agentModelu()));
 		setAgentUrgentPrijmu(new AgentUrgentPrijmu(Id.agentUrgentPrijmu, this, agentModelu()));
 		setAgentVstupVysetrenia(new AgentVstupVysetrenia(Id.agentVstupVysetrenia, this, agentUrgentPrijmu()));
 		setAgentOsetrenia(new AgentOsetrenia(Id.agentOsetrenia, this, agentUrgentPrijmu()));
+		setAgentOkolia(new AgentOkolia(Id.agentOkolia, this, agentModelu()));
 	}
 
 	private AgentModelu _agentModelu;
@@ -59,14 +59,6 @@ public AgentModelu agentModelu()
 
 	public void setAgentModelu(AgentModelu agentModelu)
 	{_agentModelu = agentModelu; }
-
-	private AgentOkolia _agentOkolia;
-
-public AgentOkolia agentOkolia()
-	{ return _agentOkolia; }
-
-	public void setAgentOkolia(AgentOkolia agentOkolia)
-	{_agentOkolia = agentOkolia; }
 
 	private AgentUrgentPrijmu _agentUrgentPrijmu;
 
@@ -91,5 +83,13 @@ public AgentOsetrenia agentOsetrenia()
 
 	public void setAgentOsetrenia(AgentOsetrenia agentOsetrenia)
 	{_agentOsetrenia = agentOsetrenia; }
+
+	private AgentOkolia _agentOkolia;
+
+public AgentOkolia agentOkolia()
+	{ return _agentOkolia; }
+
+	public void setAgentOkolia(AgentOkolia agentOkolia)
+	{_agentOkolia = agentOkolia; }
 	//meta! tag="end"
 }

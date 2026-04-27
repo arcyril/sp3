@@ -4,7 +4,7 @@ import OSPABA.*;
 import simulation.*;
 import agents.agentokolia.continualassistants.*;
 
-//meta! id="2"
+//meta! id="1"
 public class AgentOkolia extends OSPABA.Agent
 {
 	public AgentOkolia(int id, Simulation mySim, Agent parent)
@@ -26,8 +26,9 @@ public class AgentOkolia extends OSPABA.Agent
 		new ManagerOkolia(Id.managerOkolia, mySim(), this);
 		new PlanovacPrichodovSanitkou(Id.planovacPrichodovSanitkou, mySim(), this);
 		new PlanovacPrichodovSamostatne(Id.planovacPrichodovSamostatne, mySim(), this);
-		addOwnMessage(Mc.pacientOdisiel);
-		addOwnMessage(Mc.notice);
+		addOwnMessage(Mc.pacientPrisiel);
+		addOwnMessage(Mc.prisielSamostatne);
+		addOwnMessage(Mc.prisielSanitkou);
 	}
 	//meta! tag="end"
 }

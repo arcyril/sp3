@@ -3,7 +3,7 @@ package agents.agentmodelu;
 import OSPABA.*;
 import simulation.*;
 
-//meta! id="1"
+//meta! id="2"
 public class ManagerModelu extends OSPABA.Manager
 {
 	public ManagerModelu(int id, Simulation mySim, Agent myAgent)
@@ -24,13 +24,13 @@ public class ManagerModelu extends OSPABA.Manager
 		}
 	}
 
-	//meta! sender="AgentOkolia", id="25", type="Notice"
-	public void processPacientPrisiel(MessageForm message)
+	//meta! sender="AgentOkolia", id="13", type="Notice"
+	public void processPacientOdisiel(MessageForm message)
 	{
 	}
 
-	//meta! sender="AgentUrgentPrijmu", id="28", type="Response"
-	public void processSpracovatPacienta(MessageForm message)
+	//meta! sender="AgentUrgentPrijmu", id="16", type="Response"
+	public void processSpracovaniePacienta(MessageForm message)
 	{
 	}
 
@@ -52,12 +52,12 @@ public class ManagerModelu extends OSPABA.Manager
 	{
 		switch (message.code())
 		{
-		case Mc.pacientPrisiel:
-			processPacientPrisiel(message);
+		case Mc.spracovaniePacienta:
+			processSpracovaniePacienta(message);
 		break;
 
-		case Mc.spracovatPacienta:
-			processSpracovatPacienta(message);
+		case Mc.pacientOdisiel:
+			processPacientOdisiel(message);
 		break;
 
 		default:
