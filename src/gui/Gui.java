@@ -69,7 +69,7 @@ public class Gui extends JFrame {
         txtTrvanie.setText("86400");
         txtReplikacii.setText("20");
         sliderSimDur.setValue(1);
-        sliderSimInt.setValue(1);
+        sliderSimInt.setValue(500);
     }
 
     private void buidGui() {
@@ -189,8 +189,8 @@ public class Gui extends JFrame {
         lblSimInt.setAlignmentX(0.5f);
         leftPanel.add(lblSimInt);
 
-        sliderSimInt = new JSlider(JSlider.HORIZONTAL, 1, 100, 100);
-        sliderSimInt.setMajorTickSpacing(20);
+        sliderSimInt = new JSlider(JSlider.HORIZONTAL, 1, 1000, 100);
+        sliderSimInt.setMajorTickSpacing(200);
         sliderSimInt.setPaintTicks(true);
         sliderSimInt.setPaintLabels(true);
         sliderSimInt.setMaximumSize(new Dimension(150, 50));

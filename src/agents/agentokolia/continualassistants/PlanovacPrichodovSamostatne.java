@@ -8,7 +8,8 @@ import simulation.*;
 //meta! id="20"
 public class PlanovacPrichodovSamostatne extends OSPABA.Scheduler
 {
-	private ExponencialnyGenerator expGen = new ExponencialnyGenerator(100.0, 1); //## to configure 
+	//## to configure
+	private ExponencialnyGenerator expGen = new ExponencialnyGenerator(1 / 573.99, 12345); 
 
 	public PlanovacPrichodovSamostatne(int id, Simulation mySim, CommonAgent myAgent)
 	{
