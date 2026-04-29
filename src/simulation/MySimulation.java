@@ -1,14 +1,23 @@
 package simulation;
 
 import OSPABA.*;
+import OSPStat.Stat;
 import agents.agentosetrenia.*;
 import agents.agentokolia.*;
 import agents.agentvstupvysetrenia.*;
 import agents.agenturgentprijmu.*;
 import agents.agentmodelu.*;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 public class MySimulation extends OSPABA.Simulation
 {
+	//** LLM usage, to specify
+	public ConcurrentHashMap<Integer, String[]> aktualniPacienti = new ConcurrentHashMap<>();
+
+	public Stat globalSPriemernyCasCakaniaSamostatne;
+    public Stat globalSPriemernyCasCakaniaSanitkou;
+
 	public MySimulation()
 	{
 		init();
@@ -19,6 +28,8 @@ public class MySimulation extends OSPABA.Simulation
 	{
 		super.prepareSimulation();
 		// Create global statistcis
+		globalSPriemernyCasCakaniaSamostatne = new Stat();
+        globalSPriemernyCasCakaniaSanitkou = new Stat();
 	}
 
 	@Override
@@ -40,6 +51,14 @@ public class MySimulation extends OSPABA.Simulation
 	{
 		// Display simulation results
 		super.simulationFinished();
+	}
+
+	public void refreshUI()
+	{
+		if (_onRefreshUI != null)
+		{
+			_onRefreshUI.accept(this);
+		}
 	}
 
 	//meta! userInfo="Generated code: do not modify", tag="begin"

@@ -1,0 +1,215 @@
+package gui;
+
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.EventObject;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.xml.crypto.Data;
+
+import simulation.MySimulation;
+import OSPABA.Simulation;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
+
+public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
+
+    private Gui _gui;
+    private SimThread _simThread;
+    private MySimulation _mySim;
+
+    private boolean _simMaxSpeedPressed = false;
+    private boolean _animMaxSpeedPressed = false;
+
+    public static int SELECTED_IMAGE_TYPE = 1; 
+
+    private class Prepravka {
+        public Object[] data = null;
+    }
+
+    public GuiLogic(Gui gui) {
+        _gui = gui;
+        _mySim = new MySimulation();
+
+        gui.btnStart.addActionListener(this);
+        gui.btnPause.addActionListener(this);
+        gui.btnStop.addActionListener(this);
+
+        gui.rdioBttonImgType1.addActionListener(e -> SELECTED_IMAGE_TYPE = 1);
+        gui.rdioBttonImgType2.addActionListener(e -> SELECTED_IMAGE_TYPE = 2);
+
+        gui.btnSimMaxSpeed.addActionListener(this);
+        gui.btnCreateAnim.addActionListener(this);
+        gui.btnRemoveAnim.addActionListener(this);
+
+        gui.sliderSimDur.addChangeListener(this);
+        gui.sliderSimInt.addChangeListener(this);
+        gui.chckBoxCreateAnimAfterStart.addItemListener(this);
+    }
+
+    private boolean callActionMethod(EventObject ae, JComponent component, String methodName) {
+        if (ae.getSource() == component) {
+            try {
+                Method method = getClass().getDeclaredMethod(methodName, new Class[]{});
+                method.invoke(this, new Object[]{});
+                return true;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent ae) {
+        if (callActionMethod(ae, _gui.btnStart, "btnStart")) return;
+        if (callActionMethod(ae, _gui.btnPause, "btnPause")) return;
+        if (callActionMethod(ae, _gui.btnStop, "btnStop")) return;
+        if (callActionMethod(ae, _gui.btnSimMaxSpeed, "btnSimMaxSpeed")) return;
+        if (callActionMethod(ae, _gui.btnCreateAnim, "btnCreateAnim")) return;
+        if (callActionMethod(ae, _gui.btnRemoveAnim, "btnRemoveAnim")) return;
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent che) {
+        if (callActionMethod(che, _gui.sliderSimDur, "sliderSimDur")) return;
+        if (callActionMethod(che, _gui.sliderSimInt, "sliderSimInt")) return;
+    }
+
+    @Override
+    public void itemStateChanged(ItemEvent arg0) {}
+
+    public Object[] getSettings() {
+        Prepravka prepravka = new Prepravka();
+
+        invokeInEventDispatchThread(() -> {
+            try {
+                prepravka.data = new Object[10];
+                prepravka.data[0] = Double.parseDouble(_gui.txtTrvanie.getText());
+                prepravka.data[1] = Integer.parseInt(_gui.txtReplikacii.getText());
+                prepravka.data[2] = _gui.sliderSimDur.getValue();
+                prepravka.data[3] = _gui.sliderSimInt.getValue();
+                prepravka.data[6] = _simMaxSpeedPressed;
+                prepravka.data[7] = _animMaxSpeedPressed;
+                prepravka.data[8] = _gui.chckBoxCreateAnimAfterStart.isSelected();
+            } catch (NumberFormatException e) {
+            }
+        });
+
+        return prepravka.data;
+    }
+
+    public void invokeInEventDispatchThread(Runnable code) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            code.run();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(() -> { code.run(); });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @SuppressWarnings("unused")
+    private void btnStart() {
+        if (_simThread != null) {
+            _simThread.stopSim();
+            setGuiDefaultVisage();
+        }
+        _simThread = new SimThread(this, _mySim);
+        _simThread.start();
+    }
+
+    @SuppressWarnings("unused")
+    private void btnPause() {
+        if (_simThread != null) {
+            if (_simThread.getSim().isPaused()) {
+                _simThread.resumeSim();
+                _gui.btnPause.setText("Pause");
+            } else {
+                _simThread.pauseSim();
+                _gui.btnPause.setText("Resume");
+            }
+        }
+    }
+
+    @SuppressWarnings("unused")
+    private void btnStop() {
+        if (_simThread != null) _simThread.stopSim();
+    }
+
+    private void setSimSpeed() {
+        if (_simThread != null) {
+            _simThread.setSimSpeed(
+                    _gui.sliderSimDur.getValue(),
+                    _gui.sliderSimInt.getValue(),
+                    _simMaxSpeedPressed);
+        }
+    }
+
+    @SuppressWarnings("unused")
+    private void btnSimMaxSpeed() {
+        _simMaxSpeedPressed = true;
+        setButtonTextCollor(_gui.btnSimMaxSpeed, Color.RED);
+        setSimSpeed();
+    }
+
+    @SuppressWarnings("unused")
+    public void btnCreateAnim() {
+    }
+
+    @SuppressWarnings("unused")
+    private void btnRemoveAnim() {
+    }
+
+    @SuppressWarnings("unused")
+    private void sliderSimDur() {
+        _simMaxSpeedPressed = false;
+        setButtonTextCollor(_gui.btnSimMaxSpeed, Color.BLACK);
+        setSimSpeed();
+    }
+
+    @SuppressWarnings("unused")
+    private void sliderSimInt() {
+        _simMaxSpeedPressed = false;
+        setButtonTextCollor(_gui.btnSimMaxSpeed, Color.BLACK);
+        setSimSpeed();
+    }
+
+    private void setButtonTextCollor(JButton button, Color color) {
+        button.setForeground(color);
+    }
+
+    private void setGuiDefaultVisage() {
+        _gui.lblResult.setText("Výsledky.");
+        _gui.lblSimTime.setText("Simulacny cas:");
+        _gui.btnPause.setText("Pause");
+    }
+
+    public void onRefreshUI(Simulation sim) {
+        //** LLM usage, to specify
+        invokeInEventDispatchThread(() -> {
+            MySimulation simulacia = (MySimulation) sim;
+
+            _gui.tableModel.setRowCount(0);
+            
+            for (String[] riadok : simulacia.aktualniPacienti.values()) {
+                _gui.tableModel.addRow(riadok);
+            }
+
+            _gui.lblSimTime.setText("Čas: " + String.format("%.2f", sim.currentTime()));
+        });
+    }
+}

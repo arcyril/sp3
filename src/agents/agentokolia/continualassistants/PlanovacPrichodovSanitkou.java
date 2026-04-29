@@ -2,11 +2,14 @@ package agents.agentokolia.continualassistants;
 
 import OSPABA.*;
 import agents.agentokolia.*;
+import generators.ExponencialnyGenerator;
 import simulation.*;
 
 //meta! id="22"
 public class PlanovacPrichodovSanitkou extends OSPABA.Scheduler
 {
+	private ExponencialnyGenerator expGenSanitka = new ExponencialnyGenerator(200.0, 2);
+
 	public PlanovacPrichodovSanitkou(int id, Simulation mySim, CommonAgent myAgent)
 	{
 		super(id, mySim, myAgent);
@@ -24,6 +27,33 @@ public class PlanovacPrichodovSanitkou extends OSPABA.Scheduler
 	{
 		switch (message.code())
 		{
+			case Mc.start:
+				message.setCode(Mc.prisielSanitkou);
+				hold(expGenSanitka.sample(), message);
+				break;
+			default:
+				System.out.println("Time: " + String.format("%.2f", mySim().currentTime()) + ", pacient prisiel sanitkou");
+
+				MyMessage novyPacient = new MyMessage(mySim());
+				novyPacient.setTypPacienta("SANITKOU"); 
+				novyPacient.setCasPrichodu(mySim().currentTime()); 
+				
+				String[] info = {
+					String.valueOf(novyPacient.idPacienta), 
+					"SANITKOU", 
+					"Ide na urgent. príjem", 
+					String.format("%.2f", mySim().currentTime())
+				};
+				((MySimulation)mySim()).aktualniPacienti.put(novyPacient.idPacienta, info);
+				((MySimulation)mySim()).refreshUI();
+
+				
+				novyPacient.setAddressee(myAgent());				
+				novyPacient.setCode(Mc.prisielSanitkou); 
+				notice(novyPacient);
+
+				hold(expGenSanitka.sample(), message);
+				break;
 		}
 	}
 
