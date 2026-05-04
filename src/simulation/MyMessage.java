@@ -4,11 +4,11 @@ import OSPABA.*;
 
 public class MyMessage extends OSPABA.MessageForm
 {
-	private String typPacienta;
-	private double casPrichodu;
-
-	public int idPacienta;
 	public static int globalIdCounter = 1;
+	public int idPacienta;
+	public String typPacienta;
+	public int priorita; //??
+	public double casPrichodu;
 
 	public MyMessage(Simulation mySim)
 	{
@@ -34,9 +34,9 @@ public class MyMessage extends OSPABA.MessageForm
 		super.copy(message);
 		MyMessage original = (MyMessage)message;
 		// Copy attributes
+		this.idPacienta = original.idPacienta;
 		this.typPacienta = original.typPacienta;
         this.casPrichodu = original.casPrichodu;
-		this.idPacienta = original.idPacienta;
 	}
 
 	public String getTypPacienta() {

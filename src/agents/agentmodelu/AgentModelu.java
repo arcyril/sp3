@@ -23,7 +23,7 @@ public class AgentModelu extends OSPABA.Agent
 	private void init()
 	{
 		new ManagerModelu(Id.managerModelu, mySim(), this);
-		addOwnMessage(Mc.pacientOdisiel);
+		addOwnMessage(Mc.pacientPrisiel);
 		addOwnMessage(Mc.spracovaniePacienta);
 	}
 	//meta! tag="end"

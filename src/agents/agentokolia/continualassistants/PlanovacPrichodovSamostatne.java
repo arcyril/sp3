@@ -9,7 +9,7 @@ import simulation.*;
 public class PlanovacPrichodovSamostatne extends OSPABA.Scheduler
 {
 	//## to configure
-	private ExponencialnyGenerator expGen = new ExponencialnyGenerator(1 / 573.99, 12345); 
+	private ExponencialnyGenerator genPrichodSam;
 
 	public PlanovacPrichodovSamostatne(int id, Simulation mySim, CommonAgent myAgent)
 	{
@@ -21,6 +21,7 @@ public class PlanovacPrichodovSamostatne extends OSPABA.Scheduler
 	{
 		super.prepareReplication();
 		// Setup component for the next replication
+		genPrichodSam = new ExponencialnyGenerator(1 / 573.99, 12345); 
 	}
 
 	//meta! userInfo="Process messages defined in code", id="0"
@@ -30,7 +31,7 @@ public class PlanovacPrichodovSamostatne extends OSPABA.Scheduler
 		switch (message.code())
 		{
 			case Mc.start:
-				double prvyPrichod = expGen.sample();
+				double prvyPrichod = genPrichodSam.sample();
 				System.out.println("Planujem prvy prichod o: " + prvyPrichod + " sekund");
 				//!!
 				message.setCode(Mc.prisielSamostatne);
@@ -61,7 +62,7 @@ public class PlanovacPrichodovSamostatne extends OSPABA.Scheduler
 				notice(novyPacient);
 
 				//!!
-				hold(expGen.sample(), message);
+				hold(genPrichodSam.sample(), message);
 				break;
 		}
 	}

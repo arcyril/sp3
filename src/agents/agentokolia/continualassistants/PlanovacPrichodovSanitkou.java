@@ -8,7 +8,7 @@ import simulation.*;
 //meta! id="22"
 public class PlanovacPrichodovSanitkou extends OSPABA.Scheduler
 {
-	private EmpirickyGenerator genSanitka = new EmpirickyGenerator(2);
+	private EmpirickyGenerator genPrichodSanitkou;
 
 	public PlanovacPrichodovSanitkou(int id, Simulation mySim, CommonAgent myAgent)
 	{
@@ -20,6 +20,7 @@ public class PlanovacPrichodovSanitkou extends OSPABA.Scheduler
 	{
 		super.prepareReplication();
 		// Setup component for the next replication
+		genPrichodSanitkou = new EmpirickyGenerator(2);
 	}
 
 	//meta! userInfo="Process messages defined in code", id="0"
@@ -29,7 +30,7 @@ public class PlanovacPrichodovSanitkou extends OSPABA.Scheduler
 		{
 			case Mc.start:
 				message.setCode(Mc.prisielSanitkou);
-				hold(genSanitka.sample(), message);
+				hold(genPrichodSanitkou.sample(), message);
 				break;
 			default:
 				System.out.println("Time: " + String.format("%.2f", mySim().currentTime()) + ", pacient prisiel sanitkou");
@@ -52,7 +53,7 @@ public class PlanovacPrichodovSanitkou extends OSPABA.Scheduler
 				novyPacient.setCode(Mc.prisielSanitkou); 
 				notice(novyPacient);
 
-				hold(genSanitka.sample(), message);
+				hold(genPrichodSanitkou.sample(), message);
 				break;
 		}
 	}

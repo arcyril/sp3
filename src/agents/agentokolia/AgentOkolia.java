@@ -26,7 +26,7 @@ public class AgentOkolia extends OSPABA.Agent
 		new ManagerOkolia(Id.managerOkolia, mySim(), this);
 		new PlanovacPrichodovSanitkou(Id.planovacPrichodovSanitkou, mySim(), this);
 		new PlanovacPrichodovSamostatne(Id.planovacPrichodovSamostatne, mySim(), this);
-		addOwnMessage(Mc.pacientPrisiel);
+		addOwnMessage(Mc.pacientOdisiel);
 		addOwnMessage(Mc.prisielSamostatne);
 		addOwnMessage(Mc.prisielSanitkou);
 	}

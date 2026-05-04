@@ -1,11 +1,16 @@
 package agents.agentvstupvysetrenia;
 
 import OSPABA.*;
+import OSPDataStruct.SimQueue;
+import OSPStat.WStat;
 import simulation.*;
 
 //meta! id="4"
 public class ManagerVstupVysetrenia extends OSPABA.Manager
 {
+	public SimQueue<MyMessage> radSanitkou;
+    public SimQueue<MyMessage> radSamostatne;
+
 	public ManagerVstupVysetrenia(int id, Simulation mySim, Agent myAgent)
 	{
 		super(id, mySim, myAgent);
@@ -22,11 +27,21 @@ public class ManagerVstupVysetrenia extends OSPABA.Manager
 		{
 			petriNet().clear();
 		}
+
+		//!! STATS
+		radSanitkou = new SimQueue<>(new WStat(mySim()));
+        radSamostatne = new SimQueue<>(new WStat(mySim()));
 	}
 
 	//meta! sender="AgentUrgentPrijmu", id="17", type="Request"
 	public void processVykonatVstupOsetrenie(MessageForm message)
 	{
+		MyMessage pacient = (MyMessage) message;
+		if (pacient.typPacienta.equals("SANITKA")) {
+            radSanitkou.enqueue(pacient);
+        } else {
+            radSamostatne.enqueue(pacient);
+        }
 	}
 
 	//meta! sender="ProcesVstupVysetrenia", id="35", type="Finish"

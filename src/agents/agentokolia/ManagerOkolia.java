@@ -2,7 +2,6 @@ package agents.agentokolia;
 
 import OSPABA.*;
 import simulation.*;
-import agents.agentokolia.continualassistants.*;
 
 //meta! id="1"
 public class ManagerOkolia extends OSPABA.Manager
@@ -26,25 +25,28 @@ public class ManagerOkolia extends OSPABA.Manager
 
 		System.out.println("manager okolia test, time " + mySim().currentTime());
 		System.out.println("Mc.start " + Mc.start);
+		//?? maybe if statement
 		MyMessage startSamostatne = new MyMessage(mySim());
 		startSamostatne.setAddressee(Id.planovacPrichodovSamostatne);
+		//?? apparently mc.start is automatic anyway
 		startSamostatne.setCode(Mc.start);
-		try {
-			startContinualAssistant(startSamostatne);
-			System.out.println("startContinualAssistant SAMOSTATNE");
-		} catch (Exception e) {
-			System.out.println("ERROR" + e.getMessage());
-			e.printStackTrace();
-		}
-
 		MyMessage startSanitkou = new MyMessage(mySim());
 		startSanitkou.setAddressee(Id.planovacPrichodovSanitkou);
 		startSanitkou.setCode(Mc.start);
-		startContinualAssistant(startSanitkou);
+		try {
+			startContinualAssistant(startSamostatne);
+			startContinualAssistant(startSanitkou);
+			System.out.println("startContinualAssistant");
+		} catch (Exception e) {
+			System.out.println("ERROR" + e.getMessage());
+			//??
+			e.printStackTrace();
+		}
+
 	}
 
 	//meta! sender="AgentModelu", id="15", type="Notice"
-	public void processPacientPrisiel(MessageForm message)
+	public void processPacientOdisiel(MessageForm message)
 	{
 	}
 
@@ -53,7 +55,6 @@ public class ManagerOkolia extends OSPABA.Manager
 	{
 		//**LLM FOR DEBUGGING
 		message.setAddressee(((MySimulation)mySim()).agentModelu());
-		// Assuming you have an arrow to AgentModelu named "novyPacient"
 		message.setCode(Mc.pacientPrisiel); 
 		notice(message);
 	}
@@ -84,16 +85,16 @@ public class ManagerOkolia extends OSPABA.Manager
 	{
 		switch (message.code())
 		{
-		case Mc.prisielSamostatne:
-			processPrisielSamostatne(message);
+		case Mc.pacientOdisiel:
+			processPacientOdisiel(message);
 		break;
 
 		case Mc.prisielSanitkou:
 			processPrisielSanitkou(message);
 		break;
 
-		case Mc.pacientPrisiel:
-			processPacientPrisiel(message);
+		case Mc.prisielSamostatne:
+			processPrisielSamostatne(message);
 		break;
 
 		default:

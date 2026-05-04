@@ -4,7 +4,7 @@ import OSPABA.*;
 import simulation.*;
 import agents.agenturgentprijmu.*;
 // import OSPABA.Process;
-
+import generators.TrojuholnikovyGenerator;
 // import java.awt.Color;
 // import java.awt.Graphics;
 // import java.awt.image.BufferedImage;
@@ -13,8 +13,9 @@ import generators.UniformGenerator;
 //meta! id="29"
 public class ProcesPresunu extends OSPABA.Process
 {
-	private UniformGenerator genCasPresunu = new UniformGenerator(10.0, 30.0, 4);
-
+	private TrojuholnikovyGenerator genCasPresunuSamostatne;
+    private UniformGenerator genCasPresunuSanitkou;
+	
 	public ProcesPresunu(int id, Simulation mySim, CommonAgent myAgent)
 	{
 		super(id, mySim, myAgent);
@@ -25,28 +26,30 @@ public class ProcesPresunu extends OSPABA.Process
 	{
 		super.prepareReplication();
 		// Setup component for the next replication
+		//# what of seed
+		genCasPresunuSamostatne = new TrojuholnikovyGenerator(120.0, 150.0, 300.0, 1);
+        genCasPresunuSanitkou = new UniformGenerator(90.0, 200.0, 1);
 	}
 
 	//meta! sender="AgentUrgentPrijmu", id="30", type="Start"
 	public void processStart(MessageForm message)
 	{
-		double casPresunu = genCasPresunu.sample();
-        hold(casPresunu, message);
+		MyMessage pacient = (MyMessage) message;
+        double casPresunu = 0.0;
+
+		if (pacient.typPacienta.equals("SAMOSTATNE")) {
+            casPresunu = genCasPresunuSamostatne.sample();
+        } else {
+            casPresunu = genCasPresunuSanitkou.sample();
+        }
+
+		hold(casPresunu, message);
 	}
 
 	//meta! userInfo="Process messages defined in code", id="0"
 	public void processDefault(MessageForm message)
 	{
-		MyMessage pacient = (MyMessage) message;
-
-		if (((MySimulation)mySim()).aktualniPacienti.containsKey(pacient.idPacienta)) {
-			((MySimulation)mySim()).aktualniPacienti.get(pacient.idPacienta)[2] = "čaka v rade na vyšetrenie";
-		}
-		((MySimulation)mySim()).refreshUI();
 		assistantFinished(message);
-		// switch (message.code())
-		// {
-		// }
 	}
 
 	//meta! userInfo="Generated code: do not modify", tag="begin"

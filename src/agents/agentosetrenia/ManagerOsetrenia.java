@@ -1,11 +1,15 @@
 package agents.agentosetrenia;
 
 import OSPABA.*;
+import OSPDataStruct.SimQueue;
+import OSPStat.WStat;
 import simulation.*;
 
 //meta! id="5"
 public class ManagerOsetrenia extends OSPABA.Manager
 {
+	private SimQueue<MyMessage>[] radyPodlaPriority;
+	
 	public ManagerOsetrenia(int id, Simulation mySim, Agent myAgent)
 	{
 		super(id, mySim, myAgent);
@@ -22,6 +26,35 @@ public class ManagerOsetrenia extends OSPABA.Manager
 		{
 			petriNet().clear();
 		}
+
+		radyPodlaPriority = new SimQueue[5];
+		//** LLM */
+		for (int i = 0; i < 5; i++) {
+            radyPodlaPriority[i] = new SimQueue<>(new WStat(mySim()));
+        }
+	}
+
+	public void pridatDoRadu(MyMessage pacient) {
+		int index = pacient.priorita - 1;
+		radyPodlaPriority[index].enqueue(pacient);
+	}
+
+	public boolean cakajuciPacienti() {
+		for (int i = 0; i < radyPodlaPriority.length; i++) {
+			if (!radyPodlaPriority[i].isEmpty()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public MyMessage dalsiPacient() {
+		for (int i = 0; i < radyPodlaPriority.length; i++) {
+			if (!radyPodlaPriority[i].isEmpty()) {
+				return radyPodlaPriority[i].dequeue();
+			}
+		}
+		return null;
 	}
 
 	//meta! sender="AgentUrgentPrijmu", id="18", type="Request"
