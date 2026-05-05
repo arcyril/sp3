@@ -10,6 +10,7 @@ public class Statistic {
         this.sum = 0.0;
         this.sumSquared = 0.0;
         this.count = 0;
+        this.max = 0.0;
     }
 
     public void addValue(double value) {

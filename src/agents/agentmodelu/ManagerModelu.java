@@ -36,6 +36,7 @@ public class ManagerModelu extends OSPABA.Manager
 	//meta! sender="AgentUrgentPrijmu", id="16", type="Response"
 	public void processSpracovaniePacienta(MessageForm message)
 	{
+		System.out.println("14 throwing patient out through AgentModelu" + message);
 		message.setAddressee(Id.agentOkolia); //((MySimulation)mySim()).agentOkolia()
 		message.setCode(Mc.pacientOdisiel);
 		notice(message);

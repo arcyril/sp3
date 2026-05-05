@@ -2,18 +2,20 @@ package agents.agentokolia.continualassistants;
 
 import OSPABA.*;
 import agents.agentokolia.*;
-import generators.ExponencialnyGenerator;
+import generators.LognormalnyGenerator;
 import simulation.*;
 
 //meta! id="20"
 public class PlanovacPrichodovSamostatne extends OSPABA.Scheduler
 {
 	//## to configure
-	private ExponencialnyGenerator prichodSamGen;
+	private LognormalnyGenerator prichodSamGen;
 
 	public PlanovacPrichodovSamostatne(int id, Simulation mySim, CommonAgent myAgent)
 	{
 		super(id, mySim, myAgent);
+
+		prichodSamGen = new LognormalnyGenerator(6.05, 0.83, ((MySimulation)mySim()).masterRandom.nextInt());
 	}
 
 	@Override
@@ -21,7 +23,6 @@ public class PlanovacPrichodovSamostatne extends OSPABA.Scheduler
 	{
 		super.prepareReplication();
 		// Setup component for the next replication
-		prichodSamGen = new ExponencialnyGenerator(1 / 573.99, 12345); 
 	}
 
 	//meta! userInfo="Process messages defined in code", id="0"

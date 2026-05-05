@@ -5,21 +5,35 @@ import OSPStat.Stat;
 import agents.agentosetrenia.*;
 import agents.agentokolia.*;
 import agents.agentvstupvysetrenia.*;
+import statistics.GlobalStatistic;
+import statistics.Statistic;
 import agents.agenturgentprijmu.*;
 import agents.agentmodelu.*;
 
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MySimulation extends OSPABA.Simulation
 {
+	public Random masterRandom;
+	
+	public Statistic statCasCakaniaOsetrenie;
+    public GlobalStatistic globalCasCakaniaOsetrenie;
+    public Statistic statCasVSysteme;
+    public GlobalStatistic globalCasVSysteme;
+
 	//** LLM usage, to specify
 	public ConcurrentHashMap<Integer, String[]> aktualniPacienti = new ConcurrentHashMap<>();
 
-	public Stat globalSPriemernyCasCakaniaSamostatne;
-    public Stat globalSPriemernyCasCakaniaSanitkou;
-
 	public MySimulation()
 	{
+
+		masterRandom = new Random(12345);
+		statCasCakaniaOsetrenie = new Statistic();
+        globalCasCakaniaOsetrenie = new GlobalStatistic();
+        statCasVSysteme = new Statistic();
+        globalCasVSysteme = new GlobalStatistic();
+		
 		init();
 	}
 
@@ -28,8 +42,8 @@ public class MySimulation extends OSPABA.Simulation
 	{
 		super.prepareSimulation();
 		// Create global statistcis
-		globalSPriemernyCasCakaniaSamostatne = new Stat();
-        globalSPriemernyCasCakaniaSanitkou = new Stat();
+		globalCasCakaniaOsetrenie.clear();
+        globalCasVSysteme.clear();
 	}
 
 	@Override
@@ -37,6 +51,8 @@ public class MySimulation extends OSPABA.Simulation
 	{
 		super.prepareReplication();
 		// Reset entities, queues, local statistics, etc...
+		statCasCakaniaOsetrenie.clear();
+        statCasVSysteme.clear();
 	}
 
 	@Override
@@ -44,6 +60,21 @@ public class MySimulation extends OSPABA.Simulation
 	{
 		// Collect local statistics into global, update UI, etc...
 		super.replicationFinished();
+
+		globalCasCakaniaOsetrenie.addReplicationData(
+            statCasCakaniaOsetrenie.getAverage(), 
+            statCasCakaniaOsetrenie.getMax()
+        );
+        
+        globalCasVSysteme.addReplicationData(
+            statCasVSysteme.getAverage(), 
+            statCasVSysteme.getMax()
+        );
+
+		//??
+		System.out.println("End of Replication: " + currentReplication());
+        System.out.println("Avg Wait for Osetrenie: " + statCasCakaniaOsetrenie.getAverage() + " seconds");
+        System.out.println("Avg Time in System: " + statCasVSysteme.getAverage() + " seconds");
 	}
 
 	@Override
@@ -51,6 +82,15 @@ public class MySimulation extends OSPABA.Simulation
 	{
 		// Display simulation results
 		super.simulationFinished();
+
+		//??
+		System.out.println("\n====== SIMULATION FINISHED ======");
+        System.out.println("GLOBAL Avg Wait for Treatment: " + globalCasCakaniaOsetrenie.getGlobalAverage());
+        System.out.println("95% CI Wait for Treatment: +/- " + globalCasCakaniaOsetrenie.getConfidenceIntervalHalfWidth());
+        
+        System.out.println("GLOBAL Avg Time in System: " + globalCasVSysteme.getGlobalAverage());
+        System.out.println("95% CI Time in System: +/- " + globalCasVSysteme.getConfidenceIntervalHalfWidth());
+        System.out.println("=================================");
 	}
 
 	public void refreshUI()

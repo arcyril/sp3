@@ -27,8 +27,8 @@ public class ProcesPresunu extends OSPABA.Process
 		super.prepareReplication();
 		// Setup component for the next replication
 		//# what of seed
-		genCasPresunuSamostatne = new TrojuholnikovyGenerator(120.0, 150.0, 300.0, 1);
-        genCasPresunuSanitkou = new UniformGenerator(90.0, 200.0, 1);
+		genCasPresunuSamostatne = new TrojuholnikovyGenerator(120.0, 150.0, 300.0, ((MySimulation)mySim()).masterRandom.nextInt());
+        genCasPresunuSanitkou = new UniformGenerator(90.0, 200.0, ((MySimulation)mySim()).masterRandom.nextInt());
 	}
 
 	//meta! sender="AgentUrgentPrijmu", id="30", type="Start"
@@ -45,7 +45,7 @@ public class ProcesPresunu extends OSPABA.Process
         } else {
             casPresunu = genCasPresunuSanitkou.sample();
         }
-		
+
 		message.setCode(Mc.finish);
 		hold(casPresunu, message);
 	}

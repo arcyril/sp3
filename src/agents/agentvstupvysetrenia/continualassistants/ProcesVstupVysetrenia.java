@@ -3,15 +3,16 @@ package agents.agentvstupvysetrenia.continualassistants;
 import OSPABA.*;
 import simulation.*;
 import agents.agentvstupvysetrenia.*;
-import generators.EmpirickyGenerator;
 import generators.RovnomernyDisktretnyGenerator;
 import generators.SpojityEmpirickyGenerator;
+import generators.TrojuholnikovyGenerator;
 import generators.UniformGenerator;
 import OSPABA.Process;
 
 //meta! id="34"
 public class ProcesVstupVysetrenia extends OSPABA.Process
 {
+	private TrojuholnikovyGenerator genCasPresunuPersonalu;
 	private SpojityEmpirickyGenerator casVstupVysSamostatneGen;
     private RovnomernyDisktretnyGenerator casVstupVysSanitkouGen;
 	private UniformGenerator prioritaGen;
@@ -19,6 +20,8 @@ public class ProcesVstupVysetrenia extends OSPABA.Process
 	public ProcesVstupVysetrenia(int id, Simulation mySim, CommonAgent myAgent)
 	{
 		super(id, mySim, myAgent);
+
+		genCasPresunuPersonalu = new TrojuholnikovyGenerator(15.0, 20.0, 45.0, ((MySimulation)mySim()).masterRandom.nextInt());
 	}
 
 	@Override
@@ -30,10 +33,9 @@ public class ProcesVstupVysetrenia extends OSPABA.Process
 		double[] minCas = {3.0, 5.0};
 		double[] maxCas = {5.0, 9.0};
 
-		casVstupVysSamostatneGen = new SpojityEmpirickyGenerator(pravdepodobnosti, minCas, maxCas, 1); //#
-		casVstupVysSanitkouGen = new RovnomernyDisktretnyGenerator(4, 8, 1);
-		prioritaGen = new UniformGenerator(0.0, 1.0, 1); //#;
-
+		casVstupVysSamostatneGen = new SpojityEmpirickyGenerator(pravdepodobnosti, minCas, maxCas, ((MySimulation)mySim()).masterRandom.nextInt());
+		casVstupVysSanitkouGen = new RovnomernyDisktretnyGenerator(4, 8, ((MySimulation)mySim()).masterRandom.nextInt());
+		prioritaGen = new UniformGenerator(0.0, 1.0, ((MySimulation)mySim()).masterRandom.nextInt());
 	}
 
 	//meta! sender="AgentVstupVysetrenia", id="35", type="Start"
@@ -41,24 +43,24 @@ public class ProcesVstupVysetrenia extends OSPABA.Process
 	{
 		System.out.println("7 processStart of ProcesVstupVysetrenia");
 		MyMessage pacient = (MyMessage) message;
-		double casVstupVysetreniaMinuty;
+		double casVstupVysetreniaSekundy;
 
 		if (pacient.typPacienta.equals("SAMOSTATNE")) {
-            casVstupVysetreniaMinuty = casVstupVysSamostatneGen.sample();
+            casVstupVysetreniaSekundy = casVstupVysSamostatneGen.sample() * 60.0;
         } else {
-            casVstupVysetreniaMinuty = casVstupVysSanitkouGen.sample();
+            casVstupVysetreniaSekundy = casVstupVysSanitkouGen.sample() * 60.0;
         }
-		
-		double casVstupVysetrenia = casVstupVysetreniaMinuty * 60.0;
-		
+
+		double casPresunuPersonalu = genCasPresunuPersonalu.sample();
+		double celkovyCas = casVstupVysetreniaSekundy + casPresunuPersonalu;
+
 		message.setCode(Mc.finish);
-		hold(casVstupVysetrenia, message);
+		hold(celkovyCas, message);
 	}
 
 	//meta! userInfo="Process messages defined in code", id="0"
 	public void processDefault(MessageForm message)
 	{
-		//??
 		// switch (message.code())
 		// {
 		// }

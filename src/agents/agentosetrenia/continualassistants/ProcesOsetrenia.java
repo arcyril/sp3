@@ -3,6 +3,7 @@ package agents.agentosetrenia.continualassistants;
 import OSPABA.*;
 import agents.agentosetrenia.*;
 import generators.SpojityEmpirickyGenerator;
+import generators.TrojuholnikovyGenerator;
 import generators.UniformGenerator;
 import simulation.*;
 import OSPABA.Process;
@@ -10,12 +11,15 @@ import OSPABA.Process;
 //meta! id="36"
 public class ProcesOsetrenia extends OSPABA.Process
 {
+	private TrojuholnikovyGenerator genCasPresunuPersonalu;
 	private SpojityEmpirickyGenerator casOsetreniaSamostatneGen;
     private UniformGenerator casOsetreniaSanitkouGen;
 
 	public ProcesOsetrenia(int id, Simulation mySim, CommonAgent myAgent)
 	{
 		super(id, mySim, myAgent);
+
+		genCasPresunuPersonalu = new TrojuholnikovyGenerator(15.0, 20.0, 45.0, ((MySimulation)mySim()).masterRandom.nextInt());
 	}
 
 	@Override
@@ -28,28 +32,29 @@ public class ProcesOsetrenia extends OSPABA.Process
 		double[] minCas = {10.0, 12.0, 14.0};
 		double[] maxCas = {12.0, 14.0, 18.0};
 
-		casOsetreniaSamostatneGen = new SpojityEmpirickyGenerator(pravdepodobnosti, minCas, maxCas, 1);
-		casOsetreniaSanitkouGen = new UniformGenerator(15.0, 30.0, 1); //#;
+		casOsetreniaSamostatneGen = new SpojityEmpirickyGenerator(pravdepodobnosti, minCas, maxCas, ((MySimulation)mySim()).masterRandom.nextInt());
+		casOsetreniaSanitkouGen = new UniformGenerator(15.0, 30.0, ((MySimulation)mySim()).masterRandom.nextInt());
 	}
 
 	//meta! sender="AgentOsetrenia", id="37", type="Start"
 	public void processStart(MessageForm message)
 	{
 		MyMessage pacient = (MyMessage) message;
-        double casOsetreniaMinuty;
+        double casOsetreniaSekundy;
 		
 		if (pacient.typPacienta.equals("SAMOSTATNE")) {
-            casOsetreniaMinuty = casOsetreniaSamostatneGen.sample(); 
+            casOsetreniaSekundy = casOsetreniaSamostatneGen.sample() * 60.0; 
 			System.out.println("11 ProcesOsetrenia SAM");
 		} else {
-			casOsetreniaMinuty = casOsetreniaSanitkouGen.sample();
+			casOsetreniaSekundy = casOsetreniaSanitkouGen.sample() * 60.0;
 			System.out.println("11 ProcesOsetrenia SANITKOU");
 		}
 
-		double casOsetrenia = casOsetreniaMinuty * 60.0;
+		double casPresunuPersonalu = genCasPresunuPersonalu.sample();
+		double celkovyCas = casOsetreniaSekundy + casPresunuPersonalu;
 
 		message.setCode(Mc.finish);
-        hold(casOsetrenia, message);
+        hold(celkovyCas, message);
 	}
 
 	//meta! userInfo="Process messages defined in code", id="0"

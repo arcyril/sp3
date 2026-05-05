@@ -30,7 +30,7 @@ public class ManagerOsetrenia extends OSPABA.Manager
 		radyPodlaPriority = new SimQueue[5];
 		//** LLM */
 		for (int i = 0; i < 5; i++) {
-            radyPodlaPriority[i] = new SimQueue<>(new WStat(mySim()));
+            radyPodlaPriority[i] = new SimQueue<>();
         }
 	}
 
@@ -69,6 +69,8 @@ public class ManagerOsetrenia extends OSPABA.Manager
 	public void processFinish(MessageForm message)
 	{
 		System.out.println("12 ProcesOsetrenia IS FINISHED");
+
+		message.setCode(Mc.vykonatOsetrenie);
 		response(message);
 	}
 

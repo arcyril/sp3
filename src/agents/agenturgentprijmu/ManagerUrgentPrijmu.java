@@ -85,7 +85,22 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 	//meta! sender="AgentOsetrenia", id="18", type="Response"
 	public void processVykonatOsetrenie(MessageForm message)
 	{
-		System.out.println("12 response is sent from AgentOsetrenia. Calling pridelPracu again");
+		System.out.println("13 response is sent from AgentOsetrenia");
+
+		MyMessage pacient = (MyMessage) message;
+		volniLekari.add(pacient.priradenyLekar);
+        volneSestry.add(pacient.priradenaSestra);
+
+		pacient.priradenyLekar = null;
+        pacient.priradenaSestra = null;
+
+		// if (((MySimulation)mySim()).aktualniPacienti.containsKey(pacient.idPacienta)) {
+        //     ((MySimulation)mySim()).aktualniPacienti.remove(pacient.idPacienta);
+        // }
+        // ((MySimulation)mySim()).refreshUI();
+
+		message.setCode(Mc.spracovaniePacienta);
+		response(message);
 
 		pridelPracu();
 	}
@@ -141,23 +156,27 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 
 		// }
 		// System.out.println("5.5 pridelPracu inside of Finish");
-		ManagerOsetrenia manOsetrenia = (ManagerOsetrenia) ((MySimulation)mySim()).agentOsetrenia().myManager();
-        ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) ((MySimulation)mySim()).agentVstupVysetrenia().myManager();
-
+		
 		// if (!volneSestry.isEmpty() && !manVstup.radSamostatne.isEmpty()) {
-        
+			
 		// 	MyMessage pacient = manVstup.radSamostatne.dequeue();
 		// 	pacient.priradenaSestra = volneSestry.remove(0);
-
+		
 		// 	pacient.setAddressee(Id.agentVstupVysetrenia);
 		// 	pacient.setCode(Mc.vykonatVstupOsetrenie);
 		// 	request(pacient); 
 		// }
-
+		
+		ManagerOsetrenia manOsetrenia = (ManagerOsetrenia) ((MySimulation)mySim()).agentOsetrenia().myManager();
+		ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) ((MySimulation)mySim()).agentVstupVysetrenia().myManager();
 
 		if (!volniLekari.isEmpty() && !volneSestry.isEmpty() && manOsetrenia.cakajuciPacienti()) {
             System.out.println("pridelPracu inside if cakajuciPacienti is true. vykonatOsetrenie will be called");
             MyMessage pacient = manOsetrenia.dalsiPacient();
+
+			double casCakania = mySim().currentTime() - pacient.casPrichodu; 
+            ((MySimulation)mySim()).statCasCakaniaOsetrenie.addValue(casCakania);
+
             pacient.priradenyLekar = volniLekari.remove(0);
             pacient.priradenaSestra = volneSestry.remove(0);
 
@@ -177,7 +196,6 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
             pacient.setCode(Mc.vykonatVstupOsetrenie);
             request(pacient); 
         }
-
 	}
 
 	//meta! userInfo="Generated code: do not modify", tag="begin"

@@ -28,7 +28,7 @@ public class GlobalStatistic {
 
     public double getConfidenceIntervalHalfWidth() {
         if (count <= 1) return 0;
-        return 1.645 * (getStandardDeviation() / Math.sqrt(count));
+        return 1.96 * (getStandardDeviation() / Math.sqrt(count));
     }
 
     public double getAbsoluteMax() { 

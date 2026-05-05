@@ -10,7 +10,7 @@ public class MyMessage extends OSPABA.MessageForm
 	public static int globalIdCounter = 1;
 	public int idPacienta;
 	public String typPacienta;
-	public int priorita; //??
+	public int priorita;
 	public double casPrichodu;
 
 	//??
