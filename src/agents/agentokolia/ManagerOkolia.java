@@ -25,21 +25,23 @@ public class ManagerOkolia extends OSPABA.Manager
 
 		System.out.println("manager okolia test, time " + mySim().currentTime());
 		System.out.println("Mc.start " + Mc.start);
+		
 		//?? maybe if statement
 		MyMessage startSamostatne = new MyMessage(mySim());
 		startSamostatne.setAddressee(Id.planovacPrichodovSamostatne);
 		//?? apparently mc.start is automatic anyway
 		startSamostatne.setCode(Mc.start);
+		startContinualAssistant(startSamostatne);
+
 		MyMessage startSanitkou = new MyMessage(mySim());
 		startSanitkou.setAddressee(Id.planovacPrichodovSanitkou);
 		startSanitkou.setCode(Mc.start);
+		startContinualAssistant(startSanitkou);
+
 		try {
-			startContinualAssistant(startSamostatne);
-			startContinualAssistant(startSanitkou);
-			System.out.println("startContinualAssistant");
+			// System.out.println("startContinualAssistant");
 		} catch (Exception e) {
 			System.out.println("ERROR" + e.getMessage());
-			//??
 			e.printStackTrace();
 		}
 
@@ -53,8 +55,8 @@ public class ManagerOkolia extends OSPABA.Manager
 	//meta! sender="PlanovacPrichodovSamostatne", id="26", type="Notice"
 	public void processPrisielSamostatne(MessageForm message)
 	{
-		//**LLM FOR DEBUGGING
-		message.setAddressee(((MySimulation)mySim()).agentModelu());
+		System.out.println("1 processPrisielSamostatne");
+		message.setAddressee(Id.agentModelu); // ((MySimulation)mySim()).agentModelu()
 		message.setCode(Mc.pacientPrisiel); 
 		notice(message);
 	}
@@ -62,7 +64,7 @@ public class ManagerOkolia extends OSPABA.Manager
 	//meta! sender="PlanovacPrichodovSanitkou", id="27", type="Notice"
 	public void processPrisielSanitkou(MessageForm message)
 	{
-		message.setAddressee(((MySimulation)mySim()).agentModelu());
+		message.setAddressee(Id.agentModelu);
 		message.setCode(Mc.pacientPrisiel);
 		notice(message);
 	}

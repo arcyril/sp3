@@ -34,6 +34,9 @@ public class ProcesPresunu extends OSPABA.Process
 	//meta! sender="AgentUrgentPrijmu", id="30", type="Start"
 	public void processStart(MessageForm message)
 	{
+		// System.out.println("4 processStart ProcesPresunu, defining time travel");
+		System.out.println("Time: " + mySim().currentTime() + " | 4 processStart ProcesPresunu");
+
 		MyMessage pacient = (MyMessage) message;
         double casPresunu = 0.0;
 
@@ -42,13 +45,16 @@ public class ProcesPresunu extends OSPABA.Process
         } else {
             casPresunu = genCasPresunuSanitkou.sample();
         }
-
+		
+		message.setCode(Mc.finish);
 		hold(casPresunu, message);
 	}
 
 	//meta! userInfo="Process messages defined in code", id="0"
 	public void processDefault(MessageForm message)
 	{
+				System.out.println("4.5");
+
 		assistantFinished(message);
 	}
 

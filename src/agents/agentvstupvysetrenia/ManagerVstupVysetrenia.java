@@ -29,13 +29,14 @@ public class ManagerVstupVysetrenia extends OSPABA.Manager
 		}
 
 		//!! STATS
-		// radSanitkou = new SimQueue<>(new WStat(mySim()));
-        // radSamostatne = new SimQueue<>(new WStat(mySim()));
+		radSanitkou = new SimQueue<>(new WStat(mySim()));
+        radSamostatne = new SimQueue<>(new WStat(mySim()));
 	}
 
 	//meta! sender="AgentUrgentPrijmu", id="17", type="Request"
 	public void processVykonatVstupOsetrenie(MessageForm message)
 	{
+		System.out.println("6 processVykonatVstupOsetrenie");
 		message.setAddressee(Id.procesVstupVysetrenia);
 		startContinualAssistant(message);
 	}
@@ -43,6 +44,9 @@ public class ManagerVstupVysetrenia extends OSPABA.Manager
 	//meta! sender="ProcesVstupVysetrenia", id="35", type="Finish"
 	public void processFinish(MessageForm message)
 	{
+		System.out.println("9 processFinish of ProcesVstupVysetrenia");
+
+		message.setCode(Mc.vykonatVstupOsetrenie);
 		response(message);
 	}
 

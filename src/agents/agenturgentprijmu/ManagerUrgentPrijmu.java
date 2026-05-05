@@ -70,7 +70,7 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 		MyMessage pacient = (MyMessage) message;
 
 		volneSestry.add(pacient.priradenaSestra);
-        volneAmbulancieB.add(pacient.priradenaMiestnost);
+        // volneAmbulancieB.add(pacient.priradenaMiestnost);
 
 		pacient.priradenaSestra = null;
         pacient.priradenaMiestnost = null;
@@ -85,12 +85,16 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 	//meta! sender="AgentOsetrenia", id="18", type="Response"
 	public void processVykonatOsetrenie(MessageForm message)
 	{
+		System.out.println("12 response is sent from AgentOsetrenia. Calling pridelPracu again");
+
 		pridelPracu();
 	}
 
 	//meta! sender="ProcesPresunu", id="30", type="Finish"
 	public void processFinish(MessageForm message)
 	{
+		System.out.println("5 processFinish runs after procesPresunu");
+
 		MyMessage pacient = (MyMessage) message;
 
 		ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) ((MySimulation)mySim()).agentVstupVysetrenia().myManager();
@@ -99,23 +103,20 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 		} else {
 			manVstup.radSanitkou.enqueue(pacient);
 		}
-		pridelPracu();
-
+		
 		//# GUI
 		if (((MySimulation)mySim()).aktualniPacienti.containsKey(pacient.idPacienta)) {
 			((MySimulation)mySim()).aktualniPacienti.get(pacient.idPacienta)[2] = "čaka v rade na vyšetrenie";
 		}
 		((MySimulation)mySim()).refreshUI();
-
-		//!! FINISH
-		message.setAddressee(Id.agentVstupVysetrenia);
-		message.setCode(Mc.vykonatVstupOsetrenie);
-		request(message);
+		
+		pridelPracu();
 	}
 
 	//meta! sender="AgentModelu", id="16", type="Request"
 	public void processSpracovaniePacienta(MessageForm message)
 	{
+		System.out.println("3 processSpracovaniePacienta");
 		//!! PROCESS PRESUNU
 		message.setAddressee(Id.procesPresunu);
 		startContinualAssistant(message);
@@ -139,18 +140,44 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 		// if (cakajuciPacienti && !volniLekari.isEmpty() && !volneSestry.isEmpty() /* //# has right room */) {
 
 		// }
+		// System.out.println("5.5 pridelPracu inside of Finish");
+		ManagerOsetrenia manOsetrenia = (ManagerOsetrenia) ((MySimulation)mySim()).agentOsetrenia().myManager();
+        ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) ((MySimulation)mySim()).agentVstupVysetrenia().myManager();
 
-		ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) ((MySimulation)mySim()).agentVstupVysetrenia().myManager();
-
-		if (!volneSestry.isEmpty() && !manVstup.radSamostatne.isEmpty()) {
+		// if (!volneSestry.isEmpty() && !manVstup.radSamostatne.isEmpty()) {
         
-        MyMessage pacient = manVstup.radSamostatne.dequeue();
-        pacient.priradenaSestra = volneSestry.remove(0);
+		// 	MyMessage pacient = manVstup.radSamostatne.dequeue();
+		// 	pacient.priradenaSestra = volneSestry.remove(0);
 
-        pacient.setAddressee(Id.agentVstupVysetrenia);
-        pacient.setCode(Mc.vykonatVstupOsetrenie);
-        request(pacient); 
-    }
+		// 	pacient.setAddressee(Id.agentVstupVysetrenia);
+		// 	pacient.setCode(Mc.vykonatVstupOsetrenie);
+		// 	request(pacient); 
+		// }
+
+
+		if (!volniLekari.isEmpty() && !volneSestry.isEmpty() && manOsetrenia.cakajuciPacienti()) {
+            System.out.println("pridelPracu inside if cakajuciPacienti is true. vykonatOsetrenie will be called");
+            MyMessage pacient = manOsetrenia.dalsiPacient();
+            pacient.priradenyLekar = volniLekari.remove(0);
+            pacient.priradenaSestra = volneSestry.remove(0);
+
+            pacient.setAddressee(Id.agentOsetrenia);
+            pacient.setCode(Mc.vykonatOsetrenie);
+            request(pacient); 
+            
+            return;
+        }
+
+        if (!volneSestry.isEmpty() && !manVstup.radSamostatne.isEmpty()) {
+			System.out.println("pridelPracu inside if cakajuciPacienti is not true and someone is waiting in radSamostatne. vykonatVstupOsetrenie will be called");
+            MyMessage pacient = manVstup.radSamostatne.dequeue();
+            pacient.priradenaSestra = volneSestry.remove(0);
+
+            pacient.setAddressee(Id.agentVstupVysetrenia);
+            pacient.setCode(Mc.vykonatVstupOsetrenie);
+            request(pacient); 
+        }
+
 	}
 
 	//meta! userInfo="Generated code: do not modify", tag="begin"

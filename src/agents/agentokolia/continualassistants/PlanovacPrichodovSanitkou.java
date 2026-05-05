@@ -3,12 +3,13 @@ package agents.agentokolia.continualassistants;
 import OSPABA.*;
 import agents.agentokolia.*;
 import generators.EmpirickyGenerator;
+import generators.ExponencialnyGenerator;
 import simulation.*;
 
 //meta! id="22"
 public class PlanovacPrichodovSanitkou extends OSPABA.Scheduler
 {
-	private EmpirickyGenerator genPrichodSanitkou;
+	private ExponencialnyGenerator prichodSanitkouGen;
 
 	public PlanovacPrichodovSanitkou(int id, Simulation mySim, CommonAgent myAgent)
 	{
@@ -20,7 +21,7 @@ public class PlanovacPrichodovSanitkou extends OSPABA.Scheduler
 	{
 		super.prepareReplication();
 		// Setup component for the next replication
-		// genPrichodSanitkou = new EmpirickyGenerator(2); //#
+		prichodSanitkouGen = new ExponencialnyGenerator(1 / 573.99, 12345); //#
 	}
 
 	//meta! userInfo="Process messages defined in code", id="0"
@@ -30,7 +31,7 @@ public class PlanovacPrichodovSanitkou extends OSPABA.Scheduler
 		{
 			case Mc.start:
 				message.setCode(Mc.prisielSanitkou);
-				hold(genPrichodSanitkou.sample(), message);
+				hold(prichodSanitkouGen.sample(), message);
 				break;
 			default:
 				System.out.println("Time: " + String.format("%.2f", mySim().currentTime()) + ", pacient prisiel sanitkou");
@@ -53,7 +54,7 @@ public class PlanovacPrichodovSanitkou extends OSPABA.Scheduler
 				novyPacient.setCode(Mc.prisielSanitkou); 
 				notice(novyPacient);
 
-				hold(genPrichodSanitkou.sample(), message);
+				hold(prichodSanitkouGen.sample(), message);
 				break;
 		}
 	}

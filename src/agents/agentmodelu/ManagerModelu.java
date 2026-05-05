@@ -27,7 +27,8 @@ public class ManagerModelu extends OSPABA.Manager
 	//meta! sender="AgentOkolia", id="13", type="Notice"
 	public void processPacientPrisiel(MessageForm message)
 	{
-		message.setAddressee(((MySimulation)mySim()).agentUrgentPrijmu());
+		System.out.println("2 processPacientPrisiel");
+		message.setAddressee(Id.agentUrgentPrijmu); //((MySimulation)mySim()).agentUrgentPrijmu()
 		message.setCode(Mc.spracovaniePacienta);
 		request(message);
 	}
@@ -35,7 +36,7 @@ public class ManagerModelu extends OSPABA.Manager
 	//meta! sender="AgentUrgentPrijmu", id="16", type="Response"
 	public void processSpracovaniePacienta(MessageForm message)
 	{
-		message.setAddressee(((MySimulation)mySim()).agentOkolia());
+		message.setAddressee(Id.agentOkolia); //((MySimulation)mySim()).agentOkolia()
 		message.setCode(Mc.pacientOdisiel);
 		notice(message);
 	}

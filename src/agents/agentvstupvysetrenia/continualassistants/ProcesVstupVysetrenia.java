@@ -39,6 +39,7 @@ public class ProcesVstupVysetrenia extends OSPABA.Process
 	//meta! sender="AgentVstupVysetrenia", id="35", type="Start"
 	public void processStart(MessageForm message)
 	{
+		System.out.println("7 processStart of ProcesVstupVysetrenia");
 		MyMessage pacient = (MyMessage) message;
 		double casVstupVysetreniaMinuty;
 
@@ -49,8 +50,9 @@ public class ProcesVstupVysetrenia extends OSPABA.Process
         }
 		
 		double casVstupVysetrenia = casVstupVysetreniaMinuty * 60.0;
+		
+		message.setCode(Mc.finish);
 		hold(casVstupVysetrenia, message);
-
 	}
 
 	//meta! userInfo="Process messages defined in code", id="0"
@@ -60,6 +62,7 @@ public class ProcesVstupVysetrenia extends OSPABA.Process
 		// switch (message.code())
 		// {
 		// }
+		System.out.println("8 processDefault of ProcesVstupVysetrenia. Runs after hold() expires");
 		MyMessage pacient = (MyMessage) message;
             
 		double p = prioritaGen.sample();
@@ -102,11 +105,11 @@ public class ProcesVstupVysetrenia extends OSPABA.Process
 		{
 		case Mc.start:
 			processStart(message);
-		break;
+			break;
 
 		default:
 			processDefault(message);
-		break;
+			break;
 		}
 	}
 	//meta! tag="end"
