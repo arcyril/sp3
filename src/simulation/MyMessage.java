@@ -1,6 +1,9 @@
 package simulation;
 
 import OSPABA.*;
+import entities.Ambulancia;
+import entities.Lekar;
+import entities.Sestra;
 
 public class MyMessage extends OSPABA.MessageForm
 {
@@ -9,6 +12,11 @@ public class MyMessage extends OSPABA.MessageForm
 	public String typPacienta;
 	public int priorita; //??
 	public double casPrichodu;
+
+	//??
+	public Lekar priradenyLekar;
+	public Sestra priradenaSestra;
+	public Ambulancia priradenaMiestnost;
 
 	public MyMessage(Simulation mySim)
 	{

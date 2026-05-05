@@ -20,7 +20,7 @@ public class PlanovacPrichodovSanitkou extends OSPABA.Scheduler
 	{
 		super.prepareReplication();
 		// Setup component for the next replication
-		genPrichodSanitkou = new EmpirickyGenerator(2);
+		// genPrichodSanitkou = new EmpirickyGenerator(2); //#
 	}
 
 	//meta! userInfo="Process messages defined in code", id="0"

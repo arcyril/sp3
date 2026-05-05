@@ -60,11 +60,14 @@ public class ManagerOsetrenia extends OSPABA.Manager
 	//meta! sender="AgentUrgentPrijmu", id="18", type="Request"
 	public void processVykonatOsetrenie(MessageForm message)
 	{
+		message.setAddressee(Id.procesOsetrenia);
+		startContinualAssistant(message);
 	}
 
 	//meta! sender="ProcesOsetrenia", id="37", type="Finish"
 	public void processFinish(MessageForm message)
 	{
+		response(message);
 	}
 
 	//meta! userInfo="Process messages defined in code", id="0"

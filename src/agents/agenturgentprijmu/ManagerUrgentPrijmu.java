@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.ArrayList;
 
 import OSPABA.*;
+import agents.agentosetrenia.ManagerOsetrenia;
+import agents.agentvstupvysetrenia.ManagerVstupVysetrenia;
 import simulation.*;
 import entities.*;
 
@@ -51,7 +53,7 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
         }
 
 		for (int i = 1; i <= 5; i++) {
-            volneAmbulancieA.add(new Ambulancia(i, "A", "A1"));
+            volneAmbulancieA.add(new Ambulancia(i, "A", "A1")); //# CONFIGURE LOCATION
         }
 
 		for (int i = 1; i <= 7; i++) {
@@ -62,17 +64,44 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 	//meta! sender="AgentVstupVysetrenia", id="17", type="Response"
 	public void processVykonatVstupOsetrenie(MessageForm message)
 	{
+		// MyMessage pacient = (MyMessage) message;
+		// volneSestry.add(pacient.priradenaSestra);
+		// volneAmbulancieB.add(pacient.priradenaMiestnost);
+		MyMessage pacient = (MyMessage) message;
+
+		volneSestry.add(pacient.priradenaSestra);
+        volneAmbulancieB.add(pacient.priradenaMiestnost);
+
+		pacient.priradenaSestra = null;
+        pacient.priradenaMiestnost = null;
+		
+		ManagerOsetrenia manOsetrenia = (ManagerOsetrenia) ((MySimulation)mySim()).agentOsetrenia().myManager();
+        manOsetrenia.pridatDoRadu(pacient);
+
+		pridelPracu();
+		
 	}
 
 	//meta! sender="AgentOsetrenia", id="18", type="Response"
 	public void processVykonatOsetrenie(MessageForm message)
 	{
+		pridelPracu();
 	}
 
 	//meta! sender="ProcesPresunu", id="30", type="Finish"
 	public void processFinish(MessageForm message)
 	{
 		MyMessage pacient = (MyMessage) message;
+
+		ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) ((MySimulation)mySim()).agentVstupVysetrenia().myManager();
+		if (pacient.typPacienta.equals("SAMOSTATNE")) {
+			manVstup.radSamostatne.enqueue(pacient);
+		} else {
+			manVstup.radSanitkou.enqueue(pacient);
+		}
+		pridelPracu();
+
+		//# GUI
 		if (((MySimulation)mySim()).aktualniPacienti.containsKey(pacient.idPacienta)) {
 			((MySimulation)mySim()).aktualniPacienti.get(pacient.idPacienta)[2] = "čaka v rade na vyšetrenie";
 		}
@@ -101,7 +130,27 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 	}
 
 	public void pridelPracu() {
+		// if (volneSestry.isEmpty()) {
+		// 	return;
+		// }
 
+		// //??
+		// boolean cakajuciPacienti = ((ManagerOsetrenia)((MySimulation)mySim()).agentOsetrenia().myManager()).cakajuciPacienti();
+		// if (cakajuciPacienti && !volniLekari.isEmpty() && !volneSestry.isEmpty() /* //# has right room */) {
+
+		// }
+
+		ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) ((MySimulation)mySim()).agentVstupVysetrenia().myManager();
+
+		if (!volneSestry.isEmpty() && !manVstup.radSamostatne.isEmpty()) {
+        
+        MyMessage pacient = manVstup.radSamostatne.dequeue();
+        pacient.priradenaSestra = volneSestry.remove(0);
+
+        pacient.setAddressee(Id.agentVstupVysetrenia);
+        pacient.setCode(Mc.vykonatVstupOsetrenie);
+        request(pacient); 
+    }
 	}
 
 	//meta! userInfo="Generated code: do not modify", tag="begin"

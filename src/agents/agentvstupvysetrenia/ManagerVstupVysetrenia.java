@@ -29,24 +29,21 @@ public class ManagerVstupVysetrenia extends OSPABA.Manager
 		}
 
 		//!! STATS
-		radSanitkou = new SimQueue<>(new WStat(mySim()));
-        radSamostatne = new SimQueue<>(new WStat(mySim()));
+		// radSanitkou = new SimQueue<>(new WStat(mySim()));
+        // radSamostatne = new SimQueue<>(new WStat(mySim()));
 	}
 
 	//meta! sender="AgentUrgentPrijmu", id="17", type="Request"
 	public void processVykonatVstupOsetrenie(MessageForm message)
 	{
-		MyMessage pacient = (MyMessage) message;
-		if (pacient.typPacienta.equals("SANITKA")) {
-            radSanitkou.enqueue(pacient);
-        } else {
-            radSamostatne.enqueue(pacient);
-        }
+		message.setAddressee(Id.procesVstupVysetrenia);
+		startContinualAssistant(message);
 	}
 
 	//meta! sender="ProcesVstupVysetrenia", id="35", type="Finish"
 	public void processFinish(MessageForm message)
 	{
+		response(message);
 	}
 
 	//meta! userInfo="Process messages defined in code", id="0"
