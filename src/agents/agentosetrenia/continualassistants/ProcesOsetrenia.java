@@ -11,7 +11,7 @@ import OSPABA.Process;
 //meta! id="36"
 public class ProcesOsetrenia extends OSPABA.Process
 {
-	private TrojuholnikovyGenerator genCasPresunuPersonalu;
+	// private TrojuholnikovyGenerator genCasPresunuPersonalu;
 	private SpojityEmpirickyGenerator casOsetreniaSamostatneGen;
     private UniformGenerator casOsetreniaSanitkouGen;
 
@@ -19,7 +19,7 @@ public class ProcesOsetrenia extends OSPABA.Process
 	{
 		super(id, mySim, myAgent);
 
-		genCasPresunuPersonalu = new TrojuholnikovyGenerator(15.0, 20.0, 45.0, ((MySimulation)mySim()).masterRandom.nextInt());
+		// genCasPresunuPersonalu = new TrojuholnikovyGenerator(15.0, 20.0, 45.0, ((MySimulation)mySim()).masterRandom.nextInt());
 	}
 
 	@Override
@@ -50,11 +50,11 @@ public class ProcesOsetrenia extends OSPABA.Process
 			System.out.println("11 ProcesOsetrenia SANITKOU");
 		}
 
-		double casPresunuPersonalu = genCasPresunuPersonalu.sample();
-		double celkovyCas = casOsetreniaSekundy + casPresunuPersonalu;
+		// double casPresunuPersonalu = genCasPresunuPersonalu.sample();
+		// double celkovyCas = casOsetreniaSekundy + casPresunuPersonalu;
 
 		message.setCode(Mc.finish);
-        hold(celkovyCas, message);
+        hold(casOsetreniaSekundy + pacient.casPresunu, message);
 	}
 
 	//meta! userInfo="Process messages defined in code", id="0"

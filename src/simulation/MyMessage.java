@@ -14,6 +14,10 @@ public class MyMessage extends OSPABA.MessageForm
 	public double casPrichodu;
 
 	//??
+	public double casPresunu;
+	// public String cielovaMiestnost;
+
+	//??
 	public Lekar priradenyLekar;
 	public Sestra priradenaSestra;
 	public Ambulancia priradenaMiestnost;

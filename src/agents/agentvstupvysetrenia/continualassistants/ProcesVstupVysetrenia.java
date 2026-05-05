@@ -12,7 +12,7 @@ import OSPABA.Process;
 //meta! id="34"
 public class ProcesVstupVysetrenia extends OSPABA.Process
 {
-	private TrojuholnikovyGenerator genCasPresunuPersonalu;
+	// private TrojuholnikovyGenerator genCasPresunuPersonalu;
 	private SpojityEmpirickyGenerator casVstupVysSamostatneGen;
     private RovnomernyDisktretnyGenerator casVstupVysSanitkouGen;
 	private UniformGenerator prioritaGen;
@@ -21,7 +21,7 @@ public class ProcesVstupVysetrenia extends OSPABA.Process
 	{
 		super(id, mySim, myAgent);
 
-		genCasPresunuPersonalu = new TrojuholnikovyGenerator(15.0, 20.0, 45.0, ((MySimulation)mySim()).masterRandom.nextInt());
+		// genCasPresunuPersonalu = new TrojuholnikovyGenerator(15.0, 20.0, 45.0, ((MySimulation)mySim()).masterRandom.nextInt());
 	}
 
 	@Override
@@ -51,11 +51,11 @@ public class ProcesVstupVysetrenia extends OSPABA.Process
             casVstupVysetreniaSekundy = casVstupVysSanitkouGen.sample() * 60.0;
         }
 
-		double casPresunuPersonalu = genCasPresunuPersonalu.sample();
-		double celkovyCas = casVstupVysetreniaSekundy + casPresunuPersonalu;
+		// double casPresunuPersonalu = genCasPresunuPersonalu.sample();
+		// double celkovyCas = casVstupVysetreniaSekundy + casPresunuPersonalu;
 
 		message.setCode(Mc.finish);
-		hold(celkovyCas, message);
+		hold(casVstupVysetreniaSekundy + pacient.casPresunu, message);
 	}
 
 	//meta! userInfo="Process messages defined in code", id="0"
