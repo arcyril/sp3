@@ -57,6 +57,15 @@ public class ManagerOsetrenia extends OSPABA.Manager
 		return null;
 	}
 
+	public MyMessage peekDalsiPacient() {
+		for (int i = 0; i < radyPodlaPriority.length; i++) {
+			if (!radyPodlaPriority[i].isEmpty()) {
+				return radyPodlaPriority[i].peek();
+			}
+		}
+		return null;
+	}
+
 	//meta! sender="AgentUrgentPrijmu", id="18", type="Request"
 	public void processVykonatOsetrenie(MessageForm message)
 	{

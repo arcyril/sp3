@@ -3,6 +3,7 @@ package gui;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Toolkit;
 
 import javax.swing.BorderFactory;
@@ -31,6 +32,11 @@ public class Gui extends JFrame {
 
     JTextField txtTrvanie;
     JTextField txtReplikacii;
+    JTextField txtZahrievanie;
+    JCheckBox chckBoxTurboRezim;
+    JTextField txtPocetLekarov;
+    JTextField txtPocetSestier;
+    JCheckBox chckBoxRezim1Aktivny;
 
     JRadioButton rdioBttonImgType1;
     JRadioButton rdioBttonImgType2;
@@ -68,6 +74,11 @@ public class Gui extends JFrame {
     private void setValues() {
         txtTrvanie.setText("86400");
         txtReplikacii.setText("20");
+        txtPocetLekarov.setText("5");
+        txtPocetSestier.setText("10");
+        chckBoxRezim1Aktivny.setSelected(true);
+        txtZahrievanie.setText("0"); 
+        chckBoxTurboRezim.setSelected(false);
         sliderSimDur.setValue(1);
         sliderSimInt.setValue(500);
     }
@@ -113,12 +124,19 @@ public class Gui extends JFrame {
 
         JPanel vystupPanel = createPanel(0f, 0.5f, BoxLayout.PAGE_AXIS);
 
-        lblResult = new JLabel("Výsledky.");
-        vystupPanel.add(lblResult);
-        panel.add(Box.createRigidArea(new DimensionUIResource(0, 5)));
-
+        JPanel simTimePanel = createPanel(0f, 0f, BoxLayout.LINE_AXIS);
+        simTimePanel.add(Box.createRigidArea(new DimensionUIResource(12, 0)));
         lblSimTime = new JLabel("Simulacny cas:");
-        vystupPanel.add(lblSimTime);
+        lblSimTime.setFont(new Font("SansSerif", Font.BOLD, 22));
+        simTimePanel.add(lblSimTime);
+        simTimePanel.add(Box.createRigidArea(new DimensionUIResource(20, 0)));
+        vystupPanel.add(simTimePanel);
+        vystupPanel.add(Box.createRigidArea(new DimensionUIResource(0, 5)));
+
+        lblResult = new JLabel("<html><br>Čaká sa na simuláciu...</html>");
+        lblResult.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        vystupPanel.add(lblResult);
+        panel.add(Box.createRigidArea(new DimensionUIResource(0, 15)));
 
         panel.add(vystupPanel);
         return panel;
@@ -146,6 +164,39 @@ public class Gui extends JFrame {
         txtReplikacii.setMaximumSize(new Dimension(70, 20));
         panel.add(txtReplikacii);
 
+        panel.add(Box.createRigidArea(new DimensionUIResource(10, 0)));
+
+        panel.add(new JLabel("Pocet lekarov:"));
+        panel.add(Box.createRigidArea(new DimensionUIResource(5, 0)));
+
+        txtPocetLekarov = new JTextField();
+        txtPocetLekarov.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        txtPocetLekarov.setPreferredSize(new Dimension(70, 20));
+        txtPocetLekarov.setMaximumSize(new Dimension(70, 20));
+        panel.add(txtPocetLekarov);
+
+        panel.add(Box.createRigidArea(new DimensionUIResource(10, 0)));
+
+        panel.add(new JLabel("Pocet sestier:"));
+        panel.add(Box.createRigidArea(new DimensionUIResource(5, 0)));
+
+        txtPocetSestier = new JTextField();
+        txtPocetSestier.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        txtPocetSestier.setPreferredSize(new Dimension(70, 20));
+        txtPocetSestier.setMaximumSize(new Dimension(70, 20));
+        panel.add(txtPocetSestier);
+
+        panel.add(Box.createRigidArea(new DimensionUIResource(10, 0)));
+
+        panel.add(new JLabel("Zahrievanie (s):"));
+        panel.add(Box.createRigidArea(new DimensionUIResource(5, 0)));
+
+        txtZahrievanie = new JTextField();
+        txtZahrievanie.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        txtZahrievanie.setPreferredSize(new Dimension(70, 20));
+        txtZahrievanie.setMaximumSize(new Dimension(70, 20));
+        panel.add(txtZahrievanie);
+
         return panel;
     }
 
@@ -171,6 +222,16 @@ public class Gui extends JFrame {
     private JPanel buidBottomPanel() {
         JPanel panel = createPanel(0f, 0f, BoxLayout.LINE_AXIS);
         JPanel leftPanel = createPanel(0f, 0f, BoxLayout.PAGE_AXIS);
+
+        chckBoxRezim1Aktivny = new JCheckBox("Rezim 1 aktivny");
+        chckBoxRezim1Aktivny.setAlignmentX(0.5f);
+        leftPanel.add(chckBoxRezim1Aktivny);
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 3)));
+
+        chckBoxTurboRezim = new JCheckBox("Turbo Režim");
+        chckBoxTurboRezim.setAlignmentX(0.5f);
+        leftPanel.add(chckBoxTurboRezim);
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
         JLabel lblSimDur = new JLabel("Sim. trvanie pauzy");
         lblSimDur.setAlignmentX(0.5f);

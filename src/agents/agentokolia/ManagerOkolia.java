@@ -49,17 +49,21 @@ public class ManagerOkolia extends OSPABA.Manager
 			System.out.println("ERROR" + e.getMessage());
 			e.printStackTrace();
 		}
-
 	}
 
 	//meta! sender="AgentModelu", id="15", type="Notice"
 	public void processPacientOdisiel(MessageForm message)
 	{
 		MyMessage pacient = (MyMessage) message;
+		MySimulation sim = (MySimulation) mySim();
 		
 		double casOdchodu = genCasOdchodu.sample();
 		double casVSysteme = mySim().currentTime() + casOdchodu - pacient.casPrichodu;
-        ((MySimulation)mySim()).statCasVSysteme.addValue(casVSysteme);
+
+		sim.skontrolujZahrievanie(sim.currentTime());
+        if (sim.currentTime() >= sim.configZahrievanie) {
+            sim.statCasVSysteme.addValue(casVSysteme);
+        }
 	}
 
 	//meta! sender="PlanovacPrichodovSamostatne", id="26", type="Notice"

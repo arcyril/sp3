@@ -18,8 +18,11 @@ public class SimThread extends Thread {
             Object[] settings = _guiLogic.getSettings();
 
             _sim.onRefreshUI((sim) -> {
-                _guiLogic.onRefreshUI(sim);
+                if (!_sim.configTurboRezim) {
+                    _guiLogic.onRefreshUI(sim);
+                }
             });
+            
             _sim.onReplicationWillStart((sim) -> {
                 Object[] guiSettings = _guiLogic.getSettings();
 
@@ -27,15 +30,32 @@ public class SimThread extends Thread {
                 int interval = (int) guiSettings[3];
                 boolean maxSpeed = (boolean) guiSettings[6];
 
-                setSimSpeed(duration, interval, maxSpeed);
-                // if ((boolean) guiSettings[8]) {
-                //     _guiLogic.btnCreateAnim();
-                // } else {
-                    // _sim.setSpeed(guiSettings);
-                // }
+                _sim.configPocetLekarov = (int) guiSettings[9];
+                _sim.configPocetSestier = (int) guiSettings[10];
+                _sim.configRezim1Aktivny = (boolean) guiSettings[11];
+                _sim.configZahrievanie = (double) guiSettings[12];
+                _sim.configTurboRezim = (boolean) guiSettings[13];
+
+                if (_sim.configTurboRezim) {
+                    setSimSpeed(duration, interval, true);
+                } else {
+                    setSimSpeed(duration, interval, maxSpeed);
+                }
             });
+            
             _sim.onReplicationDidFinish((sim) -> {
-                _guiLogic.onRefreshUI(sim);
+                if (!_sim.configTurboRezim) {
+                    _guiLogic.onRefreshUI(sim);
+                }
+            });
+
+            _sim.onSimulationDidFinish((sim) -> {
+                String results = String.format("<html><b>Výsledky:</b><br>" +
+                    "Priemerný čas v systéme: %.2f &plusmn; %.2f s</html>",
+                    _sim.globalCasVSysteme.getGlobalAverage(),
+                    _sim.globalCasVSysteme.getConfidenceIntervalHalfWidth()
+                );
+                _guiLogic.showResults(results);
             });
 
             _sim.simulate((int) settings[1], (double) settings[0]);

@@ -95,7 +95,7 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
 
         invokeInEventDispatchThread(() -> {
             try {
-                prepravka.data = new Object[10];
+                prepravka.data = new Object[14];
                 prepravka.data[0] = Double.parseDouble(_gui.txtTrvanie.getText());
                 prepravka.data[1] = Integer.parseInt(_gui.txtReplikacii.getText());
                 prepravka.data[2] = _gui.sliderSimDur.getValue();
@@ -103,6 +103,12 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
                 prepravka.data[6] = _simMaxSpeedPressed;
                 prepravka.data[7] = _animMaxSpeedPressed;
                 prepravka.data[8] = _gui.chckBoxCreateAnimAfterStart.isSelected();
+                prepravka.data[9] = Integer.parseInt(_gui.txtPocetLekarov.getText());
+                prepravka.data[10] = Integer.parseInt(_gui.txtPocetSestier.getText());
+                prepravka.data[11] = _gui.chckBoxRezim1Aktivny.isSelected();
+                prepravka.data[12] = Double.parseDouble(_gui.txtZahrievanie.getText());
+                prepravka.data[13] = _gui.chckBoxTurboRezim.isSelected();
+
             } catch (NumberFormatException e) {
             }
         });
@@ -120,6 +126,12 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void showResults(String results) {
+        invokeInEventDispatchThread(() -> {
+            _gui.lblResult.setText(results);
+        });
     }
 
     @SuppressWarnings("unused")
@@ -193,7 +205,7 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
     }
 
     private void setGuiDefaultVisage() {
-        _gui.lblResult.setText("Výsledky.");
+        // _gui.lblResult.setText("Výsledky.");
         _gui.lblSimTime.setText("Simulacny cas:");
         _gui.btnPause.setText("Pause");
     }
@@ -209,7 +221,16 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
                 _gui.tableModel.addRow(riadok);
             }
 
-            _gui.lblSimTime.setText("Čas: " + String.format("%.2f", sim.currentTime()));
+            _gui.lblSimTime.setText("Čas: " + formatSimTime(sim.currentTime()));
         });
+    }
+
+    private String formatSimTime(double timeInSeconds) {
+        long totalSeconds = (long) timeInSeconds;
+        long hours = totalSeconds / 3600;
+        long minutes = (totalSeconds % 3600) / 60;
+        long seconds = totalSeconds % 60;
+
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
     }
 }

@@ -15,6 +15,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class MySimulation extends OSPABA.Simulation
 {
+	//#
+	public int configPocetLekarov = 5;
+	public int configPocetSestier = 10;
+	public boolean configRezim1Aktivny = true;
+
+	public double configZahrievanie = 0.0;
+    public boolean configTurboRezim = false;
+    private boolean zahriate = false;
+
 	public Random masterRandom;
 	
 	public Statistic statCasCakaniaOsetrenie;
@@ -53,6 +62,8 @@ public class MySimulation extends OSPABA.Simulation
 		// Reset entities, queues, local statistics, etc...
 		statCasCakaniaOsetrenie.clear();
         statCasVSysteme.clear();
+
+		zahriate = false;
 	}
 
 	@Override
@@ -100,6 +111,15 @@ public class MySimulation extends OSPABA.Simulation
 			_onRefreshUI.accept(this);
 		}
 	}
+
+	//* LLM */
+	public void skontrolujZahrievanie(double currentTime) {
+        if (configZahrievanie > 0 && !zahriate && currentTime >= configZahrievanie) {
+            statCasCakaniaOsetrenie.clear();
+            statCasVSysteme.clear();
+            zahriate = true;
+        }
+    }
 
 	//meta! userInfo="Generated code: do not modify", tag="begin"
 	private void init()
