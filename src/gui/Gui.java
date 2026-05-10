@@ -36,6 +36,7 @@ public class Gui extends JFrame {
     JTextField txtZahrievanie;
     JCheckBox chckBoxTurboRezim;
     JCheckBox chckBoxSledovatZahrievanie;
+    JCheckBox chckBoxOptimalizacia;
     JTextField txtPocetLekarov;
     JTextField txtPocetSestier;
     JCheckBox chckBoxRezim1Aktivny;
@@ -242,9 +243,13 @@ public class Gui extends JFrame {
         leftPanel.add(chckBoxTurboRezim);
         leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
+        chckBoxOptimalizacia = new JCheckBox("Režim Optimalizácie (Algoritmus)");
+        leftPanel.add(chckBoxOptimalizacia);
+        leftPanel.add(Box.createRigidArea(new DimensionUIResource(10, 0)));
+
         chckBoxSledovatZahrievanie = new JCheckBox("Analýza Zahrievania (CSV)");
-        panel.add(chckBoxSledovatZahrievanie);
-        panel.add(Box.createRigidArea(new DimensionUIResource(10, 0)));
+        leftPanel.add(chckBoxSledovatZahrievanie);
+        leftPanel.add(Box.createRigidArea(new DimensionUIResource(10, 0)));
 
         JLabel lblSimDur = new JLabel("Sim. trvanie pauzy");
         lblSimDur.setAlignmentX(0.5f);

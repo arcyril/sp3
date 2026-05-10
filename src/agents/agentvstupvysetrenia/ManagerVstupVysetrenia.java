@@ -7,8 +7,8 @@ import simulation.*;
 //meta! id="4"
 public class ManagerVstupVysetrenia extends OSPABA.Manager
 {
-	public SimQueue<MyMessage> radSanitkou;
-    public SimQueue<MyMessage> radSamostatne;
+	public SimQueue<MyMessage> radSantikouVstupVysetrenie;
+    public SimQueue<MyMessage> radVstupVysSamostatne;
 
 	public ManagerVstupVysetrenia(int id, Simulation mySim, Agent myAgent)
 	{
@@ -27,8 +27,8 @@ public class ManagerVstupVysetrenia extends OSPABA.Manager
 			petriNet().clear();
 		}
 
-		radSanitkou = new SimQueue<>();
-        radSamostatne = new SimQueue<>();
+		radSantikouVstupVysetrenie = new SimQueue<>();
+        radVstupVysSamostatne = new SimQueue<>();
 	}
 
 	//meta! sender="AgentUrgentPrijmu", id="17", type="Request"

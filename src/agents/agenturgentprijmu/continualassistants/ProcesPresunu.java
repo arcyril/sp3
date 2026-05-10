@@ -3,11 +3,8 @@ package agents.agenturgentprijmu.continualassistants;
 import OSPABA.*;
 import simulation.*;
 import agents.agenturgentprijmu.*;
-// import OSPABA.Process;
+import OSPABA.Process;
 import generators.TrojuholnikovyGenerator;
-// import java.awt.Color;
-// import java.awt.Graphics;
-// import java.awt.image.BufferedImage;
 import generators.UniformGenerator;
 
 //meta! id="29"

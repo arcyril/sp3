@@ -21,7 +21,7 @@ public class MySimulation extends OSPABA.Simulation
 	public int configPocetSestier = 10;
 	public boolean configRezim1Aktivny = true;
 
-	public double configZahrievanie = 0.0;
+	public double trvanieZahrievania = 0.0;
     public boolean configTurboRezim = false;
     private boolean zahriate = false;
 
@@ -35,16 +35,18 @@ public class MySimulation extends OSPABA.Simulation
     public GlobalStatistic globalCasVSysteme;
 
 	public Statistic statCasCakaniaVstup;
-    public GlobalStatistic globalCasCakaniaVstup;
+    public GlobalStatistic globalCasCakaniaVstupVysVsetci;
 
-    public StatisticWeighted wstatRadSanitka;
-    public GlobalStatistic globalRadSanitka;
+    public StatisticWeighted wstatradVstupVysetrenieSanitkou;
+    public GlobalStatistic globalRadVstupVysetrenieSanitkou;
 
-	public StatisticWeighted wstatRadSamostatne;
-    public GlobalStatistic globalRadSamostatne;
+	public StatisticWeighted wstatRadVstupVysSamostatne;
+    public GlobalStatistic globalRadVstupVysSamostatne;
 
-	public Statistic statCasCakaniaOsetrenie;
-    public GlobalStatistic globalCasCakaniaOsetrenie;
+	public Statistic statCakanieSanitka;
+    public GlobalStatistic globalCasCakaniaOsetreniaSanitkou;
+    public Statistic statCakanieSamostatne;
+    public GlobalStatistic globalCasCakaniaOsetreniaSamostatne;
 
     public StatisticWeighted wstatVyuzitieLekar;
     public GlobalStatistic globalVyuzitieLekar;
@@ -65,14 +67,16 @@ public class MySimulation extends OSPABA.Simulation
         statCasVSysteme = new Statistic();
         globalCasVSysteme = new GlobalStatistic();
 		statCasCakaniaVstup = new Statistic();
-        globalCasCakaniaVstup = new GlobalStatistic();
-        wstatRadSanitka = new StatisticWeighted();
-        globalRadSanitka = new GlobalStatistic();
-		wstatRadSamostatne = new StatisticWeighted();
-        globalRadSamostatne = new GlobalStatistic();
-		statCasCakaniaOsetrenie = new Statistic();
-        globalCasCakaniaOsetrenie = new GlobalStatistic();
-        wstatVyuzitieLekar = new StatisticWeighted();
+        globalCasCakaniaVstupVysVsetci = new GlobalStatistic();
+        wstatradVstupVysetrenieSanitkou = new StatisticWeighted();
+        globalRadVstupVysetrenieSanitkou = new GlobalStatistic();
+		wstatRadVstupVysSamostatne = new StatisticWeighted();
+        globalRadVstupVysSamostatne = new GlobalStatistic();
+		statCakanieSanitka = new Statistic();
+        globalCasCakaniaOsetreniaSanitkou = new GlobalStatistic();
+        statCakanieSamostatne = new Statistic();
+        globalCasCakaniaOsetreniaSamostatne = new GlobalStatistic();
+		wstatVyuzitieLekar = new StatisticWeighted();
         globalVyuzitieLekar = new GlobalStatistic();
 		wstatVyuzitieSestra = new StatisticWeighted();
         globalVyuzitieSestra = new GlobalStatistic();
@@ -88,21 +92,14 @@ public class MySimulation extends OSPABA.Simulation
 		super.prepareSimulation();
 		// Create global statistcis
         globalCasVSysteme.clear();
-		globalCasCakaniaVstup.clear();
-        globalRadSanitka.clear();
-		globalRadSamostatne.clear();
-		globalCasCakaniaOsetrenie.clear();
-        globalVyuzitieLekar.clear();
+		globalCasCakaniaVstupVysVsetci.clear();
+        globalRadVstupVysetrenieSanitkou.clear();
+		globalRadVstupVysSamostatne.clear();
+		globalCasCakaniaOsetreniaSanitkou.clear();
+        globalCasCakaniaOsetreniaSamostatne.clear();
+		globalVyuzitieLekar.clear();
         globalVyuzitieSestra.clear();
         globalVybaveniPacienti.clear();
-
-		// if (configSledovatZahrievanie) {
-        //     try (java.io.FileWriter writer = new java.io.FileWriter("warmup_data.csv", false)) {
-        //         writer.write("Cas_Sekundy,Cas_Hodiny,PriemernyCasVSysteme,PriemerneCakanieOsetrenie,RadSanitka,RadSamostatne\n");
-        //     } catch (Exception e) {
-        //         e.printStackTrace();
-        //     }
-        // }
 	}
 
 	@Override
@@ -112,9 +109,10 @@ public class MySimulation extends OSPABA.Simulation
 		// Reset entities, queues, local statistics, etc...
         statCasVSysteme.clear();
 		statCasCakaniaVstup.clear();
-        wstatRadSanitka.clear();
-		wstatRadSamostatne.clear();
-		statCasCakaniaOsetrenie.clear();
+        wstatradVstupVysetrenieSanitkou.clear();
+		wstatRadVstupVysSamostatne.clear();
+		statCakanieSanitka.clear();
+        statCakanieSamostatne.clear();
         wstatVyuzitieLekar.clear();
         wstatVyuzitieSestra.clear();
         statVybaveniPacienti.clear();
@@ -130,15 +128,16 @@ public class MySimulation extends OSPABA.Simulation
 		// Collect local statistics into global, update UI, etc...
 		super.replicationFinished();
 
-		globalCasCakaniaOsetrenie.addReplicationData(statCasCakaniaOsetrenie.getAverage(), statCasCakaniaOsetrenie.getMax());
-        
+		globalCasCakaniaOsetreniaSanitkou.addReplicationData(statCakanieSanitka.getAverage(), statCakanieSanitka.getMax());
+        globalCasCakaniaOsetreniaSamostatne.addReplicationData(statCakanieSamostatne.getAverage(), statCakanieSamostatne.getMax());
+		
         globalCasVSysteme.addReplicationData(statCasVSysteme.getAverage(), statCasVSysteme.getMax());
 		
-		globalCasCakaniaVstup.addReplicationData(statCasCakaniaVstup.getAverage(), statCasCakaniaVstup.getMax());
+		globalCasCakaniaVstupVysVsetci.addReplicationData(statCasCakaniaVstup.getAverage(), statCasCakaniaVstup.getMax());
         
-        globalRadSanitka.addReplicationData(wstatRadSanitka.getAverage(currentTime()), 0);
+        globalRadVstupVysetrenieSanitkou.addReplicationData(wstatradVstupVysetrenieSanitkou.getAverage(currentTime()), 0);
 
-		globalRadSamostatne.addReplicationData(wstatRadSamostatne.getAverage(currentTime()), 0);
+		globalRadVstupVysSamostatne.addReplicationData(wstatRadVstupVysSamostatne.getAverage(currentTime()), 0);
         //#
         double vyuzitieLekarPercento = (wstatVyuzitieLekar.getAverage(currentTime()) / configPocetLekarov) * 100.0;
         globalVyuzitieLekar.addReplicationData(vyuzitieLekarPercento, 0);
@@ -150,7 +149,6 @@ public class MySimulation extends OSPABA.Simulation
 
 		//??
 		System.out.println("End of Replication: " + currentReplication());
-        System.out.println("Avg Wait for Osetrenie: " + statCasCakaniaOsetrenie.getAverage() + " seconds");
         System.out.println("Avg Time in System: " + statCasVSysteme.getAverage() + " seconds");
 	}
 
@@ -162,8 +160,12 @@ public class MySimulation extends OSPABA.Simulation
 
 		//??
 		System.out.println("\n====== SIMULATION FINISHED ======");
-        System.out.println("GLOBAL Avg Wait for Treatment: " + globalCasCakaniaOsetrenie.getGlobalAverage());
-        System.out.println("95% CI Wait for Treatment: +/- " + globalCasCakaniaOsetrenie.getConfidenceIntervalHalfWidth());
+        System.out.println("GLOBAL Avg Wait for Treatment Samostatne: " + globalCasCakaniaOsetreniaSamostatne.getGlobalAverage());
+        System.out.println("95% CI Wait for Treatment: +/- " + globalCasCakaniaOsetreniaSamostatne.getConfidenceIntervalHalfWidth());
+
+		System.out.println("GLOBAL Avg Wait for Treatment Sanitka: " + globalCasCakaniaOsetreniaSanitkou.getGlobalAverage());
+        System.out.println("95% CI Wait for Treatment: +/- " + globalCasCakaniaOsetreniaSanitkou.getConfidenceIntervalHalfWidth());
+
         
         System.out.println("GLOBAL Avg Time in System: " + globalCasVSysteme.getGlobalAverage());
         System.out.println("95% CI Time in System: +/- " + globalCasVSysteme.getConfidenceIntervalHalfWidth());
@@ -179,18 +181,19 @@ public class MySimulation extends OSPABA.Simulation
 	}
 
 	//* LLM */
-	public void skontrolujZahrievanie(double currentTime) {
-        if (configZahrievanie > 0 && !zahriate && currentTime >= configZahrievanie) {
+	public void zahrievanieSkonciloCheck(double currentTime) {
+        if (trvanieZahrievania > 0 && !zahriate && currentTime >= trvanieZahrievania) {
 			statCasVSysteme.clear();
 			statCasCakaniaVstup.clear();
-            statCasCakaniaOsetrenie.clear();
-            statVybaveniPacienti.clear();
+			statCakanieSanitka.clear();
+			statCakanieSamostatne.clear();
+			statVybaveniPacienti.clear();
 
 			ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) agentVstupVysetrenia().myManager();
             ManagerUrgentPrijmu manUrgent = (ManagerUrgentPrijmu) agentUrgentPrijmu().myManager();
             
-            wstatRadSanitka.warmUp(currentTime, manVstup.radSanitkou.size());
-			wstatRadSamostatne.warmUp(currentTime, manVstup.radSamostatne.size());
+            wstatradVstupVysetrenieSanitkou.warmUp(currentTime, manVstup.radSantikouVstupVysetrenie.size());
+			wstatRadVstupVysSamostatne.warmUp(currentTime, manVstup.radVstupVysSamostatne.size());
             wstatVyuzitieLekar.warmUp(currentTime, configPocetLekarov - manUrgent.volniLekari.size());
 			wstatVyuzitieSestra.warmUp(currentTime, configPocetSestier - manUrgent.volneSestry.size());
 
@@ -210,15 +213,15 @@ public class MySimulation extends OSPABA.Simulation
             int qSamostatne = 0;
             if (agentVstupVysetrenia() != null && agentVstupVysetrenia().myManager() != null) {
                 ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) agentVstupVysetrenia().myManager();
-                if (manVstup.radSanitkou != null) qSanitka = manVstup.radSanitkou.size();
-                if (manVstup.radSamostatne != null) qSamostatne = manVstup.radSamostatne.size();
+                if (manVstup.radSantikouVstupVysetrenie != null) qSanitka = manVstup.radSantikouVstupVysetrenie.size();
+                if (manVstup.radVstupVysSamostatne != null) qSamostatne = manVstup.radVstupVysSamostatne.size();
             }
 
             try (java.io.FileWriter writer = new java.io.FileWriter("warmup_data.csv", true)) {
                 writer.write(currentTime + "," 
                      + (currentTime / 3600.0) + "," 
                      + statCasVSysteme.getAverage() + "," 
-                     + statCasCakaniaOsetrenie.getAverage() + "," 
+                    //  + statCasCakaniaOsetrenie.getAverage() + "," 
                      + qSanitka + "," 
                      + qSamostatne + "\n");
             } catch (Exception e) {

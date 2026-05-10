@@ -60,8 +60,8 @@ public class ManagerOkolia extends OSPABA.Manager
 		double casOdchodu = genCasOdchodu.sample();
 		double casVSysteme = mySim().currentTime() + casOdchodu - pacient.casPrichodu;
 
-		sim.skontrolujZahrievanie(sim.currentTime());
-        if (sim.currentTime() >= sim.configZahrievanie) {
+		sim.zahrievanieSkonciloCheck(sim.currentTime());
+        if (sim.currentTime() >= sim.trvanieZahrievania) {
             sim.statCasVSysteme.addValue(casVSysteme);
 			sim.statVybaveniPacienti.addValue(1.0);
         }

@@ -74,16 +74,13 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 	//meta! sender="AgentVstupVysetrenia", id="17", type="Response"
 	public void processVykonatVstupOsetrenie(MessageForm message)
 	{
-		// MyMessage pacient = (MyMessage) message;
-		// volneSestry.add(pacient.priradenaSestra);
-		// volneAmbulancieB.add(pacient.priradenaMiestnost);
 		MyMessage pacient = (MyMessage) message;
 		MySimulation sim = (MySimulation) mySim();
 
 		volneSestry.add(pacient.priradenaSestra);
 
-		sim.skontrolujZahrievanie(sim.currentTime());
-        if (sim.currentTime() >= sim.configZahrievanie) {
+		sim.zahrievanieSkonciloCheck(sim.currentTime());
+        if (sim.currentTime() >= sim.trvanieZahrievania) {
             int busySestry = sim.configPocetSestier - volneSestry.size();
             sim.wstatVyuzitieSestra.update(sim.currentTime(), busySestry);
         }
@@ -98,7 +95,7 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 		ManagerOsetrenia manOsetrenia = (ManagerOsetrenia) ((MySimulation)mySim()).agentOsetrenia().myManager();
         manOsetrenia.pridatDoRadu(pacient);
 
-		pridelPracu();	
+		pridelitZdroje();	
 	}
 
 	//meta! sender="AgentOsetrenia", id="18", type="Response"
@@ -112,8 +109,8 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 		volniLekari.add(pacient.priradenyLekar);
         volneSestry.add(pacient.priradenaSestra);
 
-		sim.skontrolujZahrievanie(sim.currentTime());
-        if (sim.currentTime() >= sim.configZahrievanie) {
+		sim.zahrievanieSkonciloCheck(sim.currentTime());
+        if (sim.currentTime() >= sim.trvanieZahrievania) {
             int busyDoctors = sim.configPocetLekarov - volniLekari.size();
             sim.wstatVyuzitieLekar.update(sim.currentTime(), busyDoctors);
 			int busySestry = sim.configPocetSestier - volneSestry.size();
@@ -132,15 +129,10 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
         pacient.priradenaSestra = null;
 		pacient.priradenaMiestnost = null;
 
-		// if (((MySimulation)mySim()).aktualniPacienti.containsKey(pacient.idPacienta)) {
-        //     ((MySimulation)mySim()).aktualniPacienti.remove(pacient.idPacienta);
-        // }
-        // ((MySimulation)mySim()).refreshUI();
-
 		message.setCode(Mc.spracovaniePacienta);
 		response(message);
 
-		pridelPracu();
+		pridelitZdroje();
 	}
 
 	//meta! sender="ProcesPresunu", id="30", type="Finish"
@@ -153,19 +145,19 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 		MySimulation sim = (MySimulation) mySim();
 
 		if (pacient.typPacienta.equals("SAMOSTATNE")) {
-			manVstup.radSamostatne.enqueue(pacient);
-			sim.skontrolujZahrievanie(sim.currentTime());
+			manVstup.radVstupVysSamostatne.enqueue(pacient);
+			sim.zahrievanieSkonciloCheck(sim.currentTime());
 			
-			if (sim.currentTime() >= sim.configZahrievanie) {
-                sim.wstatRadSamostatne.update(sim.currentTime(), manVstup.radSamostatne.size());
+			if (sim.currentTime() >= sim.trvanieZahrievania) {
+                sim.wstatRadVstupVysSamostatne.update(sim.currentTime(), manVstup.radVstupVysSamostatne.size());
             }
 
 		} else {
-			manVstup.radSanitkou.enqueue(pacient);
+			manVstup.radSantikouVstupVysetrenie.enqueue(pacient);
 
-			sim.skontrolujZahrievanie(sim.currentTime());
-            if (sim.currentTime() >= sim.configZahrievanie) {
-                sim.wstatRadSanitka.update(sim.currentTime(), manVstup.radSanitkou.size());
+			sim.zahrievanieSkonciloCheck(sim.currentTime());
+            if (sim.currentTime() >= sim.trvanieZahrievania) {
+                sim.wstatradVstupVysetrenieSanitkou.update(sim.currentTime(), manVstup.radSantikouVstupVysetrenie.size());
             }
 		}
 		
@@ -175,7 +167,7 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 		}
 		((MySimulation)mySim()).refreshUI();
 		
-		pridelPracu();
+		pridelitZdroje();
 	}
 
 	//meta! sender="AgentModelu", id="16", type="Request"
@@ -214,7 +206,7 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 
 	public boolean rezim1Aktivny = true;
 
-	public void pridelPracu() 
+	public void pridelitZdroje() 
 	{
 		boolean pracoval = true; //#
 
@@ -222,14 +214,14 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
             pracoval = false;
             
             if (rezim1Aktivny) {
-                pracoval = pridelPracuRezim1();
+                pracoval = pridelitZdrojeRezim1();
             } else {
-                pracoval = pridelPracuRezim2();
+                pracoval = pridelitZdrojeRezim2();
             }
         }
 	}
 
-	private boolean pridelPracuRezim1() 
+	private boolean pridelitZdrojeRezim1() 
     {
         ManagerOsetrenia manOsetrenia = (ManagerOsetrenia) ((MySimulation)mySim()).agentOsetrenia().myManager();
         ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) ((MySimulation)mySim()).agentVstupVysetrenia().myManager();
@@ -241,35 +233,35 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 
             if (priorita == 1 || priorita == 2) {
                 if (volniLekari.size() > 0 && volneSestry.size() > 0 && volneAmbulancieA.size() > 0) {
-                    odozliNaOsetrenie(manOsetrenia.dalsiPacient(), "A");
+                    startOsetrenie(manOsetrenia.dalsiPacient(), "A");
                     return true;
                 }
             } 
             else if (priorita == 3 || priorita == 4) {
                 if (volniLekari.size() >= 2 && volneSestry.size() >= 2) {
                     if (volneAmbulancieB.size() > 0) {
-                        odozliNaOsetrenie(manOsetrenia.dalsiPacient(), "B");
+                        startOsetrenie(manOsetrenia.dalsiPacient(), "B");
                         return true;
                     } else if (volneAmbulancieA.size() > 0) {
-                        odozliNaOsetrenie(manOsetrenia.dalsiPacient(), "A");
+                        startOsetrenie(manOsetrenia.dalsiPacient(), "A");
                         return true;
                     }
                 }
             } 
             else if (priorita == 5) {
                 if (volniLekari.size() >= 3 && volneSestry.size() >= 3 && volneAmbulancieB.size() > 0) {
-                    odozliNaOsetrenie(manOsetrenia.dalsiPacient(), "B");
+                    startOsetrenie(manOsetrenia.dalsiPacient(), "B");
                     return true;
                 }
             }
         }
 
         if (volneSestry.size() > 0 && volneAmbulancieB.size() > 0) {
-            if (!manVstup.radSanitkou.isEmpty()) {
-                odozliNaVstupneVysetrenie(manVstup.radSanitkou.dequeue());
+            if (!manVstup.radSantikouVstupVysetrenie.isEmpty()) {
+                startVstupVysetrenie(manVstup.radSantikouVstupVysetrenie.dequeue());
                 return true;
-            } else if (!manVstup.radSamostatne.isEmpty()) {
-                odozliNaVstupneVysetrenie(manVstup.radSamostatne.dequeue());
+            } else if (!manVstup.radVstupVysSamostatne.isEmpty()) {
+                startVstupVysetrenie(manVstup.radVstupVysSamostatne.dequeue());
                 return true;
             }
         }
@@ -277,7 +269,7 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
         return false;
     }
 
-    private boolean pridelPracuRezim2() 
+    private boolean pridelitZdrojeRezim2() 
     {
         ManagerOsetrenia manOsetrenia = (ManagerOsetrenia) ((MySimulation)mySim()).agentOsetrenia().myManager();
         ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) ((MySimulation)mySim()).agentVstupVysetrenia().myManager();
@@ -289,24 +281,24 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 
             if (priorita == 1 || priorita == 2) {
                 if (volniLekari.size() > 0 && volneSestry.size() > 0 && volneAmbulancieA.size() > 0) {
-                    odozliNaOsetrenie(manOsetrenia.dalsiPacient(), "A");
+                    startOsetrenie(manOsetrenia.dalsiPacient(), "A");
                     return true;
                 }
             } 
             else if (priorita == 3 || priorita == 4) {
                 if (volniLekari.size() > 0 && volneSestry.size() > 0) {
                     if (volneAmbulancieB.size() > 0) {
-                        odozliNaOsetrenie(manOsetrenia.dalsiPacient(), "B");
+                        startOsetrenie(manOsetrenia.dalsiPacient(), "B");
                         return true;
                     } else if (volneAmbulancieA.size() > 0) {
-                        odozliNaOsetrenie(manOsetrenia.dalsiPacient(), "A");
+                        startOsetrenie(manOsetrenia.dalsiPacient(), "A");
                         return true;
                     }
                 }
             } 
             else if (priorita == 5) {
                 if (volniLekari.size() > 0 && volneSestry.size() > 0 && volneAmbulancieB.size() > 0) {
-                    odozliNaOsetrenie(manOsetrenia.dalsiPacient(), "B");
+                    startOsetrenie(manOsetrenia.dalsiPacient(), "B");
                     return true;
                 }
             }
@@ -315,11 +307,11 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
         }
 
         if (volneSestry.size() > 0 && volneAmbulancieB.size() > 0) {
-            if (!manVstup.radSanitkou.isEmpty()) {
-                odozliNaVstupneVysetrenie(manVstup.radSanitkou.dequeue());
+            if (!manVstup.radSantikouVstupVysetrenie.isEmpty()) {
+                startVstupVysetrenie(manVstup.radSantikouVstupVysetrenie.dequeue());
                 return true;
-            } else if (!manVstup.radSamostatne.isEmpty()) {
-                odozliNaVstupneVysetrenie(manVstup.radSamostatne.dequeue());
+            } else if (!manVstup.radVstupVysSamostatne.isEmpty()) {
+                startVstupVysetrenie(manVstup.radVstupVysSamostatne.dequeue());
                 return true;
             }
         }
@@ -328,7 +320,7 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
     }
 
 	//#
-    private void odozliNaOsetrenie(MyMessage pacient, String typAmbulancie) {
+    private void startOsetrenie(MyMessage pacient, String typAmbulancie) {
         Lekar lekar = volniLekari.remove(0);
         Sestra sestra = volneSestry.remove(0);
         Ambulancia miestnost = typAmbulancie.equals("A") ? volneAmbulancieA.remove(0) : volneAmbulancieB.remove(0);
@@ -346,11 +338,16 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
         pacient.priradenaMiestnost = miestnost;
 
 		MySimulation sim = (MySimulation) mySim();
-		sim.skontrolujZahrievanie(sim.currentTime());
+		sim.zahrievanieSkonciloCheck(sim.currentTime());
 
-        if (sim.currentTime() >= sim.configZahrievanie) {
+        if (sim.currentTime() >= sim.trvanieZahrievania) {
             double casCakania = sim.currentTime() - pacient.casPrichodu;
-            sim.statCasCakaniaOsetrenie.addValue(casCakania);
+            
+			if (pacient.typPacienta.equals("SAMOSTATNE")) {
+                sim.statCakanieSamostatne.addValue(casCakania);
+            } else {
+                sim.statCakanieSanitka.addValue(casCakania);
+            }
 
 			int busyDoctors = sim.configPocetLekarov - volniLekari.size();
             sim.wstatVyuzitieLekar.update(sim.currentTime(), busyDoctors);
@@ -358,13 +355,12 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 			sim.wstatVyuzitieSestra.update(sim.currentTime(), busySestry);
         }
 
-
         pacient.setAddressee(Id.agentOsetrenia);
         pacient.setCode(Mc.vykonatOsetrenie);
         request(pacient);
     }
 
-    private void odozliNaVstupneVysetrenie(MyMessage pacient) {
+    private void startVstupVysetrenie(MyMessage pacient) {
         Sestra sestra = volneSestry.remove(0);
         Ambulancia miestnost = volneAmbulancieB.remove(0);
 
@@ -377,16 +373,16 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 		MySimulation sim = (MySimulation) mySim();
         ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) ((MySimulation)mySim()).agentVstupVysetrenia().myManager();
         
-        sim.skontrolujZahrievanie(sim.currentTime());
+        sim.zahrievanieSkonciloCheck(sim.currentTime());
 
-        if (sim.currentTime() >= sim.configZahrievanie) {
+        if (sim.currentTime() >= sim.trvanieZahrievania) {
             double casCakaniaTriage = sim.currentTime() - pacient.casPrichodu;
             sim.statCasCakaniaVstup.addValue(casCakaniaTriage);
             
             if (pacient.typPacienta.equals("SAMOSTATNE")) {
-                sim.wstatRadSamostatne.update(sim.currentTime(), manVstup.radSamostatne.size());
+                sim.wstatRadVstupVysSamostatne.update(sim.currentTime(), manVstup.radVstupVysSamostatne.size());
             } else {
-                sim.wstatRadSanitka.update(sim.currentTime(), manVstup.radSanitkou.size());
+                sim.wstatradVstupVysetrenieSanitkou.update(sim.currentTime(), manVstup.radSantikouVstupVysetrenie.size());
             }
 			
 			int busySestry = sim.configPocetSestier - volneSestry.size();
