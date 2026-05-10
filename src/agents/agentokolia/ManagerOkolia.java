@@ -63,7 +63,10 @@ public class ManagerOkolia extends OSPABA.Manager
 		sim.skontrolujZahrievanie(sim.currentTime());
         if (sim.currentTime() >= sim.configZahrievanie) {
             sim.statCasVSysteme.addValue(casVSysteme);
+			sim.statVybaveniPacienti.addValue(1.0);
         }
+
+		((MySimulation)mySim()).logWarmupData(mySim().currentTime());
 	}
 
 	//meta! sender="PlanovacPrichodovSamostatne", id="26", type="Notice"
@@ -73,6 +76,8 @@ public class ManagerOkolia extends OSPABA.Manager
 		message.setAddressee(Id.agentModelu); // ((MySimulation)mySim()).agentModelu()
 		message.setCode(Mc.pacientPrisiel); 
 		notice(message);
+
+		((MySimulation)mySim()).logWarmupData(mySim().currentTime());
 	}
 
 	//meta! sender="PlanovacPrichodovSanitkou", id="27", type="Notice"
@@ -81,6 +86,8 @@ public class ManagerOkolia extends OSPABA.Manager
 		message.setAddressee(Id.agentModelu);
 		message.setCode(Mc.pacientPrisiel);
 		notice(message);
+
+		((MySimulation)mySim()).logWarmupData(mySim().currentTime());
 	}
 
 	//meta! userInfo="Process messages defined in code", id="0"

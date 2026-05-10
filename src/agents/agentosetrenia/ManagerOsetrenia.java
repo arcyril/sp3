@@ -2,7 +2,6 @@ package agents.agentosetrenia;
 
 import OSPABA.*;
 import OSPDataStruct.SimQueue;
-import OSPStat.WStat;
 import simulation.*;
 
 //meta! id="5"

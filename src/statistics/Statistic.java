@@ -36,6 +36,9 @@ public class Statistic {
         return max; 
     }
 
+    public int getCount() {
+        return count;
+    }
 
     public void clear() {
         this.sum = 0.0;

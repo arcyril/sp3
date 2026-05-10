@@ -22,6 +22,7 @@ import javax.swing.plaf.DimensionUIResource;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.JProgressBar;
 
 @SuppressWarnings("serial")
 public class Gui extends JFrame {
@@ -34,6 +35,7 @@ public class Gui extends JFrame {
     JTextField txtReplikacii;
     JTextField txtZahrievanie;
     JCheckBox chckBoxTurboRezim;
+    JCheckBox chckBoxSledovatZahrievanie;
     JTextField txtPocetLekarov;
     JTextField txtPocetSestier;
     JCheckBox chckBoxRezim1Aktivny;
@@ -58,6 +60,7 @@ public class Gui extends JFrame {
 
     DefaultTableModel tableModel;
     JTable tablePacienti;
+    JProgressBar progressBar;
 
     public Gui() {
         setTitle("Simulácia Urgentného Príjmu");
@@ -72,7 +75,7 @@ public class Gui extends JFrame {
     }
 
     private void setValues() {
-        txtTrvanie.setText("86400");
+        txtTrvanie.setText("2419200");
         txtReplikacii.setText("20");
         txtPocetLekarov.setText("5");
         txtPocetSestier.setText("10");
@@ -132,6 +135,12 @@ public class Gui extends JFrame {
         simTimePanel.add(Box.createRigidArea(new DimensionUIResource(20, 0)));
         vystupPanel.add(simTimePanel);
         vystupPanel.add(Box.createRigidArea(new DimensionUIResource(0, 5)));
+        
+        progressBar = new JProgressBar(0, 100);
+        progressBar.setStringPainted(true);
+        progressBar.setPreferredSize(new Dimension(300, 25));
+        progressBar.setMaximumSize(new Dimension(300, 25));
+        vystupPanel.add(progressBar);
 
         lblResult = new JLabel("<html><br>Čaká sa na simuláciu...</html>");
         lblResult.setFont(new Font("SansSerif", Font.PLAIN, 14));
@@ -232,6 +241,10 @@ public class Gui extends JFrame {
         chckBoxTurboRezim.setAlignmentX(0.5f);
         leftPanel.add(chckBoxTurboRezim);
         leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+
+        chckBoxSledovatZahrievanie = new JCheckBox("Analýza Zahrievania (CSV)");
+        panel.add(chckBoxSledovatZahrievanie);
+        panel.add(Box.createRigidArea(new DimensionUIResource(10, 0)));
 
         JLabel lblSimDur = new JLabel("Sim. trvanie pauzy");
         lblSimDur.setAlignmentX(0.5f);

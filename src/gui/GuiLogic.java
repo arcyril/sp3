@@ -13,15 +13,9 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.xml.crypto.Data;
 
 import simulation.MySimulation;
 import OSPABA.Simulation;
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 
 public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
 
@@ -95,7 +89,7 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
 
         invokeInEventDispatchThread(() -> {
             try {
-                prepravka.data = new Object[14];
+                prepravka.data = new Object[15];
                 prepravka.data[0] = Double.parseDouble(_gui.txtTrvanie.getText());
                 prepravka.data[1] = Integer.parseInt(_gui.txtReplikacii.getText());
                 prepravka.data[2] = _gui.sliderSimDur.getValue();
@@ -108,6 +102,7 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
                 prepravka.data[11] = _gui.chckBoxRezim1Aktivny.isSelected();
                 prepravka.data[12] = Double.parseDouble(_gui.txtZahrievanie.getText());
                 prepravka.data[13] = _gui.chckBoxTurboRezim.isSelected();
+                prepravka.data[14] = _gui.chckBoxSledovatZahrievanie.isSelected();
 
             } catch (NumberFormatException e) {
             }
@@ -227,10 +222,22 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
 
     private String formatSimTime(double timeInSeconds) {
         long totalSeconds = (long) timeInSeconds;
-        long hours = totalSeconds / 3600;
+        
+        long days = totalSeconds / 86400;
+        long hours = (totalSeconds % 86400) / 3600;
         long minutes = (totalSeconds % 3600) / 60;
         long seconds = totalSeconds % 60;
 
-        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+        if (days > 0) {
+            return String.format("%d dni, %02d:%02d:%02d", days, hours, minutes, seconds);
+        } else {
+            return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+        }
+    }
+
+    public void updateProgressBar(int percent) {
+        invokeInEventDispatchThread(() -> {
+            _gui.progressBar.setValue(percent);
+        });
     }
 }

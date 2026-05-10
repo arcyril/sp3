@@ -5,7 +5,6 @@ import simulation.*;
 import agents.agentvstupvysetrenia.*;
 import generators.RovnomernyDisktretnyGenerator;
 import generators.SpojityEmpirickyGenerator;
-import generators.TrojuholnikovyGenerator;
 import generators.UniformGenerator;
 import OSPABA.Process;
 

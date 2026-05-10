@@ -3,7 +3,6 @@ package agents.agentosetrenia.continualassistants;
 import OSPABA.*;
 import agents.agentosetrenia.*;
 import generators.SpojityEmpirickyGenerator;
-import generators.TrojuholnikovyGenerator;
 import generators.UniformGenerator;
 import simulation.*;
 import OSPABA.Process;
