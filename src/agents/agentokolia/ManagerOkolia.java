@@ -1,14 +1,15 @@
 package agents.agentokolia;
 
 import OSPABA.*;
-import generators.TrojuholnikovyGenerator;
+// import generators.TrojuholnikovyGenerator;
+import generators.UniformGenerator;
 import simulation.*;
 
 //meta! id="1"
 public class ManagerOkolia extends OSPABA.Manager
 {
-	private TrojuholnikovyGenerator genCasOdchodu;
-
+private UniformGenerator genCasOdchodu;
+	
 	public ManagerOkolia(int id, Simulation mySim, Agent myAgent)
 	{
 		super(id, mySim, myAgent);
@@ -29,8 +30,7 @@ public class ManagerOkolia extends OSPABA.Manager
 		System.out.println("manager okolia test, time " + mySim().currentTime());
 		System.out.println("Mc.start " + Mc.start);
 		
-		genCasOdchodu = new TrojuholnikovyGenerator(120.0, 150.0, 300.0, ((MySimulation)mySim()).masterRandom.nextInt());
-
+		genCasOdchodu = new UniformGenerator(150.0, 240.0, ((MySimulation)mySim()).masterRandom.nextInt());
 		//?? maybe if statement
 		MyMessage startSamostatne = new MyMessage(mySim());
 		startSamostatne.setAddressee(Id.planovacPrichodovSamostatne);

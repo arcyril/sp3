@@ -65,6 +65,11 @@ public class ManagerOsetrenia extends OSPABA.Manager
 		return null;
 	}
 
+	public int pocetCakajucichPriorita(int priorita) {
+        int index = priorita - 1;
+        return radyPodlaPriority[index].size();
+    }
+
 	//meta! sender="AgentUrgentPrijmu", id="18", type="Request"
 	public void processVykonatOsetrenie(MessageForm message)
 	{

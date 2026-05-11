@@ -9,11 +9,13 @@ import agents.agentvstupvysetrenia.ManagerVstupVysetrenia;
 import simulation.*;
 import entities.*;
 import generators.TrojuholnikovyGenerator;
+import generators.UniformGenerator;
 
 //meta! id="3"
 public class ManagerUrgentPrijmu extends OSPABA.Manager
 {
-	private TrojuholnikovyGenerator genPresunZVchodu;
+	private TrojuholnikovyGenerator genPresunZVchoduSamostatne;
+    private UniformGenerator genPresunZVchoduSanitkou;
 	private TrojuholnikovyGenerator genPresunMedziMiestnostami;
 
 
@@ -39,7 +41,8 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 			petriNet().clear();
 		}
 
-		genPresunZVchodu = new TrojuholnikovyGenerator(120.0, 150.0, 300.0, ((MySimulation)mySim()).masterRandom.nextInt());
+		genPresunZVchoduSamostatne = new TrojuholnikovyGenerator(120.0, 150.0, 300.0, ((MySimulation)mySim()).masterRandom.nextInt());
+		genPresunZVchoduSanitkou = new UniformGenerator(90.0, 200.0, ((MySimulation)mySim()).masterRandom.nextInt());
 		genPresunMedziMiestnostami = new TrojuholnikovyGenerator(15.0, 20.0, 45.0, ((MySimulation)mySim()).masterRandom.nextInt());
 
 		//** LLM
@@ -52,14 +55,13 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 
 		int pocetLekarov = sim.configPocetLekarov;
 		int pocetSestier = sim.configPocetSestier;
-		rezim1Aktivny = sim.configRezim1Aktivny;
 
 		for (int i = 0; i < pocetLekarov; i++) {
-            volniLekari.add(new Lekar(i, "VCHOD"));
+            volniLekari.add(new Lekar(i, "VCHOD_SANITKA"));
         }
 
 		for (int i = 0; i < pocetSestier; i++) {
-            volneSestry.add(new Sestra(i, "VCHOD"));
+            volneSestry.add(new Sestra(i, "VCHOD_SANITKA"));
         }
 
 		for (int i = 1; i <= 5; i++) {
@@ -196,134 +198,68 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 		if (od.equals(kam)) {
 			return 0.0;
 		}
-
-		if ("VCHOD".equals(od) || "VCHOD".equals(kam)) {
-			return genPresunZVchodu.sample();
-		}
+        //??
+		if ("VCHOD_SAMOSTATNE".equals(od) || "VCHOD_SAMOSTATNE".equals(kam)) {
+			return genPresunZVchoduSamostatne.sample();
+		} else if ("VCHOD_SANITKA".equals(od) || "VCHOD_SANITKA".equals(kam)) {
+            return genPresunZVchoduSanitkou.sample();
+        }
 
 		return genPresunMedziMiestnostami.sample();
 	}
 
-	public boolean rezim1Aktivny = true;
+    private Lekar najdiLekaraPreLokaciu(String cielovaLokacia) {
+        for (int i = 0; i < volniLekari.size(); i++) {
+            if (volniLekari.get(i).lokacia.equals(cielovaLokacia)) {
+                return volniLekari.remove(i);
+            }
+        }
+        return volniLekari.remove(0);
+    }
+
+    private Sestra najdiSestruPreLokaciu(String cielovaLokacia) {
+        for (int i = 0; i < volneSestry.size(); i++) {
+            if (volneSestry.get(i).lokacia.equals(cielovaLokacia)) {
+                return volneSestry.remove(i);
+            }
+        }
+        return volneSestry.remove(0);
+    }
+
 
 	public void pridelitZdroje() 
 	{
-		boolean pracoval = true; //#
+		boolean pracoval = true;  //#
+        MySimulation sim = (MySimulation) mySim();
 
-		while (pracoval) {
+        while (pracoval) {
             pracoval = false;
             
-            if (rezim1Aktivny) {
-                pracoval = pridelitZdrojeRezim1();
-            } else {
-                pracoval = pridelitZdrojeRezim2();
+            switch (sim.configZvolenyRezim) {
+                case 1:
+                    pracoval = strategies.StrategiePrideleniaZdrojov.pridelitZdrojeRezim1(this);
+                    break;
+                case 2:
+                    pracoval = strategies.StrategiePrideleniaZdrojov.pridelitZdrojeRezim2(this);
+                    break;
+                case 3:
+                    pracoval = strategies.StrategiePrideleniaZdrojov.pridelitZdrojeRezim3(this);
+                    break;
+                case 5:
+                    pracoval = strategies.StrategiePrideleniaZdrojov.pridelitZdrojeRezim5(this);
+                    break;
+                default:
+                    pracoval = strategies.StrategiePrideleniaZdrojov.pridelitZdrojeRezim1(this);
+                    break;
             }
         }
 	}
 
-	private boolean pridelitZdrojeRezim1() 
-    {
-        ManagerOsetrenia manOsetrenia = (ManagerOsetrenia) ((MySimulation)mySim()).agentOsetrenia().myManager();
-        ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) ((MySimulation)mySim()).agentVstupVysetrenia().myManager();
-            
-        MyMessage pacientNaOsetrenie = manOsetrenia.peekDalsiPacient();
-
-        if (pacientNaOsetrenie != null) {
-            int priorita = pacientNaOsetrenie.priorita;
-
-            if (priorita == 1 || priorita == 2) {
-                if (volniLekari.size() > 0 && volneSestry.size() > 0 && volneAmbulancieA.size() > 0) {
-                    startOsetrenie(manOsetrenia.dalsiPacient(), "A");
-                    return true;
-                }
-            } 
-            else if (priorita == 3 || priorita == 4) {
-                if (volniLekari.size() >= 2 && volneSestry.size() >= 2) {
-                    if (volneAmbulancieB.size() > 0) {
-                        startOsetrenie(manOsetrenia.dalsiPacient(), "B");
-                        return true;
-                    } else if (volneAmbulancieA.size() > 0) {
-                        startOsetrenie(manOsetrenia.dalsiPacient(), "A");
-                        return true;
-                    }
-                }
-            } 
-            else if (priorita == 5) {
-                if (volniLekari.size() >= 3 && volneSestry.size() >= 3 && volneAmbulancieB.size() > 0) {
-                    startOsetrenie(manOsetrenia.dalsiPacient(), "B");
-                    return true;
-                }
-            }
-        }
-
-        if (volneSestry.size() > 0 && volneAmbulancieB.size() > 0) {
-            if (!manVstup.radSantikouVstupVysetrenie.isEmpty()) {
-                startVstupVysetrenie(manVstup.radSantikouVstupVysetrenie.dequeue());
-                return true;
-            } else if (!manVstup.radVstupVysSamostatne.isEmpty()) {
-                startVstupVysetrenie(manVstup.radVstupVysSamostatne.dequeue());
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private boolean pridelitZdrojeRezim2() 
-    {
-        ManagerOsetrenia manOsetrenia = (ManagerOsetrenia) ((MySimulation)mySim()).agentOsetrenia().myManager();
-        ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) ((MySimulation)mySim()).agentVstupVysetrenia().myManager();
-
-        MyMessage pacientNaOsetrenie = manOsetrenia.peekDalsiPacient();
-
-        if (pacientNaOsetrenie != null) {
-            int priorita = pacientNaOsetrenie.priorita;
-
-            if (priorita == 1 || priorita == 2) {
-                if (volniLekari.size() > 0 && volneSestry.size() > 0 && volneAmbulancieA.size() > 0) {
-                    startOsetrenie(manOsetrenia.dalsiPacient(), "A");
-                    return true;
-                }
-            } 
-            else if (priorita == 3 || priorita == 4) {
-                if (volniLekari.size() > 0 && volneSestry.size() > 0) {
-                    if (volneAmbulancieB.size() > 0) {
-                        startOsetrenie(manOsetrenia.dalsiPacient(), "B");
-                        return true;
-                    } else if (volneAmbulancieA.size() > 0) {
-                        startOsetrenie(manOsetrenia.dalsiPacient(), "A");
-                        return true;
-                    }
-                }
-            } 
-            else if (priorita == 5) {
-                if (volniLekari.size() > 0 && volneSestry.size() > 0 && volneAmbulancieB.size() > 0) {
-                    startOsetrenie(manOsetrenia.dalsiPacient(), "B");
-                    return true;
-                }
-            }
-            
-            return false; 
-        }
-
-        if (volneSestry.size() > 0 && volneAmbulancieB.size() > 0) {
-            if (!manVstup.radSantikouVstupVysetrenie.isEmpty()) {
-                startVstupVysetrenie(manVstup.radSantikouVstupVysetrenie.dequeue());
-                return true;
-            } else if (!manVstup.radVstupVysSamostatne.isEmpty()) {
-                startVstupVysetrenie(manVstup.radVstupVysSamostatne.dequeue());
-                return true;
-            }
-        }
-
-        return false;
-    }
-
 	//#
-    private void startOsetrenie(MyMessage pacient, String typAmbulancie) {
-        Lekar lekar = volniLekari.remove(0);
-        Sestra sestra = volneSestry.remove(0);
+    public void startOsetrenie(MyMessage pacient, String typAmbulancie) {
         Ambulancia miestnost = typAmbulancie.equals("A") ? volneAmbulancieA.remove(0) : volneAmbulancieB.remove(0);
+        Lekar lekar = najdiLekaraPreLokaciu(miestnost.lokacia);
+        Sestra sestra = najdiSestruPreLokaciu(miestnost.lokacia);
 
         double casPresunuLekar = casPresunu(lekar.lokacia, miestnost.lokacia);
         double casPresunuSestra = casPresunu(sestra.lokacia, miestnost.lokacia);
@@ -360,9 +296,9 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
         request(pacient);
     }
 
-    private void startVstupVysetrenie(MyMessage pacient) {
-        Sestra sestra = volneSestry.remove(0);
+    public void startVstupVysetrenie(MyMessage pacient) {
         Ambulancia miestnost = volneAmbulancieB.remove(0);
+        Sestra sestra = najdiSestruPreLokaciu(miestnost.lokacia);
 
         double casPresunuSestry = casPresunu(sestra.lokacia, miestnost.lokacia);
         pacient.casPresunu = casPresunuSestry;

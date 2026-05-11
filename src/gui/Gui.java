@@ -35,10 +35,12 @@ public class Gui extends JFrame {
     JTextField txtReplikacii;
     JTextField txtZahrievanie;
     JCheckBox chckBoxTurboRezim;
+    JCheckBox chckBoxRezervSestruAmbulanciuB;
     JCheckBox chckBoxSledovatZahrievanie;
-    JCheckBox chckBoxOptimalizacia;
+    JCheckBox chckBoxMinPocet;
     JTextField txtPocetLekarov;
     JTextField txtPocetSestier;
+    JTextField txtZvolenyRezim;
     JCheckBox chckBoxRezim1Aktivny;
 
     JRadioButton rdioBttonImgType1;
@@ -78,11 +80,12 @@ public class Gui extends JFrame {
     private void setValues() {
         txtTrvanie.setText("2419200");
         txtReplikacii.setText("20");
-        txtPocetLekarov.setText("5");
+        txtPocetLekarov.setText("8");
         txtPocetSestier.setText("10");
-        chckBoxRezim1Aktivny.setSelected(true);
-        txtZahrievanie.setText("0"); 
+        txtZvolenyRezim.setText("1");
+        txtZahrievanie.setText("1152000"); 
         chckBoxTurboRezim.setSelected(false);
+        chckBoxRezervSestruAmbulanciuB.setSelected(false);
         sliderSimDur.setValue(1);
         sliderSimInt.setValue(500);
     }
@@ -233,18 +236,24 @@ public class Gui extends JFrame {
         JPanel panel = createPanel(0f, 0f, BoxLayout.LINE_AXIS);
         JPanel leftPanel = createPanel(0f, 0f, BoxLayout.PAGE_AXIS);
 
-        chckBoxRezim1Aktivny = new JCheckBox("Rezim 1 aktivny");
-        chckBoxRezim1Aktivny.setAlignmentX(0.5f);
-        leftPanel.add(chckBoxRezim1Aktivny);
-        leftPanel.add(Box.createRigidArea(new Dimension(0, 3)));
+        txtZvolenyRezim = new JTextField();
+        txtZvolenyRezim.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        txtZvolenyRezim.setPreferredSize(new Dimension(70, 20));
+        txtZvolenyRezim.setMaximumSize(new Dimension(70, 20));
+        leftPanel.add(txtZvolenyRezim);
 
         chckBoxTurboRezim = new JCheckBox("Turbo Režim");
         chckBoxTurboRezim.setAlignmentX(0.5f);
         leftPanel.add(chckBoxTurboRezim);
         leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        chckBoxOptimalizacia = new JCheckBox("Režim Optimalizácie (Algoritmus)");
-        leftPanel.add(chckBoxOptimalizacia);
+        chckBoxRezervSestruAmbulanciuB = new JCheckBox("Rezerv. sestru a Ambulanciu B");
+        chckBoxRezervSestruAmbulanciuB.setAlignmentX(0.5f);
+        leftPanel.add(chckBoxRezervSestruAmbulanciuB);
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+
+        chckBoxMinPocet = new JCheckBox("Min. počet analýza");
+        leftPanel.add(chckBoxMinPocet);
         leftPanel.add(Box.createRigidArea(new DimensionUIResource(10, 0)));
 
         chckBoxSledovatZahrievanie = new JCheckBox("Analýza Zahrievania (CSV)");

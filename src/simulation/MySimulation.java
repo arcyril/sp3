@@ -19,15 +19,18 @@ public class MySimulation extends OSPABA.Simulation
 	//#
 	public int configPocetLekarov = 5;
 	public int configPocetSestier = 10;
-	public boolean configRezim1Aktivny = true;
+
+	public int configZvolenyRezim = 1;
+    public boolean configTurboRezim = false;
+	public boolean configRezervovatSestruAmbulanciuB = false;
 
 	public double trvanieZahrievania = 0.0;
-    public boolean configTurboRezim = false;
     private boolean zahriate = false;
 
 	//# CSV warmup
 	public boolean configSledovatZahrievanie = false;
     private int poslednyZaznamenanyInterval = -1;
+
 
 	public Random masterRandom;
 	

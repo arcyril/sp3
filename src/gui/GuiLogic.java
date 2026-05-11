@@ -89,7 +89,7 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
 
         invokeInEventDispatchThread(() -> {
             try {
-                prepravka.data = new Object[16];
+                prepravka.data = new Object[17];
                 prepravka.data[0] = Double.parseDouble(_gui.txtTrvanie.getText());
                 prepravka.data[1] = Integer.parseInt(_gui.txtReplikacii.getText());
                 prepravka.data[2] = _gui.sliderSimDur.getValue();
@@ -99,11 +99,12 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
                 prepravka.data[8] = _gui.chckBoxCreateAnimAfterStart.isSelected();
                 prepravka.data[9] = Integer.parseInt(_gui.txtPocetLekarov.getText());
                 prepravka.data[10] = Integer.parseInt(_gui.txtPocetSestier.getText());
-                prepravka.data[11] = _gui.chckBoxRezim1Aktivny.isSelected();
+                prepravka.data[11] = Integer.parseInt(_gui.txtZvolenyRezim.getText());
                 prepravka.data[12] = Double.parseDouble(_gui.txtZahrievanie.getText());
                 prepravka.data[13] = _gui.chckBoxTurboRezim.isSelected();
                 prepravka.data[14] = _gui.chckBoxSledovatZahrievanie.isSelected();
-                prepravka.data[15] = _gui.chckBoxOptimalizacia.isSelected();
+                prepravka.data[15] = _gui.chckBoxMinPocet.isSelected();
+                prepravka.data[16] = _gui.chckBoxRezervSestruAmbulanciuB.isSelected();
 
             } catch (NumberFormatException e) {
             }
