@@ -37,7 +37,7 @@ public class ProcesPresunu extends OSPABA.Process
 		MyMessage pacient = (MyMessage) message;
         double casPresunu = 0.0;
 
-		if (pacient.typPacienta.equals("SAMOSTATNE")) {
+		if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
             casPresunu = genCasPresunuSamostatne.sample();
         } else {
             casPresunu = genCasPresunuSanitkou.sample();

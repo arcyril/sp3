@@ -44,7 +44,7 @@ public class ProcesVstupVysetrenia extends OSPABA.Process
 		MyMessage pacient = (MyMessage) message;
 		double casVstupVysetreniaSekundy;
 
-		if (pacient.typPacienta.equals("SAMOSTATNE")) {
+		if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
             casVstupVysetreniaSekundy = casVstupVysSamostatneGen.sample() * 60.0;
         } else {
             casVstupVysetreniaSekundy = casVstupVysSanitkouGen.sample() * 60.0;
@@ -68,7 +68,7 @@ public class ProcesVstupVysetrenia extends OSPABA.Process
             
 		double p = prioritaGen.sample();
 
-		if (pacient.typPacienta.equals("SAMOSTATNE")) {
+		if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
 			if (p < 0.10) {
 				pacient.priorita = 1;
 			} else if (p < 0.30) {

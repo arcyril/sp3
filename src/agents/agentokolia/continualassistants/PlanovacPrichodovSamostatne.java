@@ -43,14 +43,14 @@ public class PlanovacPrichodovSamostatne extends OSPABA.Scheduler
 				System.out.println("čas: " + mySim().currentTime() + ", pacient prisiel");
 				//!!
 				MyMessage novyPacient = new MyMessage(mySim());
-				novyPacient.setTypPacienta("SAMOSTATNE"); 
+				novyPacient.setTypPacienta(simulation.Constants.PACIENT_SAMOSTATNE); 
 				novyPacient.setCasPrichodu(mySim().currentTime()); 
 
 				//** LLM usage, to specify
 				String[] info = {
 					String.valueOf(novyPacient.idPacienta), 
-					"SAMOSTATNE", 
-					"Prichádza na urgent. príjem", 
+					simulation.Constants.PACIENT_SAMOSTATNE,
+					simulation.Constants.STAV_PRICHADZA_URGENT, 
 					String.format("%.2f", mySim().currentTime())
 				};
 				((MySimulation)mySim()).aktualniPacienti.put(novyPacient.idPacienta, info);

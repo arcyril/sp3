@@ -41,7 +41,7 @@ public class ProcesOsetrenia extends OSPABA.Process
 		MyMessage pacient = (MyMessage) message;
         double casOsetreniaSekundy;
 		
-		if (pacient.typPacienta.equals("SAMOSTATNE")) {
+		if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
             casOsetreniaSekundy = casOsetreniaSamostatneGen.sample() * 60.0; 
 			System.out.println("11 ProcesOsetrenia SAM");
 		} else {

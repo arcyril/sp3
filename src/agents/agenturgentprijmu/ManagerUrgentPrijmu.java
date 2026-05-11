@@ -57,19 +57,19 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 		int pocetSestier = sim.configPocetSestier;
 
 		for (int i = 0; i < pocetLekarov; i++) {
-            volniLekari.add(new Lekar(i, "VCHOD_SANITKA"));
+            volniLekari.add(new Lekar(i, simulation.Constants.LOKACIA_VCHOD_SANITKA));
         }
 
 		for (int i = 0; i < pocetSestier; i++) {
-            volneSestry.add(new Sestra(i, "VCHOD_SANITKA"));
+            volneSestry.add(new Sestra(i, simulation.Constants.LOKACIA_VCHOD_SANITKA));
         }
 
 		for (int i = 1; i <= 5; i++) {
-            volneAmbulancieA.add(new Ambulancia(i, "A", "A" + i)); //# CONFIGURE LOCATION
+            volneAmbulancieA.add(new Ambulancia(i, simulation.Constants.AMBULANCIA_TYP_A, "A" + i)); //# CONFIG LOCACIU
         }
 
 		for (int i = 1; i <= 7; i++) {
-            volneAmbulancieB.add(new Ambulancia(i, "B", "B" + i));
+            volneAmbulancieB.add(new Ambulancia(i, simulation.Constants.AMBULANCIA_TYP_B, "B" + i));
         }
 	}
 
@@ -146,7 +146,7 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 		ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) ((MySimulation)mySim()).agentVstupVysetrenia().myManager();
 		MySimulation sim = (MySimulation) mySim();
 
-		if (pacient.typPacienta.equals("SAMOSTATNE")) {
+		if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
 			manVstup.radVstupVysSamostatne.enqueue(pacient);
 			sim.zahrievanieSkonciloCheck(sim.currentTime());
 			
@@ -199,9 +199,9 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 			return 0.0;
 		}
         //??
-		if ("VCHOD_SAMOSTATNE".equals(od) || "VCHOD_SAMOSTATNE".equals(kam)) {
+		if (simulation.Constants.LOKACIA_VCHOD_SAMOSTATNE.equals(od) || simulation.Constants.LOKACIA_VCHOD_SAMOSTATNE.equals(kam)) {
 			return genPresunZVchoduSamostatne.sample();
-		} else if ("VCHOD_SANITKA".equals(od) || "VCHOD_SANITKA".equals(kam)) {
+		} else if (simulation.Constants.LOKACIA_VCHOD_SANITKA.equals(od) || simulation.Constants.LOKACIA_VCHOD_SANITKA.equals(kam)) {
             return genPresunZVchoduSanitkou.sample();
         }
 
@@ -279,7 +279,7 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
         if (sim.currentTime() >= sim.trvanieZahrievania) {
             double casCakania = sim.currentTime() - pacient.casPrichodu;
             
-			if (pacient.typPacienta.equals("SAMOSTATNE")) {
+			if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
                 sim.statCakanieSamostatne.addValue(casCakania);
             } else {
                 sim.statCakanieSanitka.addValue(casCakania);
@@ -315,7 +315,7 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
             double casCakaniaTriage = sim.currentTime() - pacient.casPrichodu;
             sim.statCasCakaniaVstup.addValue(casCakaniaTriage);
             
-            if (pacient.typPacienta.equals("SAMOSTATNE")) {
+            if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
                 sim.wstatRadVstupVysSamostatne.update(sim.currentTime(), manVstup.radVstupVysSamostatne.size());
             } else {
                 sim.wstatradVstupVysetrenieSanitkou.update(sim.currentTime(), manVstup.radSantikouVstupVysetrenie.size());

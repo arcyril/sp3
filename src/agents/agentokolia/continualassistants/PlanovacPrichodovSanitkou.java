@@ -37,13 +37,13 @@ public class PlanovacPrichodovSanitkou extends OSPABA.Scheduler
 				System.out.println("Time: " + String.format("%.2f", mySim().currentTime()) + ", pacient prisiel sanitkou");
 
 				MyMessage novyPacient = new MyMessage(mySim());
-				novyPacient.setTypPacienta("SANITKOU"); 
+				novyPacient.setTypPacienta(simulation.Constants.PACIENT_SANITKOU); 
 				novyPacient.setCasPrichodu(mySim().currentTime()); 
 				
 				String[] info = {
 					String.valueOf(novyPacient.idPacienta), 
-					"SANITKOU", 
-					"Ide na urgent. príjem", 
+					simulation.Constants.PACIENT_SANITKOU,
+					simulation.Constants.STAV_IDE_URGENT, 
 					String.format("%.2f", mySim().currentTime())
 				};
 				((MySimulation)mySim()).aktualniPacienti.put(novyPacient.idPacienta, info);
