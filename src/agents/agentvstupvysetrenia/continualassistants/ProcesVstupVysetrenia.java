@@ -54,35 +54,7 @@ public class ProcesVstupVysetrenia extends OSPABA.Process
 		// double celkovyCas = casVstupVysetreniaSekundy + casPresunuPersonalu;
 
 		//!! ANIMACIA VSTUP VYSETRENIE
-		if (mySim().animatorExists() && pacient.animaciaPacienta != null && pacient.priradenaSestra != null) {
-            
-            double t0 = mySim().currentTime();
-            double dt = pacient.casPresunu / 3.0;
-            double dtFinal = pacient.casPresunu - (2.0 * dt);
-            double epsilon = 0.0001;
-
-            double targetY = (pacient.priradenaMiestnost.id - 1) * 66.0;
-            double corridorX = 830.0;
-
-            java.awt.geom.Point2D posPacient = pacient.animaciaPacienta.getPosition(t0);
-            java.awt.geom.Point2D p1Pac = new java.awt.geom.Point2D.Double(corridorX, posPacient.getY());
-            java.awt.geom.Point2D p2Pac = new java.awt.geom.Point2D.Double(corridorX, targetY);
-            java.awt.geom.Point2D p3Pac = new java.awt.geom.Point2D.Double(corridorX - 48.0, targetY);
-
-            pacient.animaciaPacienta.moveTo(t0, dt, p1Pac);
-            pacient.animaciaPacienta.moveTo(t0 + dt + epsilon, dt, p2Pac);
-            pacient.animaciaPacienta.moveTo(t0 + 2.0 * dt + (2.0 * epsilon), dtFinal, p3Pac);
-
-
-            java.awt.geom.Point2D posSestra = pacient.priradenaSestra.animaciaPracovnika.getPosition(t0);
-            java.awt.geom.Point2D p1Ses = new java.awt.geom.Point2D.Double(corridorX, posSestra.getY());
-            java.awt.geom.Point2D p2Ses = new java.awt.geom.Point2D.Double(corridorX, targetY);
-            java.awt.geom.Point2D p3Ses = new java.awt.geom.Point2D.Double(corridorX + 10.0, targetY);
-
-            pacient.priradenaSestra.animaciaPracovnika.moveTo(t0, dt, p1Ses);
-            pacient.priradenaSestra.animaciaPracovnika.moveTo(t0 + dt + epsilon, dt, p2Ses);
-            pacient.priradenaSestra.animaciaPracovnika.moveTo(t0 + 2.0 * dt + (2.0 * epsilon), dtFinal, p3Ses);
-        }
+		simulation.AnimationHelper.animateVstupVysetrenie((MySimulation)mySim(), pacient);
 
 		message.setCode(Mc.finish);
 		hold(casVstupVysetreniaSekundy + pacient.casPresunu, message);

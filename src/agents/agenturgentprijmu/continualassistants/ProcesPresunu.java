@@ -43,30 +43,7 @@ public class ProcesPresunu extends OSPABA.Process
         }
 
 		//!! ANIMACIA
-		if (mySim().animatorExists() && pacient.animaciaPacienta != null) {
-            double t0 = mySim().currentTime();
-            double dt = casPresunu / 3.0;
-            double dtFinal = casPresunu - (2.0 * dt); 
-
-            if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
-                double startX = ((MySimulation) mySim()).bodVchodSamostatne.x;
-                double startY = ((MySimulation) mySim()).bodVchodSamostatne.y;
-
-                //!! animacia. Right, up, right to the waiting room 
-                java.awt.geom.Point2D p1 = new java.awt.geom.Point2D.Double(startX + 100.0, startY);
-                java.awt.geom.Point2D p2 = new java.awt.geom.Point2D.Double(startX + 100.0, 200.0);
-                java.awt.geom.Point2D p3 = new java.awt.geom.Point2D.Double(500.0, 270.0); 
-
-                pacient.animaciaPacienta.moveTo(t0, dt, p1);
-                pacient.animaciaPacienta.moveTo(t0 + dt, dt, p2);
-                pacient.animaciaPacienta.moveTo(t0 + 2.0 * dt, dtFinal, p3);
-                
-            } else {
-                double cielX = 500.0;
-                java.awt.geom.Point2D ciel = new java.awt.geom.Point2D.Double(cielX, ((MySimulation) mySim()).bodVchodSanitka.y);
-                pacient.animaciaPacienta.moveTo(t0, casPresunu, ciel);
-            }
-        }
+		simulation.AnimationHelper.animatePresun((MySimulation)mySim(), pacient, casPresunu);
 
 		message.setCode(Mc.finish);
 		hold(casPresunu, message);
