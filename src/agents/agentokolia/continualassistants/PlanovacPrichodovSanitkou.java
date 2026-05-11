@@ -39,12 +39,6 @@ public class PlanovacPrichodovSanitkou extends OSPABA.Scheduler
 				MyMessage novyPacient = new MyMessage(mySim());
 				novyPacient.setTypPacienta(simulation.Constants.PACIENT_SANITKOU); 
 				novyPacient.setCasPrichodu(mySim().currentTime()); 
-
-				// if (mySim().animatorExists()) {
-				// 	novyPacient.animaciaPacienta = new OSPAnimator.AnimImageItem("pacient_sanitkou.png");
-				// 	novyPacient.animaciaPacienta.setPosition(((MySimulation)mySim()).bodVchodSanitka);
-				// 	mySim().animator().register(novyPacient.animaciaPacienta);
-				// }
 				
 				String[] info = {
 					String.valueOf(novyPacient.idPacienta), 
@@ -56,7 +50,7 @@ public class PlanovacPrichodovSanitkou extends OSPABA.Scheduler
 				((MySimulation)mySim()).refreshUI();
 
 				if (mySim().animatorExists()) {
-                    novyPacient.animaciaPacienta = new OSPAnimator.AnimImageItem("pacient_sanitkou.png");
+                    novyPacient.animaciaPacienta = new OSPAnimator.AnimImageItem("./assets/pacient_sanitkou.png");
                     novyPacient.animaciaPacienta.setPosition(((MySimulation)mySim()).bodVchodSanitka);
                     mySim().animator().register(novyPacient.animaciaPacienta);
                 }

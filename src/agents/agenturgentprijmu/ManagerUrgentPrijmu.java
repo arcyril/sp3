@@ -67,7 +67,7 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 		for (int i = 0; i < pocetLekarov; i++) {
             Lekar lekar = new Lekar(i, simulation.Constants.LOKACIA_VCHOD_SANITKA);
             if (mySim().animatorExists()) {
-                lekar.animaciaPracovnika = new OSPAnimator.AnimImageItem("lekar.png");
+                lekar.animaciaPracovnika = new OSPAnimator.AnimImageItem("./assets/lekar.png");
                 lekar.animaciaPracovnika.setPosition(((MySimulation)mySim()).bodVchodSanitka);
                 mySim().animator().register(lekar.animaciaPracovnika);
             }
@@ -77,7 +77,7 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
         for (int i = 0; i < pocetSestier; i++) {
             Sestra sestra = new Sestra(i, simulation.Constants.LOKACIA_VCHOD_SANITKA);
             if (mySim().animatorExists()) {
-                sestra.animaciaPracovnika = new OSPAnimator.AnimImageItem("sestra.png");
+                sestra.animaciaPracovnika = new OSPAnimator.AnimImageItem("./assets/sestra.png");
                 sestra.animaciaPracovnika.setPosition(((MySimulation)mySim()).bodVchodSanitka);
                 mySim().animator().register(sestra.animaciaPracovnika);
             }

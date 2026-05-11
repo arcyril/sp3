@@ -250,7 +250,7 @@ public class MySimulation extends OSPABA.Simulation
 
 	public void initStaticAnimation() {
 		try {
-			java.awt.image.BufferedImage pozadie = javax.imageio.ImageIO.read(new java.io.File("hospital.png"));
+			java.awt.image.BufferedImage pozadie = javax.imageio.ImageIO.read(new java.io.File("./assets/hospital.png"));
 			if (pozadie != null) {
 				animator().setBackgroundImage(pozadie);
 			}
