@@ -45,8 +45,6 @@ public class ProcesPresunu extends OSPABA.Process
 		//!! ANIMACIA
 		if (mySim().animatorExists() && pacient.animaciaPacienta != null) {
             double t0 = mySim().currentTime();
-            
-            // Fix floating point math so it perfectly equals casPresunu
             double dt = casPresunu / 3.0;
             double dtFinal = casPresunu - (2.0 * dt); 
 
@@ -54,11 +52,9 @@ public class ProcesPresunu extends OSPABA.Process
                 double startX = ((MySimulation) mySim()).bodVchodSamostatne.x;
                 double startY = ((MySimulation) mySim()).bodVchodSamostatne.y;
 
-                // Move 1: Right down the hall
+                //!! animacia. Right, up, right to the waiting room 
                 java.awt.geom.Point2D p1 = new java.awt.geom.Point2D.Double(startX + 100.0, startY);
-                // Move 2: Up the hall
                 java.awt.geom.Point2D p2 = new java.awt.geom.Point2D.Double(startX + 100.0, 200.0);
-                // Move 3: Right, stopping EXACTLY at the entrance to the waiting room
                 java.awt.geom.Point2D p3 = new java.awt.geom.Point2D.Double(500.0, 270.0); 
 
                 pacient.animaciaPacienta.moveTo(t0, dt, p1);
@@ -73,15 +69,6 @@ public class ProcesPresunu extends OSPABA.Process
         }
 
 		message.setCode(Mc.finish);
-
-		// if (mySim().animatorExists() && pacient.animaciaPacienta != null) {
-		// 	pacient.animaciaPacienta.moveTo(
-		// 		mySim().currentTime(),
-		// 		casPresunu,
-		// 		((MySimulation) mySim()).bodVstupneVysetrenie
-		// 	);
-		// }
-
 		hold(casPresunu, message);
 	}
 

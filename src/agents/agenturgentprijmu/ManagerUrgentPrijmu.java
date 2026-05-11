@@ -115,7 +115,7 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
         pacient.priradenaMiestnost = null;
 		
 		ManagerOsetrenia manOsetrenia = (ManagerOsetrenia) ((MySimulation)mySim()).agentOsetrenia().myManager();
-		//!! RAD
+		//!! ANIMACIA
 		if (sim.animatorExists() && pacient.animaciaPacienta != null) {
             sim.animRadyOsetrenie[pacient.priorita - 1].insert(pacient.animaciaPacienta);
         }
@@ -123,7 +123,6 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 
 		//!! ANIMACIA
 		if (sim.animatorExists() && pacient.animaciaPacienta != null) {
-            // Count total people waiting across all priorities (subtract 1 because we just added this patient)
             int pocetVrade = manOsetrenia.pocetCakajucichPriorita(1) + 
                              manOsetrenia.pocetCakajucichPriorita(2) + 
                              manOsetrenia.pocetCakajucichPriorita(3) + 
@@ -132,19 +131,14 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
             
             if (pocetVrade < 0) pocetVrade = 0;
 
-            // X-axis: Start at 730, shift left 60px for each person in line
             double frontX = 730.0;
             double targetX = frontX - (pocetVrade * 60.0);
-            
-            // Y-axis: Below the 7 Type B rooms (7 * 66px = 462px), plus your fixed offset (e.g., 200px)
             double targetY = (7 * 66.0) + 200.0; 
             
-            // Shift down slightly if they are a walk-in patient
             if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
                 targetY += 40.0; 
             }
 
-            // Snap them directly into their specific spot in the second waiting room
             pacient.animaciaPacienta.setPosition(new java.awt.geom.Point2D.Double(targetX, targetY));
         }
 

@@ -61,15 +61,12 @@ public class MySimulation extends OSPABA.Simulation
 	//** LLM usage, to specify
 	public ConcurrentHashMap<Integer, String[]> aktualniPacienti = new ConcurrentHashMap<>();
 
-	// public java.awt.Point bodVchodSanitka = new java.awt.Point(50, 100);
-	// public java.awt.Point bodVchodSamostatne = new java.awt.Point(50, 700);
-	// public java.awt.Point bodVstupneVysetrenie = new java.awt.Point(300, 400);
+	//!! ANIMACIA
 	public OSPAnimator.AnimQueue[] animRadyOsetrenie = new OSPAnimator.AnimQueue[5];
 	public java.awt.geom.Point2D.Double bodVchodSamostatne = new java.awt.geom.Point2D.Double(0, 500);
     public java.awt.geom.Point2D.Double bodVchodSanitka = new java.awt.geom.Point2D.Double(0, 200);
     public java.awt.geom.Point2D.Double bodTriageSamostatne = new java.awt.geom.Point2D.Double(400, 300);
     public java.awt.geom.Point2D.Double bodTriageSanitka = new java.awt.geom.Point2D.Double(400, 450);
-
 	public OSPAnimator.AnimQueue animRadSanitka;
 	public OSPAnimator.AnimQueue animRadSamostatne;
 
@@ -274,16 +271,16 @@ public class MySimulation extends OSPABA.Simulation
 
 		animRadSamostatne = new OSPAnimator.AnimQueue(
             animator(),
-            new java.awt.geom.Point2D.Double(500.0, 270.0), // <--- NOW MATCHES p3 EXACTLY!
-            new java.awt.geom.Point2D.Double(200.0, 270.0), // <--- Where the front of the line is
+            new java.awt.geom.Point2D.Double(500.0, 270.0),
+            new java.awt.geom.Point2D.Double(200.0, 270.0),
             1.0
         );
         animator().register(new AnimQueueItem(animRadSamostatne));
 
         animRadSanitka = new OSPAnimator.AnimQueue(
             animator(),
-            new java.awt.geom.Point2D.Double(500.0, bodVchodSanitka.y), // <--- NOW MATCHES Sanitka's ciel exactly
-            new java.awt.geom.Point2D.Double(200.0, bodVchodSanitka.y), // <--- Where the front of the line is
+            new java.awt.geom.Point2D.Double(500.0, bodVchodSanitka.y),
+            new java.awt.geom.Point2D.Double(200.0, bodVchodSanitka.y),
             1.0
         );
         animator().register(new AnimQueueItem(animRadSanitka));
