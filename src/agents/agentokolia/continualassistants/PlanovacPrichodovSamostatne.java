@@ -46,6 +46,12 @@ public class PlanovacPrichodovSamostatne extends OSPABA.Scheduler
 				novyPacient.setTypPacienta(simulation.Constants.PACIENT_SAMOSTATNE); 
 				novyPacient.setCasPrichodu(mySim().currentTime()); 
 
+				// if (mySim().animatorExists()) {
+				// 	novyPacient.animaciaPacienta = new OSPAnimator.AnimImageItem("pacient_samostatne.png");
+				// 	novyPacient.animaciaPacienta.setPosition(((MySimulation)mySim()).bodVchodSamostatne);
+				// 	mySim().animator().register(novyPacient.animaciaPacienta);
+				// }
+
 				//** LLM usage, to specify
 				String[] info = {
 					String.valueOf(novyPacient.idPacienta), 
@@ -56,6 +62,11 @@ public class PlanovacPrichodovSamostatne extends OSPABA.Scheduler
 				((MySimulation)mySim()).aktualniPacienti.put(novyPacient.idPacienta, info);
 				((MySimulation)mySim()).refreshUI();
 						
+				if (mySim().animatorExists()) {
+                    novyPacient.animaciaPacienta = new OSPAnimator.AnimImageItem("pacient_samostatne.png");
+                    novyPacient.animaciaPacienta.setPosition(((MySimulation)mySim()).bodVchodSamostatne);
+                    mySim().animator().register(novyPacient.animaciaPacienta);
+                }
 				//!!
 				novyPacient.setAddressee(myAgent());
 				//!!

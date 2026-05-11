@@ -19,10 +19,10 @@ import javax.swing.JRadioButton;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.plaf.DimensionUIResource;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JProgressBar;
+import java.awt.BorderLayout;
 
 @SuppressWarnings("serial")
 public class Gui extends JFrame {
@@ -64,6 +64,8 @@ public class Gui extends JFrame {
     DefaultTableModel tableModel;
     JTable tablePacienti;
     JProgressBar progressBar;
+
+    JPanel animatorPanel;
 
     public Gui() {
         setTitle("Simulácia Urgentného Príjmu");
@@ -324,13 +326,17 @@ public class Gui extends JFrame {
 
         panel.add(leftPanel);
 
+    animatorPanel = new JPanel(new BorderLayout());
+    animatorPanel.setAlignmentY(0f);
+    panel.add(animatorPanel);
+
         //** LLM usage, to specify
-        String[] stlpce = {"ID Pacienta", "Typ", "Aktuálny Stav", "Čas Príchodu"};
-        tableModel = new DefaultTableModel(stlpce, 0);
-        tablePacienti = new JTable(tableModel);
-        JScrollPane scrollPane = new JScrollPane(tablePacienti);
-        scrollPane.setAlignmentY(0f);
-        panel.add(scrollPane);
+        // String[] stlpce = {"ID Pacienta", "Typ", "Aktuálny Stav", "Čas Príchodu"};
+        // tableModel = new DefaultTableModel(stlpce, 0);
+        // tablePacienti = new JTable(tableModel);
+        // JScrollPane scrollPane = new JScrollPane(tablePacienti);
+        // scrollPane.setAlignmentY(0f);
+        // panel.add(scrollPane);
 
         return panel;
     }

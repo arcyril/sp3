@@ -1,6 +1,7 @@
 package simulation;
 
 import OSPABA.*;
+import OSPAnimator.*;
 import entities.Ambulancia;
 import entities.Lekar;
 import entities.Sestra;
@@ -21,6 +22,9 @@ public class MyMessage extends OSPABA.MessageForm
 	public Lekar priradenyLekar;
 	public Sestra priradenaSestra;
 	public Ambulancia priradenaMiestnost;
+
+	public AnimItem animaciaPacienta;
+	// public AnimObject animaciaPacienta;
 
 	public MyMessage(Simulation mySim)
 	{
@@ -49,6 +53,7 @@ public class MyMessage extends OSPABA.MessageForm
 		this.idPacienta = original.idPacienta;
 		this.typPacienta = original.typPacienta;
         this.casPrichodu = original.casPrichodu;
+		this.animaciaPacienta = original.animaciaPacienta;
 	}
 
 	public String getTypPacienta() {

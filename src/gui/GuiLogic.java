@@ -5,7 +5,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.EventObject;
 import javax.swing.JButton;
@@ -35,6 +34,12 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
     public GuiLogic(Gui gui) {
         _gui = gui;
         _mySim = new MySimulation();
+
+        if (_gui.animatorPanel != null) {
+            _gui.animatorPanel.add(_mySim.animator().canvas());
+            _gui.animatorPanel.revalidate();
+            _gui.animatorPanel.repaint();
+        }
 
         gui.btnStart.addActionListener(this);
         gui.btnPause.addActionListener(this);
@@ -211,10 +216,11 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
         invokeInEventDispatchThread(() -> {
             MySimulation simulacia = (MySimulation) sim;
 
-            _gui.tableModel.setRowCount(0);
-            
-            for (String[] riadok : simulacia.aktualniPacienti.values()) {
-                _gui.tableModel.addRow(riadok);
+            if (_gui.tableModel != null) {
+                _gui.tableModel.setRowCount(0);
+                for (String[] riadok : simulacia.aktualniPacienti.values()) {
+                    _gui.tableModel.addRow(riadok);
+                }
             }
 
             _gui.lblSimTime.setText("Čas: " + formatSimTime(sim.currentTime()));

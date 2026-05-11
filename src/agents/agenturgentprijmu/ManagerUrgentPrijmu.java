@@ -56,12 +56,32 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 		int pocetLekarov = sim.configPocetLekarov;
 		int pocetSestier = sim.configPocetSestier;
 
+		// for (int i = 0; i < pocetLekarov; i++) {
+        //     volniLekari.add(new Lekar(i, simulation.Constants.LOKACIA_VCHOD_SANITKA));
+        // }
+
+		// for (int i = 0; i < pocetSestier; i++) {
+        //     volneSestry.add(new Sestra(i, simulation.Constants.LOKACIA_VCHOD_SANITKA));
+        // }
+
 		for (int i = 0; i < pocetLekarov; i++) {
-            volniLekari.add(new Lekar(i, simulation.Constants.LOKACIA_VCHOD_SANITKA));
+            Lekar lekar = new Lekar(i, simulation.Constants.LOKACIA_VCHOD_SANITKA);
+            if (mySim().animatorExists()) {
+                lekar.animaciaPracovnika = new OSPAnimator.AnimImageItem("lekar.png");
+                lekar.animaciaPracovnika.setPosition(((MySimulation)mySim()).bodVchodSanitka);
+                mySim().animator().register(lekar.animaciaPracovnika);
+            }
+            volniLekari.add(lekar);
         }
 
-		for (int i = 0; i < pocetSestier; i++) {
-            volneSestry.add(new Sestra(i, simulation.Constants.LOKACIA_VCHOD_SANITKA));
+        for (int i = 0; i < pocetSestier; i++) {
+            Sestra sestra = new Sestra(i, simulation.Constants.LOKACIA_VCHOD_SANITKA);
+            if (mySim().animatorExists()) {
+                sestra.animaciaPracovnika = new OSPAnimator.AnimImageItem("sestra.png");
+                sestra.animaciaPracovnika.setPosition(((MySimulation)mySim()).bodVchodSanitka);
+                mySim().animator().register(sestra.animaciaPracovnika);
+            }
+            volneSestry.add(sestra);
         }
 
 		for (int i = 1; i <= 5; i++) {
@@ -95,7 +115,38 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
         pacient.priradenaMiestnost = null;
 		
 		ManagerOsetrenia manOsetrenia = (ManagerOsetrenia) ((MySimulation)mySim()).agentOsetrenia().myManager();
+		//!! RAD
+		if (sim.animatorExists() && pacient.animaciaPacienta != null) {
+            sim.animRadyOsetrenie[pacient.priorita - 1].insert(pacient.animaciaPacienta);
+        }
         manOsetrenia.pridatDoRadu(pacient);
+
+		//!! ANIMACIA
+		if (sim.animatorExists() && pacient.animaciaPacienta != null) {
+            // Count total people waiting across all priorities (subtract 1 because we just added this patient)
+            int pocetVrade = manOsetrenia.pocetCakajucichPriorita(1) + 
+                             manOsetrenia.pocetCakajucichPriorita(2) + 
+                             manOsetrenia.pocetCakajucichPriorita(3) + 
+                             manOsetrenia.pocetCakajucichPriorita(4) + 
+                             manOsetrenia.pocetCakajucichPriorita(5) - 1;
+            
+            if (pocetVrade < 0) pocetVrade = 0;
+
+            // X-axis: Start at 730, shift left 60px for each person in line
+            double frontX = 730.0;
+            double targetX = frontX - (pocetVrade * 60.0);
+            
+            // Y-axis: Below the 7 Type B rooms (7 * 66px = 462px), plus your fixed offset (e.g., 200px)
+            double targetY = (7 * 66.0) + 200.0; 
+            
+            // Shift down slightly if they are a walk-in patient
+            if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
+                targetY += 40.0; 
+            }
+
+            // Snap them directly into their specific spot in the second waiting room
+            pacient.animaciaPacienta.setPosition(new java.awt.geom.Point2D.Double(targetX, targetY));
+        }
 
 		pridelitZdroje();	
 	}
@@ -154,6 +205,14 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
                 sim.wstatRadVstupVysSamostatne.update(sim.currentTime(), manVstup.radVstupVysSamostatne.size());
             }
 
+			if (sim.animatorExists() && pacient.animaciaPacienta != null) {
+				if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
+					sim.animRadSamostatne.insert(pacient.animaciaPacienta);
+				} else {
+					sim.animRadSanitka.insert(pacient.animaciaPacienta);
+				}
+			}
+
 		} else {
 			manVstup.radSantikouVstupVysetrenie.enqueue(pacient);
 
@@ -161,6 +220,14 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
             if (sim.currentTime() >= sim.trvanieZahrievania) {
                 sim.wstatradVstupVysetrenieSanitkou.update(sim.currentTime(), manVstup.radSantikouVstupVysetrenie.size());
             }
+
+			if (sim.animatorExists() && pacient.animaciaPacienta != null) {
+				if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
+					sim.animRadSamostatne.insert(pacient.animaciaPacienta);
+				} else {
+					sim.animRadSanitka.insert(pacient.animaciaPacienta);
+				}
+			}
 		}
 		
 		//# GUI
@@ -297,6 +364,16 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
     }
 
     public void startVstupVysetrenie(MyMessage pacient) {
+		//!!
+		MySimulation sim = (MySimulation) mySim();
+        if (sim.animatorExists() && pacient.animaciaPacienta != null) {
+            if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
+                sim.animRadSamostatne.remove(pacient.animaciaPacienta);
+            } else {
+                sim.animRadSanitka.remove(pacient.animaciaPacienta);
+            }
+        }
+
         Ambulancia miestnost = volneAmbulancieB.remove(0);
         Sestra sestra = najdiSestruPreLokaciu(miestnost.lokacia);
 
@@ -306,7 +383,7 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
         pacient.priradenaSestra = sestra;
         pacient.priradenaMiestnost = miestnost;
 
-		MySimulation sim = (MySimulation) mySim();
+		// MySimulation sim = (MySimulation) mySim();
         ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) ((MySimulation)mySim()).agentVstupVysetrenia().myManager();
         
         sim.zahrievanieSkonciloCheck(sim.currentTime());
