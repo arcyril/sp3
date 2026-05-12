@@ -24,6 +24,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.JProgressBar;
 import java.awt.BorderLayout;
 
+// LLM bol použitý na odstraňovanie chýb a implementáciu niektorých funkcií v GUI
 @SuppressWarnings("serial")
 public class Gui extends JFrame {
 
@@ -44,27 +45,23 @@ public class Gui extends JFrame {
     JRadioButton rbRezim2;
     JRadioButton rbRezim3;
     JRadioButton rbRezim5;
+    JButton btnHelpRezim1;
+    JButton btnHelpRezim2;
+    JButton btnHelpRezim3;
+    JButton btnHelpRezim5;
     ButtonGroup bgRezim;
     JCheckBox chckBoxRezim1Aktivny;
-
-    // JRadioButton rdioBttonImgType1;
-    // JRadioButton rdioBttonImgType2;
 
     JLabel lblResult;
     JLabel lblSimTime;
 
-    JSlider sliderSimDur;
     JSlider sliderSimInt;
     JButton btnSimMaxSpeed;
 
-    JSlider sliderAnimDur;
     JSlider sliderAnimInt;
     JButton btnAnimMaxSpeed;
 
     JCheckBox chckBoxZobrazitPriebeh;
-    // JCheckBox chckBoxCreateAnimAfterStart;
-    // JButton btnCreateAnim;
-    // JButton btnRemoveAnim;
 
 
     DefaultTableModel tableModel;
@@ -90,21 +87,17 @@ public class Gui extends JFrame {
 
     private void setValues() {
         txtTrvanie.setText("672");
-        txtReplikacii.setText("20");
+        txtReplikacii.setText("3");
         txtPocetLekarov.setText("7");
         txtPocetSestier.setText("9");
         txtZahrievanie.setText("320"); 
         chckBoxTurboRezim.setSelected(false);
         chckBoxRezervSestruAmbulanciuB.setSelected(false);
-        sliderSimDur.setValue(1);
         sliderSimInt.setValue(500);
     }
 
     private void buidGui() {
         Container container = getContentPane();
-        // setLayout(new BoxLayout(container, BoxLayout.PAGE_AXIS));
-        // container.add(buidTopPanel());
-        // container.add(buidBottomPanel());
         container.setLayout(new java.awt.BorderLayout());
         container.add(buidBottomPanel(), java.awt.BorderLayout.CENTER);
     }
@@ -199,25 +192,6 @@ public class Gui extends JFrame {
         return panel;
     }
 
-    // private JPanel createAnimObjectType() {
-    //     JPanel panel = createPanel(0.5f, 0f, BoxLayout.LINE_AXIS);
-
-    //     rdioBttonImgType1 = new JRadioButton("Obrázok Typ 1 (Samostatne)");
-    //     panel.add(rdioBttonImgType1);
-    //     rdioBttonImgType1.setSelected(true);
-
-    //     panel.add(Box.createRigidArea(new DimensionUIResource(5, 0)));
-
-    //     rdioBttonImgType2 = new JRadioButton("Obrázok Typ 2 (Sanitka)");
-    //     panel.add(rdioBttonImgType2);
-
-    //     ButtonGroup group = new ButtonGroup();
-    //     group.add(rdioBttonImgType1);
-    //     group.add(rdioBttonImgType2);
-
-    //     return panel;
-    // }
-
     private JPanel buidBottomPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         
@@ -244,15 +218,6 @@ public class Gui extends JFrame {
         modeGroup.setBorder(BorderFactory.createTitledBorder("Nastavenia a Režimy"));
         modeGroup.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
         modeGroup.setMaximumSize(new Dimension(250, 180));
-
-        // JPanel rezimPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
-        // rezimPanel.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
-        // rezimPanel.add(new JLabel("Zvolený Režim: "));
-        // txtZvolenyRezim = new JTextField();
-        // txtZvolenyRezim.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        // txtZvolenyRezim.setPreferredSize(new Dimension(50, 20));
-        // rezimPanel.add(txtZvolenyRezim);
-        // modeGroup.add(rezimPanel);
         
         modeGroup.add(Box.createRigidArea(new Dimension(0, 4)));
         chckBoxRezervSestruAmbulanciuB = new JCheckBox("Rezerv. sestru a Ambulanciu B");
@@ -267,7 +232,31 @@ public class Gui extends JFrame {
         rbRezim1 = new JRadioButton("1");
         rbRezim2 = new JRadioButton("2");
         rbRezim3 = new JRadioButton("3");
-        rbRezim5 = new JRadioButton("5");
+        rbRezim5 = new JRadioButton("4");
+        
+        java.awt.Insets tinyMargin = new java.awt.Insets(0, 0, 0, 0);
+        java.awt.Dimension tinySize = new java.awt.Dimension(10, 20);
+        java.awt.Font tinyFont = new Font("SansSerif", Font.BOLD, 10);
+
+        btnHelpRezim1 = new JButton("?"); 
+        btnHelpRezim1.setMargin(tinyMargin); 
+        btnHelpRezim1.setPreferredSize(tinySize);
+        btnHelpRezim1.setFont(tinyFont);
+
+        btnHelpRezim2 = new JButton("?"); 
+        btnHelpRezim2.setMargin(tinyMargin); 
+        btnHelpRezim2.setPreferredSize(tinySize);
+        btnHelpRezim2.setFont(tinyFont);
+
+        btnHelpRezim3 = new JButton("?"); 
+        btnHelpRezim3.setMargin(tinyMargin); 
+        btnHelpRezim3.setPreferredSize(tinySize);
+        btnHelpRezim3.setFont(tinyFont);
+
+        btnHelpRezim5 = new JButton("?"); 
+        btnHelpRezim5.setMargin(tinyMargin); 
+        btnHelpRezim5.setPreferredSize(tinySize);
+        btnHelpRezim5.setFont(tinyFont);
         
         bgRezim = new ButtonGroup();
         bgRezim.add(rbRezim1);
@@ -276,10 +265,15 @@ public class Gui extends JFrame {
         bgRezim.add(rbRezim5);
         rbRezim1.setSelected(true);
         
-        rezimPanel.add(rbRezim1);
-        rezimPanel.add(rbRezim2);
-        rezimPanel.add(rbRezim3);
-        rezimPanel.add(rbRezim5);
+        rezimPanel.add(rbRezim1); rezimPanel.add(btnHelpRezim1);
+        rezimPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+        rezimPanel.add(rbRezim2); rezimPanel.add(btnHelpRezim2);
+        rezimPanel.add(Box.createRigidArea(new Dimension(30, 0)));
+        rezimPanel.add(Box.createRigidArea(new Dimension(46, 0)));
+        rezimPanel.add(rbRezim3); rezimPanel.add(btnHelpRezim3);
+        rezimPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+        rezimPanel.add(rbRezim5); rezimPanel.add(btnHelpRezim5);
+        
         modeGroup.add(rezimPanel);
 
         chckBoxTurboRezim = new JCheckBox("Turbo Režim");
@@ -297,28 +291,14 @@ public class Gui extends JFrame {
         leftPanel.add(modeGroup);
         leftPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
-        JLabel lblSimDur = new JLabel("Sim. trvanie pauzy");
-        lblSimDur.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
-        leftPanel.add(lblSimDur);
-
-        sliderSimDur = new JSlider(JSlider.HORIZONTAL, 1, 10, 10);
-        sliderSimDur.setMajorTickSpacing(2);
-        sliderSimDur.setPaintTicks(true);
-        sliderSimDur.setPaintLabels(true);
-        sliderSimDur.setMaximumSize(new Dimension(250, 50));
-        sliderSimDur.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
-        leftPanel.add(sliderSimDur);
-
-        leftPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-
-        JLabel lblSimInt = new JLabel("Sim. interval mdzi pauzami");
+        JLabel lblSimInt = new JLabel("Rýchlosť Simulácie");
         lblSimInt.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
         leftPanel.add(lblSimInt);
 
-        sliderSimInt = new JSlider(JSlider.HORIZONTAL, 1, 1000, 100);
-        sliderSimInt.setMajorTickSpacing(200);
+        sliderSimInt = new JSlider(JSlider.HORIZONTAL, 50, 10000, 100);
+        sliderSimInt.setMajorTickSpacing(500);
         sliderSimInt.setPaintTicks(true);
-        sliderSimInt.setPaintLabels(true);
+        // sliderSimInt.setPaintLabels(true);
         sliderSimInt.setMaximumSize(new Dimension(250, 50));
         sliderSimInt.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
         leftPanel.add(sliderSimInt);
@@ -330,35 +310,6 @@ public class Gui extends JFrame {
         leftPanel.add(btnSimMaxSpeed);
 
         leftPanel.add(Box.createRigidArea(new Dimension(0, 15)));
-
-        JLabel lblAnimDur = new JLabel("Anim. trvanie interevalu");
-        lblAnimDur.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
-        leftPanel.add(lblAnimDur);
-
-        sliderAnimDur = new JSlider(JSlider.HORIZONTAL, 0, 100, 100);
-        sliderAnimDur.setMajorTickSpacing(20);
-        sliderAnimDur.setPaintTicks(true);
-        sliderAnimDur.setPaintLabels(true);
-        sliderAnimDur.setMaximumSize(new Dimension(250, 50));
-        sliderAnimDur.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
-        leftPanel.add(sliderAnimDur);
-
-        leftPanel.add(Box.createRigidArea(new Dimension(0, 15)));
-
-        // chckBoxCreateAnimAfterStart = new JCheckBox("Vytvor Anim. po starte");
-        // chckBoxCreateAnimAfterStart.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
-        // chckBoxCreateAnimAfterStart.setVisible(false);
-        // leftPanel.add(chckBoxCreateAnimAfterStart);
-
-        // btnCreateAnim = new JButton("Vytvor Animator");
-        // btnCreateAnim.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
-        // leftPanel.add(btnCreateAnim);
-
-        // leftPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-
-        // btnRemoveAnim = new JButton("Vymaz Animator");
-        // btnRemoveAnim.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
-        // leftPanel.add(btnRemoveAnim);
 
         chckBoxZobrazitPriebeh = new JCheckBox("Zobraziť animáciu / tabuľku");
         chckBoxZobrazitPriebeh.setFont(new Font("SansSerif", Font.BOLD, 13));

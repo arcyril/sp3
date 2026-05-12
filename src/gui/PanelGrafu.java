@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
 
-//** LLM */
+//** Na Vytvorenie Kódu Bol Použitý LLM */
 public class PanelGrafu extends JPanel {
     private List<Double> dataSanitka;
     private List<Double> ciSanitka;

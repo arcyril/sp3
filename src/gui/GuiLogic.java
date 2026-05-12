@@ -16,9 +16,10 @@ import javax.swing.event.ChangeListener;
 import simulation.MySimulation;
 import OSPABA.Simulation;
 
+// LLM bol použitý na odstraňovanie chýb a implementáciu niektorých funkcií v GUI
 public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
 
-    public Gui _gui; //??
+    public Gui _gui;
     private SimThread _simThread;
     private MySimulation _mySim;
     private javax.swing.JFrame logFrame;
@@ -26,7 +27,6 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
     private boolean _simMaxSpeedPressed = false;
     private boolean _animMaxSpeedPressed = false;
 
-    // public static int SELECTED_IMAGE_TYPE = 1; 
 
     private class Prepravka {
         public Object[] data = null;
@@ -36,26 +36,44 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
         _gui = gui;
         _mySim = new MySimulation();
 
-        // if (_mySim.animator() != null && _gui.animatorPanel != null) {
-        //     java.awt.Component canvas = _mySim.animator().canvas();
-        //     _gui.animatorPanel.add(canvas, java.awt.BorderLayout.CENTER);
-        //     _mySim.initStaticAnimation();            
-        // }
-
         gui.btnStart.addActionListener(this);
         gui.btnPause.addActionListener(this);
         gui.btnStop.addActionListener(this);
-
-        // gui.rdioBttonImgType1.addActionListener(e -> SELECTED_IMAGE_TYPE = 1);
-        // gui.rdioBttonImgType2.addActionListener(e -> SELECTED_IMAGE_TYPE = 2);
+        _gui.btnHelpRezim1.addActionListener(e -> showHelp("Režim 1", "Tento režim zaručuje, že pacienti s vysokou prioritou budú ošetrení okamžite. Aj keby v systéme čakali na vyšetrenie ďalší pacienti s rovnakou prioritou, systém má prednostne ošetriť tých, ktorí sú v systéme najdlhšie. Ošetrenie pacientov s nižšou prioritou si naopak vyžaduje väčšiu dostupnosť voľných zdrojov. Tento režim vychádza z predpokladu, že pacienti s vysokou prioritou sú tí, ktorých je potrebné ošetriť ihneď, ak má liečba mať vôbec šancu na úspech.\n" + //
+                        "Ošetrenie:\n" + //
+                        "-Priorita 1 a 2: Vyžaduje 1 lekára, 1 sestru a miestnosť A\n" + //
+                        "-Priorita 3 a 4: Vyžaduje 2 lekárov a 2 sestry. Uprednostňuje sa miestnosť B. Ak je obsadená, prejde sa do miestnosti A.\n" + //
+                        "-Priorita 5: Vyžaduje 3 lekárov, 3 sestry a miestnosť B.\n" + //
+                        "Vstupné vyšetrenie:\n" + //
+                        "-Pacienti radSantikou majú prednosť (ak nie sú žiadni pacienti s prioritou 1 a 2), pokiaľ je k dispozícii 1 zdravotná sestra a izba B\n" + //
+                        "-Pacienti radSamostatne môžu byť ošetrení len v prípade, ak sú k dispozícii aspoň 2 zdravotné sestry."));
+        _gui.btnHelpRezim2.addActionListener(e -> showHelp("Režim 2", "Tento režim je vhodnejší na minimalizáciu celkovej dĺžky čakacích radov a čakacieho času. Vďaka tomu, že systém prideľuje každého dostupného zamestnanca k každému pacientovi, dokáže ošetriť viac pacientov súčasne.\n" + //
+                        "Ošetrenie:\n" + //
+                        "-Priority 1 až 5: Ošetrenie sa spustí ihneď, ako je dostupný 1 voľný lekár a 1 voľná sestra.\n" + //
+                        "-Systém sa vždy najskôr pokúsi alokovať zdroje pre rad čakajúcich na ošetrenie\n."  + //
+                        "Ak je k dispozícii pacient a základný personál, ošetrenie sa spustí bez ohľadu na to, čo sa deje v  čakárni pred vstupnym vyšetrenim.\n" + //
+                        "Vstupné vyšetrenie:\n" + //
+                        "-Prichádza na rad až vtedy, keď sa nedá spustiť ošetrenie žiadneho pacienta.\n" + //
+                        "-Pacienti radSamostatne sú vybavovaní ako poslední, pričom požiadavky na zdroje sú rovnako minimalizované\n"  + //
+                        "(vyžaduje sa len 1 voľná sestra, na rozdiel od iných režimov, ktoré vyžadujú 2)."));
+        _gui.btnHelpRezim3.addActionListener(e -> showHelp("Režim 3", "Ošetrenie:\n" + //
+                        "-Priorita 1, 2 a 3: Majú absolútnu prednosť pred akýmkoľvek vstupným vyšetrením.\n" + //
+                        "-Priorita 4 a 5: Sú odsunuté na vedľajšiu koľaj v prípade, že je prítomná sanitka..\n" + //
+                        "Vstupné vyšetrenie:\n" + //
+                        "-Pacienti radSantikou majú nadradené postavenie. Akonáhle systém odbaví priority 1 až 3,\n"  + //
+                        "okamžite prejde na vstupné vyšetrenie sanitiek, predbiehajú pacientov s prioritou 4 a 5, ktorí čakajú na ošetrenie.\n" + //
+                        "-Pacienti radSamostatne nemajú túto výhodu. Sú spracovaní až na samom konci rozhodovacieho cyklu\n"  + //
+                        "(keď sa nedá spustiť žiadne ošetrenie ani príjem sanitky) a vyžadujú prítomnosť aspoň 2 voľných sestier."));
+        _gui.btnHelpRezim5.addActionListener(e -> showHelp("Režim 5", "Ošetrenie:\n" + //
+                        "-Priorita 1 a 2: Má absolútnu prioritu.\n" + //
+                        "-Priorita 3 a 4: Prispôsobuje sa záťaži. V štandardnom režime vyžaduje plný aby boli voľných 2 lekárov a 2 sestry. Ak je detegovaný pretlak, potrebuju voľných 1 lekár a 1 sestra.\n" + //
+                        "-Priorita 5: Vždy vyžaduje 3 voľných lekárov a 3 voľni sestry.\n" + //
+                        "Vstupné vyšetrenie:\n" + //
+                        "-Realizuje sa len vtedy, ak je rad na ošetrenie prázdny, alebo chýbajú zdroje na ošetrenie aktuálneho pacienta.\n" + //
+                        "-Pacienti radSantikou majú klasickú prednosť pred samostatne prichádzajúcimi\n" + //
+                        "-Pacienti radSamostatne sú vybavovaní poslední a ich príjem je blokovaný, pokiaľ systém nedisponuje aspoň 2 voľnými sestrami."));
 
         gui.btnSimMaxSpeed.addActionListener(this);
-        // gui.btnCreateAnim.addActionListener(this);
-        // gui.btnRemoveAnim.addActionListener(this);
-
-        gui.sliderSimDur.addChangeListener(this);
-        gui.sliderSimInt.addChangeListener(this);
-        // gui.chckBoxCreateAnimAfterStart.addItemListener(this);
     }
 
     private boolean callActionMethod(EventObject ae, JComponent component, String methodName) {
@@ -77,13 +95,10 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
         if (callActionMethod(ae, _gui.btnPause, "btnPause")) return;
         if (callActionMethod(ae, _gui.btnStop, "btnStop")) return;
         if (callActionMethod(ae, _gui.btnSimMaxSpeed, "btnSimMaxSpeed")) return;
-        // if (callActionMethod(ae, _gui.btnCreateAnim, "btnCreateAnim")) return;
-        // if (callActionMethod(ae, _gui.btnRemoveAnim, "btnRemoveAnim")) return;
     }
 
     @Override
     public void stateChanged(ChangeEvent che) {
-        if (callActionMethod(che, _gui.sliderSimDur, "sliderSimDur")) return;
         if (callActionMethod(che, _gui.sliderSimInt, "sliderSimInt")) return;
     }
 
@@ -97,7 +112,8 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
             try {
                 prepravka.data = new Object[18];
                 prepravka.data[0] = Double.parseDouble(_gui.txtTrvanie.getText()) * 3600.0;
-                prepravka.data[1] = Integer.parseInt(_gui.txtReplikacii.getText());                prepravka.data[2] = _gui.sliderSimDur.getValue();
+                prepravka.data[1] = Integer.parseInt(_gui.txtReplikacii.getText());                
+                prepravka.data[2] = 1;
                 prepravka.data[3] = _gui.sliderSimInt.getValue();
                 prepravka.data[6] = _simMaxSpeedPressed;
                 prepravka.data[7] = _animMaxSpeedPressed;
@@ -197,7 +213,7 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
     private void setSimSpeed() {
         if (_simThread != null) {
             _simThread.setSimSpeed(
-                    _gui.sliderSimDur.getValue(),
+                    1,
                     _gui.sliderSimInt.getValue(),
                     _simMaxSpeedPressed);
         }
@@ -207,74 +223,6 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
     private void btnSimMaxSpeed() {
         _simMaxSpeedPressed = true;
         setButtonTextCollor(_gui.btnSimMaxSpeed, Color.RED);
-        setSimSpeed();
-    }
-
-    // @SuppressWarnings("unused")
-    // public void btnCreateAnim() {
-    //     Object[] settings = getSettings();
-    //     boolean isTurbo = (boolean) settings[13];
-    //     boolean isMinPocet = (boolean) settings[15];
-    //     boolean isZahrievanie = (boolean) settings[14];
-
-    //     if (isTurbo || isMinPocet || isZahrievanie) {
-    //         javax.swing.JOptionPane.showMessageDialog(_gui, "Animáciu nie je možné spustiť v režimoch Turbo, Min. Počet alebo Zahrievanie.");
-    //         return;
-    //     }
-
-    //     _mySim.createAnimator();
-        
-    //     invokeInEventDispatchThread(() -> {
-    //         _gui.animatorPanel.removeAll();
-    //         java.awt.Component canvas = _mySim.animator().canvas();
-    //         _gui.animatorPanel.add(canvas, java.awt.BorderLayout.CENTER);
-            
-    //         _gui.animatorPanel.revalidate();
-    //         _gui.animatorPanel.repaint();
-
-    //         // Wait 500ms for the library to finish building the toolbar, then hide buttons
-    //         javax.swing.Timer timer = new javax.swing.Timer(500, e -> {
-    //             hideUnwantedAnimatorControls(canvas);
-    //         });
-    //         timer.setRepeats(false);
-    //         timer.start();
-    //     });
-
-    //     _mySim.initStaticAnimation();
-    // }
-    // public void btnCreateAnim() {
-    //     Object[] settings = getSettings();
-    //     boolean isTurbo = (boolean) settings[13];
-    //     boolean isMinPocet = (boolean) settings[15];
-    //     boolean isZahrievanie = (boolean) settings[14];
-
-    //     if (isTurbo || isMinPocet || isZahrievanie) {
-    //         javax.swing.JOptionPane.showMessageDialog(_gui, "Animáciu nie je možné spustiť v režimoch Turbo, Min. Počet alebo Zahrievanie.");
-    //         return;
-    //     }
-
-    //     _mySim.createAnimator();
-        
-    //     invokeInEventDispatchThread(() -> {
-    //         _gui.animatorPanel.removeAll();
-    //         java.awt.Component canvas = _mySim.animator().canvas();
-    //         _gui.animatorPanel.add(canvas, java.awt.BorderLayout.CENTER);
-            
-    //         _gui.animatorPanel.revalidate();
-    //         _gui.animatorPanel.repaint();
-    //     });
-
-    //     _mySim.initStaticAnimation();
-    // }
-
-    // @SuppressWarnings("unused")
-    // private void btnRemoveAnim() {
-    // }
-
-    @SuppressWarnings("unused")
-    private void sliderSimDur() {
-        _simMaxSpeedPressed = false;
-        setButtonTextCollor(_gui.btnSimMaxSpeed, Color.BLACK);
         setSimSpeed();
     }
 
@@ -369,33 +317,8 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
         });
     }
 
-    // //** LLM usage, to specify */
-    // private void hideUnwantedAnimatorControls(java.awt.Component c) {
-    //     if (c instanceof javax.swing.JToolBar) {
-    //         javax.swing.JToolBar toolbar = (javax.swing.JToolBar) c;
-    //         for (java.awt.Component btnComponent : toolbar.getComponents()) {
-    //             if (btnComponent instanceof javax.swing.AbstractButton) {
-    //                 javax.swing.AbstractButton btn = (javax.swing.AbstractButton) btnComponent;
-                    
-    //                 String tooltip = btn.getToolTipText() != null ? btn.getToolTipText().toLowerCase() : "";
-    //                 String text = btn.getText() != null ? btn.getText().toLowerCase() : "";
-    //                 String action = btn.getActionCommand() != null ? btn.getActionCommand().toLowerCase() : "";
-                    
-    //                 // Checks for zoom, +, -, lupa (Slovak for magnifying glass)
-    //                 boolean isZoom = tooltip.contains("zoom") || tooltip.contains("+") || tooltip.contains("-")
-    //                               || text.contains("zoom") || text.contains("+") || text.contains("-")
-    //                               || action.contains("zoom") || action.contains("+") || action.contains("-")
-    //                               || tooltip.contains("lupa") || tooltip.contains("zväčšiť") || tooltip.contains("zmenšiť");
-                    
-    //                 if (!isZoom) {
-    //                     btn.setVisible(false);
-    //                 }
-    //             }
-    //         }
-    //     } else if (c instanceof java.awt.Container) {
-    //         for (java.awt.Component child : ((java.awt.Container) c).getComponents()) {
-    //             hideUnwantedAnimatorControls(child);
-    //         }
-    //     }
-    // }
+    private void showHelp(String title, String text) {
+        String formattedText = "<html><body style='width: 500px;'>" + text + "</body></html>";
+        javax.swing.JOptionPane.showMessageDialog(_gui, formattedText, "Info o režime: " + title, javax.swing.JOptionPane.INFORMATION_MESSAGE);
+    }
 }

@@ -4,14 +4,17 @@ import simulation.MySimulation;
 import java.util.ArrayList;
 import java.util.List;
 
+// LLM bol použitý na odstraňovanie chýb a implementáciu niektorých funkcií v GUI
 public class SimThread extends Thread {
-
     private GuiLogic _guiLogic;
     private MySimulation _sim;
     private List<Double> dataSanitka;
     private List<Double> ciSanitka;
     private List<Double> dataSamostatne;
     private List<Double> ciSamostatne;
+
+    //optimalizácia. využitie pamäte RAM
+    private int lastPercent = -1;
 
     public SimThread(GuiLogic guiLogic, MySimulation sim) {
         _guiLogic = guiLogic;
@@ -31,13 +34,6 @@ public class SimThread extends Thread {
             boolean isZahrievanie = (boolean) settings[14];
             boolean isMinPocet = (boolean) settings[15];
             boolean isZobrazitPriebeh = (boolean) settings[17];
-            // if (isTurbo || isMinPocet || isZahrievanie) {
-            //     _guiLogic.invokeInEventDispatchThread(() -> {
-            //         // Force the UI to switch to the Tabuľka stavov (Index 1)
-            //         _guiLogic._gui.tabbedPane.setSelectedIndex(1);
-            //     });
-            // }
-
             boolean showUI = !isTurbo && !isMinPocet && !isZahrievanie && isZobrazitPriebeh;
 
             _sim.onRefreshUI((sim) -> {
@@ -49,7 +45,10 @@ public class SimThread extends Thread {
                 double currentOverallTime = (_sim.currentReplication() * (double) settings[0]) + sim.currentTime();
                 int percent = (int) ((currentOverallTime / totalTime) * 100);
                 
-                _guiLogic.updateProgressBar(percent);
+                if (percent != lastPercent) {
+                    lastPercent = percent;
+                    _guiLogic.updateProgressBar(percent);
+                }
             });
 
             _sim.onReplicationWillStart((sim) -> {
@@ -74,9 +73,14 @@ public class SimThread extends Thread {
                 double currentOverallTime = ((_sim.currentReplication() + 1) * (double) settings[0]);
                 int percent = (int) ((currentOverallTime / totalTime) * 100);
                 
-                _guiLogic.updateProgressBar(percent);
+                if (percent != lastPercent) {
+                    lastPercent = percent;
+                    _guiLogic.updateProgressBar(percent);
+                }
+                
+                // _guiLogic.updateProgressBar(percent);
 
-                if (!isMinPocet) {
+                if (isTurbo && !isMinPocet) {
                     dataSanitka.add(_sim.globalCasCakaniaOsetreniaSanitkou.getGlobalAverage());
                     ciSanitka.add(_sim.globalCasCakaniaOsetreniaSanitkou.getConfidenceIntervalHalfWidth());
                     
@@ -88,29 +92,47 @@ public class SimThread extends Thread {
             boolean jeOptimalizacnyRezim = isMinPocet;
 
             _sim.onSimulationDidFinish((sim) -> {
-                if (!jeOptimalizacnyRezim) {
-                    String results = String.format("___ Výsledky (%d replikácií) ___\n\n" +
-                        "Priem. Vybavení pacienti:      %.0f\n" +
-                        "Priem. Čas v systéme:          %.2f ± %.2f min\n" +
-                        "Priem. Čakanie (Sanitka):      %.2f ± %.2f min\n" +
-                        "Priem. Čakanie (Samostatne):   %.2f ± %.2f min\n" +
-                        "Priem. Čakanie (Triage):       %.2f ± %.2f min\n" +
-                        "Priem. Dĺžka radu Sanitka:     %.2f ľudí\n" +
-                        "Priem. Dĺžka radu Samostatne:  %.2f ľudí\n" +
-                        "Priem. Využitie Lekárov:       %.2f %%\n" +
-                        "Priem. Využitie Sestier:       %.2f %%\n",
+                if (isTurbo && !jeOptimalizacnyRezim) {
+                    String results = String.format("___Výsledky (%d replikácií)___\n\n" +
+                        "Priem. celkový počet vybavených:  %.0f ± %.0f osôb\n" +
+                        "Priem. čas v systéme:             %s ± %s\n" +
+                        "Priem. čas čakania (Sanitka):     %s ± %s\n" +
+                        "Priem. čas čakania (Samostatne):  %s ± %s\n" +
+                        "Priem. čas čakania na Triage:     %s ± %s\n" +
+                        "Priem. dĺžka radu (Sanitka):      %.2f ± %.2f ľudí\n" +
+                        "Priem. dĺžka radu (Samostatne):   %.2f ± %.2f ľudí\n" +
+                        "Priem. využitie Lekárov:          %.2f ± %.2f %%\n" +
+                        "Priem. využitie Sestier:          %.2f ± %.2f %%\n",
                         (int) settings[1],
-                        _sim.globalVybaveniPacienti.getGlobalAverage(),
-                        _sim.globalCasVSysteme.getGlobalAverage() / 60.0, _sim.globalCasVSysteme.getConfidenceIntervalHalfWidth() / 60.0,
-                        _sim.globalCasCakaniaOsetreniaSanitkou.getGlobalAverage() / 60.0, _sim.globalCasCakaniaOsetreniaSanitkou.getConfidenceIntervalHalfWidth() / 60.0,
-                        _sim.globalCasCakaniaOsetreniaSamostatne.getGlobalAverage() / 60.0, _sim.globalCasCakaniaOsetreniaSamostatne.getConfidenceIntervalHalfWidth() / 60.0,
-                        _sim.globalCasCakaniaVstupVysVsetci.getGlobalAverage() / 60.0, _sim.globalCasCakaniaVstupVysVsetci.getConfidenceIntervalHalfWidth() / 60.0,
-                        _sim.globalRadVstupVysetrenieSanitkou.getGlobalAverage(),
-                        _sim.globalRadVstupVysSamostatne.getGlobalAverage(),
-                        _sim.globalVyuzitieLekar.getGlobalAverage(),
-                        _sim.globalVyuzitieSestra.getGlobalAverage()
+                        
+                        _sim.globalVybaveniPacienti.getGlobalAverage(), 
+                        _sim.globalVybaveniPacienti.getConfidenceIntervalHalfWidth(),
+                        
+                        formatCas(_sim.globalCasVSysteme.getGlobalAverage()), 
+                        formatCas(_sim.globalCasVSysteme.getConfidenceIntervalHalfWidth()),
+                        
+                        formatCas(_sim.globalCasCakaniaOsetreniaSanitkou.getGlobalAverage()), 
+                        formatCas(_sim.globalCasCakaniaOsetreniaSanitkou.getConfidenceIntervalHalfWidth()),
+                        
+                        formatCas(_sim.globalCasCakaniaOsetreniaSamostatne.getGlobalAverage()), 
+                        formatCas(_sim.globalCasCakaniaOsetreniaSamostatne.getConfidenceIntervalHalfWidth()),
+                        
+                        formatCas(_sim.globalCasCakaniaVstupVysVsetci.getGlobalAverage()), 
+                        formatCas(_sim.globalCasCakaniaVstupVysVsetci.getConfidenceIntervalHalfWidth()),
+                        
+                        _sim.globalRadVstupVysetrenieSanitkou.getGlobalAverage(), 
+                        _sim.globalRadVstupVysetrenieSanitkou.getConfidenceIntervalHalfWidth(),
+                        
+                        _sim.globalRadVstupVysSamostatne.getGlobalAverage(), 
+                        _sim.globalRadVstupVysSamostatne.getConfidenceIntervalHalfWidth(),
+                        
+                        _sim.globalVyuzitieLekar.getGlobalAverage(), 
+                        _sim.globalVyuzitieLekar.getConfidenceIntervalHalfWidth(),
+                        
+                        _sim.globalVyuzitieSestra.getGlobalAverage(), 
+                        _sim.globalVyuzitieSestra.getConfidenceIntervalHalfWidth()
                     );
-            
+
                     _guiLogic.updateLiveLog("Výsledky Simulácie", results, true);
                     _guiLogic.showResults("<html>Simulácia ukončená. Výsledky sú v novom okne.</html>");
 
@@ -119,6 +141,8 @@ public class SimThread extends Thread {
                         oknoGrafu.panelGrafu.nastavData(dataSanitka, ciSanitka, dataSamostatne, ciSamostatne);
                         oknoGrafu.setVisible(true);
                     });
+                } else if (!jeOptimalizacnyRezim) {
+                    _guiLogic.showResults("<html>Simulácia ukončená.</html>");
                 }
             });
 
@@ -138,7 +162,7 @@ public class SimThread extends Thread {
                 _sim.simulate((int) settings[1], (double) settings[0]);
 
             } else {
-                int pocetLekarov = 1;
+                int pocetLekarov = 5;
                 int pocetSestier = 25;
 
                 _guiLogic.updateLiveLog("Priebeh Optimalizácie", "Analýza bola spustená (Limit: Sanitkou 15m, Samostatne 30m)\n", true);
@@ -151,13 +175,13 @@ public class SimThread extends Thread {
                     _sim.simulate((int) settings[1], (double) settings[0]);
 
                     if (podmienkySplnene(_sim)) {
-                        _guiLogic.updateLiveLog("Priebeh Optimalizácie", "  Zistená minimálna hodnota lekárov: " + pocetLekarov + " (pri dočasných " + pocetSestier + " sestrách)\n", false);
+                        _guiLogic.updateLiveLog("Priebeh Optimalizácie", "Zistená minimálna hodnota lekárov: " + pocetLekarov + " (pri dočasných " + pocetSestier + " sestrách)\n", false);
                         break;
                     }
                     pocetLekarov++;
                 }
 
-                pocetSestier = 1;
+                pocetSestier = 5;
                 while (true) {
                     _guiLogic.updateLiveLog("Priebeh Optimalizácie", "Hľadanie min. hodnoty sestier: " + pocetLekarov + " Lek, " + pocetSestier + " Ses...", false);
                     
@@ -190,6 +214,12 @@ public class SimThread extends Thread {
         boolean sanitkaPass = sim.globalCasCakaniaOsetreniaSanitkou.getGlobalAverage() < 900.0;
         boolean samostatnePass = sim.globalCasCakaniaOsetreniaSamostatne.getGlobalAverage() < 1800.0;
         return sanitkaPass && samostatnePass;
+    }
+
+    private String formatCas(double totalSeconds) {
+        long m = (long) (totalSeconds / 60);
+        long s = Math.round(totalSeconds % 60);
+        return String.format("%dm %ds", m, s);
     }
 
     public MySimulation getSim() {

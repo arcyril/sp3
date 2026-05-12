@@ -2,7 +2,7 @@ package gui;
 
 import javax.swing.JFrame;
 
-//** LLM */
+//** Na Vytvorenie Kódu Bol Použitý LLM */
 public class OknoGrafu extends JFrame {
     public PanelGrafu panelGrafu;
 
