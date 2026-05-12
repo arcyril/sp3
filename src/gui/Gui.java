@@ -61,9 +61,11 @@ public class Gui extends JFrame {
     JSlider sliderAnimInt;
     JButton btnAnimMaxSpeed;
 
-    JCheckBox chckBoxCreateAnimAfterStart;
-    JButton btnCreateAnim;
-    JButton btnRemoveAnim;
+    JCheckBox chckBoxZobrazitPriebeh;
+    // JCheckBox chckBoxCreateAnimAfterStart;
+    // JButton btnCreateAnim;
+    // JButton btnRemoveAnim;
+
 
     DefaultTableModel tableModel;
     DefaultTableModel tableAmbulancieModel;
@@ -87,11 +89,11 @@ public class Gui extends JFrame {
     }
 
     private void setValues() {
-        txtTrvanie.setText("2419200");
+        txtTrvanie.setText("672");
         txtReplikacii.setText("20");
-        txtPocetLekarov.setText("8");
-        txtPocetSestier.setText("10");
-        txtZahrievanie.setText("1152000"); 
+        txtPocetLekarov.setText("7");
+        txtPocetSestier.setText("9");
+        txtZahrievanie.setText("320"); 
         chckBoxTurboRezim.setSelected(false);
         chckBoxRezervSestruAmbulanciuB.setSelected(false);
         sliderSimDur.setValue(1);
@@ -142,7 +144,7 @@ public class Gui extends JFrame {
     private JPanel createTextInputPanel() {
         JPanel panel = createPanel(0.5f, 0f, BoxLayout.LINE_AXIS);
 
-        panel.add(new JLabel("Trvanie simulacie:"));
+        panel.add(new JLabel("Trvanie simulacie, hod.:"));
         panel.add(Box.createRigidArea(new DimensionUIResource(5, 0)));
 
         txtTrvanie = new JTextField();
@@ -185,7 +187,7 @@ public class Gui extends JFrame {
 
         panel.add(Box.createRigidArea(new DimensionUIResource(10, 0)));
 
-        panel.add(new JLabel("Zahrievanie (s):"));
+        panel.add(new JLabel("Zahrievanie, hod.:"));
         panel.add(Box.createRigidArea(new DimensionUIResource(5, 0)));
 
         txtZahrievanie = new JTextField();
@@ -343,20 +345,27 @@ public class Gui extends JFrame {
 
         leftPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
-        chckBoxCreateAnimAfterStart = new JCheckBox("Vytvor Anim. po starte");
-        chckBoxCreateAnimAfterStart.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
-        chckBoxCreateAnimAfterStart.setVisible(false);
-        leftPanel.add(chckBoxCreateAnimAfterStart);
+        // chckBoxCreateAnimAfterStart = new JCheckBox("Vytvor Anim. po starte");
+        // chckBoxCreateAnimAfterStart.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+        // chckBoxCreateAnimAfterStart.setVisible(false);
+        // leftPanel.add(chckBoxCreateAnimAfterStart);
 
-        btnCreateAnim = new JButton("Vytvor Animator");
-        btnCreateAnim.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
-        leftPanel.add(btnCreateAnim);
+        // btnCreateAnim = new JButton("Vytvor Animator");
+        // btnCreateAnim.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+        // leftPanel.add(btnCreateAnim);
 
+        // leftPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+
+        // btnRemoveAnim = new JButton("Vymaz Animator");
+        // btnRemoveAnim.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+        // leftPanel.add(btnRemoveAnim);
+
+        chckBoxZobrazitPriebeh = new JCheckBox("Zobraziť animáciu / tabuľku");
+        chckBoxZobrazitPriebeh.setFont(new Font("SansSerif", Font.BOLD, 13));
+        chckBoxZobrazitPriebeh.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+        chckBoxZobrazitPriebeh.setSelected(false);
+        leftPanel.add(chckBoxZobrazitPriebeh);
         leftPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-
-        btnRemoveAnim = new JButton("Vymaz Animator");
-        btnRemoveAnim.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
-        leftPanel.add(btnRemoveAnim);
 
         panel.add(leftPanel, BorderLayout.WEST);
 

@@ -21,7 +21,8 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
     public Gui _gui; //??
     private SimThread _simThread;
     private MySimulation _mySim;
-
+    private javax.swing.JFrame logFrame;
+    private javax.swing.JTextArea logArea;
     private boolean _simMaxSpeedPressed = false;
     private boolean _animMaxSpeedPressed = false;
 
@@ -35,11 +36,11 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
         _gui = gui;
         _mySim = new MySimulation();
 
-        if (_gui.animatorPanel != null) {
-            _gui.animatorPanel.add(_mySim.animator().canvas());
-            _gui.animatorPanel.revalidate();
-            _gui.animatorPanel.repaint();
-        }
+        // if (_mySim.animator() != null && _gui.animatorPanel != null) {
+        //     java.awt.Component canvas = _mySim.animator().canvas();
+        //     _gui.animatorPanel.add(canvas, java.awt.BorderLayout.CENTER);
+        //     _mySim.initStaticAnimation();            
+        // }
 
         gui.btnStart.addActionListener(this);
         gui.btnPause.addActionListener(this);
@@ -49,12 +50,12 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
         // gui.rdioBttonImgType2.addActionListener(e -> SELECTED_IMAGE_TYPE = 2);
 
         gui.btnSimMaxSpeed.addActionListener(this);
-        gui.btnCreateAnim.addActionListener(this);
-        gui.btnRemoveAnim.addActionListener(this);
+        // gui.btnCreateAnim.addActionListener(this);
+        // gui.btnRemoveAnim.addActionListener(this);
 
         gui.sliderSimDur.addChangeListener(this);
         gui.sliderSimInt.addChangeListener(this);
-        gui.chckBoxCreateAnimAfterStart.addItemListener(this);
+        // gui.chckBoxCreateAnimAfterStart.addItemListener(this);
     }
 
     private boolean callActionMethod(EventObject ae, JComponent component, String methodName) {
@@ -76,8 +77,8 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
         if (callActionMethod(ae, _gui.btnPause, "btnPause")) return;
         if (callActionMethod(ae, _gui.btnStop, "btnStop")) return;
         if (callActionMethod(ae, _gui.btnSimMaxSpeed, "btnSimMaxSpeed")) return;
-        if (callActionMethod(ae, _gui.btnCreateAnim, "btnCreateAnim")) return;
-        if (callActionMethod(ae, _gui.btnRemoveAnim, "btnRemoveAnim")) return;
+        // if (callActionMethod(ae, _gui.btnCreateAnim, "btnCreateAnim")) return;
+        // if (callActionMethod(ae, _gui.btnRemoveAnim, "btnRemoveAnim")) return;
     }
 
     @Override
@@ -94,14 +95,13 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
 
         invokeInEventDispatchThread(() -> {
             try {
-                prepravka.data = new Object[17];
-                prepravka.data[0] = Double.parseDouble(_gui.txtTrvanie.getText());
-                prepravka.data[1] = Integer.parseInt(_gui.txtReplikacii.getText());
-                prepravka.data[2] = _gui.sliderSimDur.getValue();
+                prepravka.data = new Object[18];
+                prepravka.data[0] = Double.parseDouble(_gui.txtTrvanie.getText()) * 3600.0;
+                prepravka.data[1] = Integer.parseInt(_gui.txtReplikacii.getText());                prepravka.data[2] = _gui.sliderSimDur.getValue();
                 prepravka.data[3] = _gui.sliderSimInt.getValue();
                 prepravka.data[6] = _simMaxSpeedPressed;
                 prepravka.data[7] = _animMaxSpeedPressed;
-                prepravka.data[8] = _gui.chckBoxCreateAnimAfterStart.isSelected();
+                // prepravka.data[8] = _gui.chckBoxCreateAnimAfterStart.isSelected();
                 prepravka.data[9] = Integer.parseInt(_gui.txtPocetLekarov.getText());
                 prepravka.data[10] = Integer.parseInt(_gui.txtPocetSestier.getText());
                 int rezim = 1;
@@ -109,11 +109,12 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
                 else if (_gui.rbRezim3.isSelected()) rezim = 3;
                 else if (_gui.rbRezim5.isSelected()) rezim = 5;
                 prepravka.data[11] = rezim;
-                prepravka.data[12] = Double.parseDouble(_gui.txtZahrievanie.getText());
+                prepravka.data[12] = Double.parseDouble(_gui.txtZahrievanie.getText()) * 3600.0;
                 prepravka.data[13] = _gui.chckBoxTurboRezim.isSelected();
                 prepravka.data[14] = _gui.chckBoxSledovatZahrievanie.isSelected();
                 prepravka.data[15] = _gui.chckBoxMinPocet.isSelected();
                 prepravka.data[16] = _gui.chckBoxRezervSestruAmbulanciuB.isSelected();
+                prepravka.data[17] = _gui.chckBoxZobrazitPriebeh.isSelected();
 
             } catch (NumberFormatException e) {
             }
@@ -146,6 +147,31 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
             _simThread.stopSim();
             setGuiDefaultVisage();
         }
+        
+        _mySim = new MySimulation();
+        
+        Object[] settings = getSettings();
+        boolean isTurbo = (boolean) settings[13];
+        boolean isZahrievanie = (boolean) settings[14];
+        boolean isMinPocet = (boolean) settings[15];
+        boolean isZobrazitPriebeh = (boolean) settings[17];
+        
+        boolean allowUI = isZobrazitPriebeh && !isTurbo && !isZahrievanie && !isMinPocet;
+
+        invokeInEventDispatchThread(() -> {
+            _gui.animatorPanel.removeAll();
+            
+            if (allowUI) {
+                _mySim.createAnimator();
+                java.awt.Component canvas = _mySim.animator().canvas();
+                _gui.animatorPanel.add(canvas, java.awt.BorderLayout.CENTER);
+                _mySim.initStaticAnimation();
+            }
+            
+            _gui.animatorPanel.revalidate();
+            _gui.animatorPanel.repaint();
+        });
+
         _simThread = new SimThread(this, _mySim);
         _simThread.start();
     }
@@ -184,7 +210,7 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
         setSimSpeed();
     }
 
-    @SuppressWarnings("unused")
+    // @SuppressWarnings("unused")
     // public void btnCreateAnim() {
     //     Object[] settings = getSettings();
     //     boolean isTurbo = (boolean) settings[13];
@@ -216,34 +242,34 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
 
     //     _mySim.initStaticAnimation();
     // }
-    public void btnCreateAnim() {
-        Object[] settings = getSettings();
-        boolean isTurbo = (boolean) settings[13];
-        boolean isMinPocet = (boolean) settings[15];
-        boolean isZahrievanie = (boolean) settings[14];
+    // public void btnCreateAnim() {
+    //     Object[] settings = getSettings();
+    //     boolean isTurbo = (boolean) settings[13];
+    //     boolean isMinPocet = (boolean) settings[15];
+    //     boolean isZahrievanie = (boolean) settings[14];
 
-        if (isTurbo || isMinPocet || isZahrievanie) {
-            javax.swing.JOptionPane.showMessageDialog(_gui, "Animáciu nie je možné spustiť v režimoch Turbo, Min. Počet alebo Zahrievanie.");
-            return;
-        }
+    //     if (isTurbo || isMinPocet || isZahrievanie) {
+    //         javax.swing.JOptionPane.showMessageDialog(_gui, "Animáciu nie je možné spustiť v režimoch Turbo, Min. Počet alebo Zahrievanie.");
+    //         return;
+    //     }
 
-        _mySim.createAnimator();
+    //     _mySim.createAnimator();
         
-        invokeInEventDispatchThread(() -> {
-            _gui.animatorPanel.removeAll();
-            java.awt.Component canvas = _mySim.animator().canvas();
-            _gui.animatorPanel.add(canvas, java.awt.BorderLayout.CENTER);
+    //     invokeInEventDispatchThread(() -> {
+    //         _gui.animatorPanel.removeAll();
+    //         java.awt.Component canvas = _mySim.animator().canvas();
+    //         _gui.animatorPanel.add(canvas, java.awt.BorderLayout.CENTER);
             
-            _gui.animatorPanel.revalidate();
-            _gui.animatorPanel.repaint();
-        });
+    //         _gui.animatorPanel.revalidate();
+    //         _gui.animatorPanel.repaint();
+    //     });
 
-        _mySim.initStaticAnimation();
-    }
+    //     _mySim.initStaticAnimation();
+    // }
 
-    @SuppressWarnings("unused")
-    private void btnRemoveAnim() {
-    }
+    // @SuppressWarnings("unused")
+    // private void btnRemoveAnim() {
+    // }
 
     @SuppressWarnings("unused")
     private void sliderSimDur() {
@@ -317,6 +343,29 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
     public void updateProgressBar(int percent) {
         invokeInEventDispatchThread(() -> {
             _gui.progressBar.setValue(percent);
+        });
+    }
+
+    //** LLM usage, to specify */
+    public void updateLiveLog(String title, String message, boolean clearFirst) {
+        invokeInEventDispatchThread(() -> {
+            if (logFrame == null || !logFrame.isVisible()) {
+                logFrame = new javax.swing.JFrame(title);
+                logFrame.setSize(500, 400);
+                logArea = new javax.swing.JTextArea();
+                logArea.setEditable(false);
+                logArea.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 13));
+                logFrame.add(new javax.swing.JScrollPane(logArea));
+                logFrame.setLocationRelativeTo(_gui);
+                logFrame.setVisible(true);
+            }
+            
+            if (clearFirst) {
+                logArea.setText(message + "\n");
+            } else {
+                logArea.append(message + "\n");
+                logArea.setCaretPosition(logArea.getDocument().getLength());
+            }
         });
     }
 

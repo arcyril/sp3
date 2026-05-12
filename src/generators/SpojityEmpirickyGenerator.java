@@ -1,6 +1,7 @@
 package generators;
 import java.util.Random;
 
+//** Na Vytvorenie Kódu Bol Použitý LLM */
 public class SpojityEmpirickyGenerator {
     private Random random;
     private double[] cumulativeProbs;
