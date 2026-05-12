@@ -18,7 +18,7 @@ import OSPABA.Simulation;
 
 public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
 
-    private Gui _gui;
+    public Gui _gui; //??
     private SimThread _simThread;
     private MySimulation _mySim;
 
@@ -104,7 +104,11 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
                 prepravka.data[8] = _gui.chckBoxCreateAnimAfterStart.isSelected();
                 prepravka.data[9] = Integer.parseInt(_gui.txtPocetLekarov.getText());
                 prepravka.data[10] = Integer.parseInt(_gui.txtPocetSestier.getText());
-                prepravka.data[11] = Integer.parseInt(_gui.txtZvolenyRezim.getText());
+                int rezim = 1;
+                if (_gui.rbRezim2.isSelected()) rezim = 2;
+                else if (_gui.rbRezim3.isSelected()) rezim = 3;
+                else if (_gui.rbRezim5.isSelected()) rezim = 5;
+                prepravka.data[11] = rezim;
                 prepravka.data[12] = Double.parseDouble(_gui.txtZahrievanie.getText());
                 prepravka.data[13] = _gui.chckBoxTurboRezim.isSelected();
                 prepravka.data[14] = _gui.chckBoxSledovatZahrievanie.isSelected();
@@ -181,7 +185,60 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
     }
 
     @SuppressWarnings("unused")
+    // public void btnCreateAnim() {
+    //     Object[] settings = getSettings();
+    //     boolean isTurbo = (boolean) settings[13];
+    //     boolean isMinPocet = (boolean) settings[15];
+    //     boolean isZahrievanie = (boolean) settings[14];
+
+    //     if (isTurbo || isMinPocet || isZahrievanie) {
+    //         javax.swing.JOptionPane.showMessageDialog(_gui, "Animáciu nie je možné spustiť v režimoch Turbo, Min. Počet alebo Zahrievanie.");
+    //         return;
+    //     }
+
+    //     _mySim.createAnimator();
+        
+    //     invokeInEventDispatchThread(() -> {
+    //         _gui.animatorPanel.removeAll();
+    //         java.awt.Component canvas = _mySim.animator().canvas();
+    //         _gui.animatorPanel.add(canvas, java.awt.BorderLayout.CENTER);
+            
+    //         _gui.animatorPanel.revalidate();
+    //         _gui.animatorPanel.repaint();
+
+    //         // Wait 500ms for the library to finish building the toolbar, then hide buttons
+    //         javax.swing.Timer timer = new javax.swing.Timer(500, e -> {
+    //             hideUnwantedAnimatorControls(canvas);
+    //         });
+    //         timer.setRepeats(false);
+    //         timer.start();
+    //     });
+
+    //     _mySim.initStaticAnimation();
+    // }
     public void btnCreateAnim() {
+        Object[] settings = getSettings();
+        boolean isTurbo = (boolean) settings[13];
+        boolean isMinPocet = (boolean) settings[15];
+        boolean isZahrievanie = (boolean) settings[14];
+
+        if (isTurbo || isMinPocet || isZahrievanie) {
+            javax.swing.JOptionPane.showMessageDialog(_gui, "Animáciu nie je možné spustiť v režimoch Turbo, Min. Počet alebo Zahrievanie.");
+            return;
+        }
+
+        _mySim.createAnimator();
+        
+        invokeInEventDispatchThread(() -> {
+            _gui.animatorPanel.removeAll();
+            java.awt.Component canvas = _mySim.animator().canvas();
+            _gui.animatorPanel.add(canvas, java.awt.BorderLayout.CENTER);
+            
+            _gui.animatorPanel.revalidate();
+            _gui.animatorPanel.repaint();
+        });
+
+        _mySim.initStaticAnimation();
     }
 
     @SuppressWarnings("unused")
@@ -262,4 +319,34 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
             _gui.progressBar.setValue(percent);
         });
     }
+
+    // //** LLM usage, to specify */
+    // private void hideUnwantedAnimatorControls(java.awt.Component c) {
+    //     if (c instanceof javax.swing.JToolBar) {
+    //         javax.swing.JToolBar toolbar = (javax.swing.JToolBar) c;
+    //         for (java.awt.Component btnComponent : toolbar.getComponents()) {
+    //             if (btnComponent instanceof javax.swing.AbstractButton) {
+    //                 javax.swing.AbstractButton btn = (javax.swing.AbstractButton) btnComponent;
+                    
+    //                 String tooltip = btn.getToolTipText() != null ? btn.getToolTipText().toLowerCase() : "";
+    //                 String text = btn.getText() != null ? btn.getText().toLowerCase() : "";
+    //                 String action = btn.getActionCommand() != null ? btn.getActionCommand().toLowerCase() : "";
+                    
+    //                 // Checks for zoom, +, -, lupa (Slovak for magnifying glass)
+    //                 boolean isZoom = tooltip.contains("zoom") || tooltip.contains("+") || tooltip.contains("-")
+    //                               || text.contains("zoom") || text.contains("+") || text.contains("-")
+    //                               || action.contains("zoom") || action.contains("+") || action.contains("-")
+    //                               || tooltip.contains("lupa") || tooltip.contains("zväčšiť") || tooltip.contains("zmenšiť");
+                    
+    //                 if (!isZoom) {
+    //                     btn.setVisible(false);
+    //                 }
+    //             }
+    //         }
+    //     } else if (c instanceof java.awt.Container) {
+    //         for (java.awt.Component child : ((java.awt.Container) c).getComponents()) {
+    //             hideUnwantedAnimatorControls(child);
+    //         }
+    //     }
+    // }
 }

@@ -1,0 +1,3663 @@
+package statistics;
+
+public class StatisticWeighted {
+    private double areaSum;
+    private double lastChangeTime;
+    private double lastValue;
+
+    public StatisticWeighted() {
+        this.areaSum = 0.0;
+        this.lastChangeTime = 0.0;
+        this.lastValue = 0.0;
+    }
+
+    public void update(double currentTime, double newValue) {
+        areaSum += lastValue * (currentTime - lastChangeTime);
+        lastValue = newValue;
+        lastChangeTime = currentTime;
+    }
+
+    public double getAverage(double totalTime) {
+        if (totalTime == 0) return 0;
+        return areaSum / totalTime;
+    }
+
+    public void clear() {
+        this.areaSum = 0.0;
+        this.lastChangeTime = 0.0;
+        this.lastValue = 0.0;
+    }
+    
+    public void warmUp(double currentTime, double currentValue) {
+        this.areaSum = 0.0;
+        this.lastChangeTime = currentTime;
+        this.lastValue = currentValue;
+    }
+}package statistics;
+
+public class Statistic {
+    private double sum;
+    private double sumSquared;
+    private int count;
+    private double max;
+
+    public Statistic() {
+        this.sum = 0.0;
+        this.sumSquared = 0.0;
+        this.count = 0;
+        this.max = 0.0;
+    }
+
+    public void addValue(double value) {
+        this.sum += value;
+        this.sumSquared += (value * value);
+        this.count++;
+        if (value > this.max) {
+            this.max = value;
+        }
+    }
+
+    public double getAverage() {
+        if (count == 0) return 0;
+        return sum / count;
+    }
+
+    public double getVariance() {
+        if (count <= 1) return 0;
+        return (sumSquared - (sum * sum) / count) / (count - 1);
+    }
+
+    public double getMax() { 
+        return max; 
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void clear() {
+        this.sum = 0.0;
+        this.sumSquared = 0.0;
+        this.count = 0;
+        this.max = 0.0;
+    }
+}package statistics;
+
+/// Na Vytvorenie Kódu Bol Použitý LLM /// 
+public class GlobalStatistic {
+    private double sum = 0.0;
+    private double sumSquared = 0.0;
+    private double absoluteMax = 0.0;
+    private int count = 0;
+
+    public void addReplicationData(double replicationAvg, double replicationMax) {
+        sum += replicationAvg;
+        sumSquared += (replicationAvg * replicationAvg);
+        count++;
+        if (replicationMax > absoluteMax) {
+            absoluteMax = replicationMax;
+        }
+    }
+
+    public double getGlobalAverage() {
+        return count == 0 ? 0 : sum / count;
+    }
+
+    public double getStandardDeviation() {
+        if (count <= 1) return 0;
+        double variance = (sumSquared - (sum * sum) / count) / (count - 1);
+        return Math.sqrt(Math.max(0, variance));
+    }
+
+    public double getConfidenceIntervalHalfWidth() {
+        if (count <= 1) return 0;
+        return 1.96 * (getStandardDeviation() / Math.sqrt(count));
+    }
+
+    public double getAbsoluteMax() { 
+        return absoluteMax; 
+    }
+    
+    public void clear() {
+        sum = 0.0; sumSquared = 0.0; count = 0;
+        absoluteMax = 0.0;
+    }
+}package strategies;
+
+import agents.agenturgentprijmu.ManagerUrgentPrijmu;
+import agents.agentosetrenia.ManagerOsetrenia;
+import agents.agentvstupvysetrenia.ManagerVstupVysetrenia;
+import simulation.MySimulation;
+import simulation.MyMessage;
+
+public class StrategiePrideleniaZdrojov {
+    public static boolean pridelitZdrojeRezim1(ManagerUrgentPrijmu manUrgent)
+    {
+        MySimulation sim = (MySimulation) manUrgent.mySim();
+        ManagerOsetrenia manOsetrenia = (ManagerOsetrenia) sim.agentOsetrenia().myManager();
+        ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) sim.agentVstupVysetrenia().myManager();
+            
+        MyMessage pacientNaOsetrenie = manOsetrenia.peekDalsiPacient();
+
+        int dostupneSestryOsetrenie = manUrgent.volneSestry.size() - (sim.configRezervovatSestruAmbulanciuB ? 1 : 0);
+        int dostupneAmbBOsetrenie = manUrgent.volneAmbulancieB.size() - (sim.configRezervovatSestruAmbulanciuB ? 1 : 0);
+
+        if (pacientNaOsetrenie != null) {
+            int priorita = pacientNaOsetrenie.priorita;
+
+            if (priorita == 1 || priorita == 2) {
+                if (manUrgent.volniLekari.size() > 0 && dostupneSestryOsetrenie > 0 && manUrgent.volneAmbulancieA.size() > 0) {
+                    manUrgent.startOsetrenie(manOsetrenia.dalsiPacient(), "A");
+                    return true;
+                }
+            } 
+            else if (priorita == 3 || priorita == 4) {
+                if (manUrgent.volniLekari.size() >= 2 && dostupneSestryOsetrenie >= 2) {
+                    if (dostupneAmbBOsetrenie > 0) {
+                        manUrgent.startOsetrenie(manOsetrenia.dalsiPacient(), "B");
+                        return true;
+                    } else if (manUrgent.volneAmbulancieA.size() > 0) {
+                        manUrgent.startOsetrenie(manOsetrenia.dalsiPacient(), "A");
+                        return true;
+                    }
+                }
+            } 
+            else if (priorita == 5) {
+                if (manUrgent.volniLekari.size() >= 3 && dostupneSestryOsetrenie >= 3 && dostupneAmbBOsetrenie > 0) {
+                    manUrgent.startOsetrenie(manOsetrenia.dalsiPacient(), "B");
+                    return true;
+                }
+            }
+        }
+
+        if (manUrgent.volneSestry.size() > 0 && manUrgent.volneAmbulancieB.size() > 0) {
+            if (!manVstup.radSantikouVstupVysetrenie.isEmpty()) {
+                manUrgent.startVstupVysetrenie(manVstup.radSantikouVstupVysetrenie.dequeue());
+                return true;
+            } else if (dostupneSestryOsetrenie >= 2 && !manVstup.radVstupVysSamostatne.isEmpty()) {
+                manUrgent.startVstupVysetrenie(manVstup.radVstupVysSamostatne.dequeue());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean pridelitZdrojeRezim2(ManagerUrgentPrijmu manUrgent)
+    {
+        MySimulation sim = (MySimulation) manUrgent.mySim();
+        ManagerOsetrenia manOsetrenia = (ManagerOsetrenia) sim.agentOsetrenia().myManager();
+        ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) sim.agentVstupVysetrenia().myManager();
+
+        MyMessage pacientNaOsetrenie = manOsetrenia.peekDalsiPacient();
+
+        int dostupneSestryOsetrenie = manUrgent.volneSestry.size() - (sim.configRezervovatSestruAmbulanciuB ? 1 : 0);
+        int dostupneAmbBOsetrenie = manUrgent.volneAmbulancieB.size() - (sim.configRezervovatSestruAmbulanciuB ? 1 : 0);
+
+        if (pacientNaOsetrenie != null) {
+            int priorita = pacientNaOsetrenie.priorita;
+
+            if (priorita == 1 || priorita == 2) {
+                if (manUrgent.volniLekari.size() > 0 && dostupneSestryOsetrenie > 0 && manUrgent.volneAmbulancieA.size() > 0) {
+                    manUrgent.startOsetrenie(manOsetrenia.dalsiPacient(), "A");
+                    return true;
+                }
+            } 
+            else if (priorita == 3 || priorita == 4) {
+                if (manUrgent.volniLekari.size() > 0 && dostupneSestryOsetrenie > 0) {
+                    if (dostupneAmbBOsetrenie > 0) {
+                        manUrgent.startOsetrenie(manOsetrenia.dalsiPacient(), "B");
+                        return true;
+                    } else if (manUrgent.volneAmbulancieA.size() > 0) {
+                        manUrgent.startOsetrenie(manOsetrenia.dalsiPacient(), "A");
+                        return true;
+                    }
+                }
+            } 
+            else if (priorita == 5) {
+                if (manUrgent.volniLekari.size() > 0 && dostupneSestryOsetrenie > 0 && dostupneAmbBOsetrenie > 0) {
+                    manUrgent.startOsetrenie(manOsetrenia.dalsiPacient(), "B");
+                    return true;
+                }
+            }
+            
+            return false; 
+        }
+
+        if (manUrgent.volneSestry.size() > 0 && manUrgent.volneAmbulancieB.size() > 0) {
+            if (!manVstup.radSantikouVstupVysetrenie.isEmpty()) {
+                manUrgent.startVstupVysetrenie(manVstup.radSantikouVstupVysetrenie.dequeue());
+                return true;
+            } else if (!manVstup.radVstupVysSamostatne.isEmpty()) {
+                manUrgent.startVstupVysetrenie(manVstup.radVstupVysSamostatne.dequeue());
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean pridelitZdrojeRezim3(ManagerUrgentPrijmu manUrgent)
+    {
+        MySimulation sim = (MySimulation) manUrgent.mySim();
+        ManagerOsetrenia manOsetrenia = (ManagerOsetrenia) sim.agentOsetrenia().myManager();
+        ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) sim.agentVstupVysetrenia().myManager();
+
+        int dostupneSestryOsetrenie = manUrgent.volneSestry.size() - (sim.configRezervovatSestruAmbulanciuB ? 1 : 0);
+        int dostupneAmbBOsetrenie = manUrgent.volneAmbulancieB.size() - (sim.configRezervovatSestruAmbulanciuB ? 1 : 0);
+
+        MyMessage pacientNaOsetrenie = manOsetrenia.peekDalsiPacient();
+
+        if (pacientNaOsetrenie != null) {
+            int priorita = pacientNaOsetrenie.priorita;
+
+            if (priorita == 1 || priorita == 2) {
+                if (manUrgent.volniLekari.size() > 0 && dostupneSestryOsetrenie > 0 && manUrgent.volneAmbulancieA.size() > 0) {
+                    manUrgent.startOsetrenie(manOsetrenia.dalsiPacient(), "A");
+                    return true;
+                }
+            } else if (priorita == 3) {
+                if (manUrgent.volniLekari.size() > 0 && dostupneSestryOsetrenie > 0) {
+                    if (dostupneAmbBOsetrenie > 0) {
+                        manUrgent.startOsetrenie(manOsetrenia.dalsiPacient(), "B");
+                        return true;
+                    } else if (manUrgent.volneAmbulancieA.size() > 0) {
+                        manUrgent.startOsetrenie(manOsetrenia.dalsiPacient(), "A");
+                        return true;
+                    }
+                }
+            }
+            
+            if (manUrgent.volneSestry.size() > 0 && manUrgent.volneAmbulancieB.size() > 0 && !manVstup.radSantikouVstupVysetrenie.isEmpty()) {
+                manUrgent.startVstupVysetrenie(manVstup.radSantikouVstupVysetrenie.dequeue());
+                return true;
+            }
+
+            if (priorita == 4) {
+                if (manUrgent.volniLekari.size() > 0 && dostupneSestryOsetrenie > 0) {
+                    if (dostupneAmbBOsetrenie > 0) {
+                        manUrgent.startOsetrenie(manOsetrenia.dalsiPacient(), "B");
+                        return true;
+                    } else if (manUrgent.volneAmbulancieA.size() > 0) {
+                        manUrgent.startOsetrenie(manOsetrenia.dalsiPacient(), "A");
+                        return true;
+                    }
+                }
+            } else if (priorita == 5) {
+                if (manUrgent.volniLekari.size() > 0 && dostupneSestryOsetrenie > 0 && dostupneAmbBOsetrenie > 0) {
+                    manUrgent.startOsetrenie(manOsetrenia.dalsiPacient(), "B");
+                    return true;
+                }
+            }
+        }
+
+        if (manUrgent.volneSestry.size() > 0 && manUrgent.volneAmbulancieB.size() > 0) {
+            if (!manVstup.radSantikouVstupVysetrenie.isEmpty()) {
+                manUrgent.startVstupVysetrenie(manVstup.radSantikouVstupVysetrenie.dequeue());
+                return true;
+            } 
+            else if (manUrgent.volneSestry.size() >= 2 && !manVstup.radVstupVysSamostatne.isEmpty()) {
+                manUrgent.startVstupVysetrenie(manVstup.radVstupVysSamostatne.dequeue());
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean pridelitZdrojeRezim5(ManagerUrgentPrijmu manUrgent)
+    {
+        MySimulation sim = (MySimulation) manUrgent.mySim();
+        ManagerOsetrenia manOsetrenia = (ManagerOsetrenia) sim.agentOsetrenia().myManager();
+        ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) sim.agentVstupVysetrenia().myManager();
+        
+        int dostupneSestryOsetrenie = manUrgent.volneSestry.size() - (sim.configRezervovatSestruAmbulanciuB ? 1 : 0);
+        int dostupneAmbBOsetrenie = manUrgent.volneAmbulancieB.size() - (sim.configRezervovatSestruAmbulanciuB ? 1 : 0);
+
+        boolean jePretlak = (manOsetrenia.pocetCakajucichPriorita(3) + manOsetrenia.pocetCakajucichPriorita(4)) > 5;
+
+        MyMessage pacientNaOsetrenie = manOsetrenia.peekDalsiPacient();
+
+        if (pacientNaOsetrenie != null) {
+            int priorita = pacientNaOsetrenie.priorita;
+
+            if (priorita == 1 || priorita == 2) {
+                if (manUrgent.volniLekari.size() > 0 && dostupneSestryOsetrenie > 0 && manUrgent.volneAmbulancieA.size() > 0) {
+                    manUrgent.startOsetrenie(manOsetrenia.dalsiPacient(), "A");
+                    return true;
+                }
+            } 
+            else if (priorita == 3 || priorita == 4) {
+                int minimumLekarov = jePretlak ? 1 : 2;
+                int minimumSestier = jePretlak ? 1 : 2;
+
+                if (manUrgent.volniLekari.size() >= minimumLekarov && dostupneSestryOsetrenie >= minimumSestier) {
+                    if (dostupneAmbBOsetrenie > 0) {
+                        manUrgent.startOsetrenie(manOsetrenia.dalsiPacient(), "B");
+                        return true;
+                    } else if (manUrgent.volneAmbulancieA.size() > 0) {
+                        manUrgent.startOsetrenie(manOsetrenia.dalsiPacient(), "A");
+                        return true;
+                    }
+                }
+            } 
+            else if (priorita == 5) {
+                if (manUrgent.volniLekari.size() >= 3 && dostupneSestryOsetrenie >= 3 && dostupneAmbBOsetrenie > 0) {
+                    manUrgent.startOsetrenie(manOsetrenia.dalsiPacient(), "B");
+                    return true;
+                }
+            }
+        }
+
+        if (manUrgent.volneSestry.size() > 0 && manUrgent.volneAmbulancieB.size() > 0) {
+            if (!manVstup.radSantikouVstupVysetrenie.isEmpty()) {
+                manUrgent.startVstupVysetrenie(manVstup.radSantikouVstupVysetrenie.dequeue());
+                return true;
+            } 
+            else if (manUrgent.volneSestry.size() >= 2 && !manVstup.radVstupVysSamostatne.isEmpty()) {
+                manUrgent.startVstupVysetrenie(manVstup.radVstupVysSamostatne.dequeue());
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+}package simulation;
+
+import OSPABA.*;
+import OSPAnimator.*;
+import entities.Ambulancia;
+import entities.Lekar;
+import entities.Sestra;
+
+public class MyMessage extends OSPABA.MessageForm
+{
+	public static int globalIdCounter = 1;
+	public int idPacienta;
+	public String typPacienta;
+	public int priorita;
+	public double casPrichodu;
+
+	//??
+	public double casPresunu;
+	// public String cielovaMiestnost;
+
+	//??
+	public Lekar priradenyLekar;
+	public Sestra priradenaSestra;
+	public Ambulancia priradenaMiestnost;
+
+	public AnimItem animaciaPacienta;
+	// public AnimObject animaciaPacienta;
+
+	public MyMessage(Simulation mySim)
+	{
+		super(mySim);
+		this.idPacienta = globalIdCounter++;
+	}
+
+	public MyMessage(MyMessage original)
+	{
+		super(original);
+		// copy() is called in superclass
+	}
+
+	@Override
+	public MessageForm createCopy()
+	{
+		return new MyMessage(this);
+	}
+
+	@Override
+	protected void copy(MessageForm message)
+	{
+		super.copy(message);
+		MyMessage original = (MyMessage)message;
+		// Copy attributes
+		this.idPacienta = original.idPacienta;
+		this.typPacienta = original.typPacienta;
+        this.casPrichodu = original.casPrichodu;
+		this.animaciaPacienta = original.animaciaPacienta;
+	}
+
+	public String getTypPacienta() {
+        return typPacienta;
+    }
+
+    public void setTypPacienta(String typPacienta) {
+        this.typPacienta = typPacienta;
+    }
+
+    public double getCasPrichodu() {
+        return casPrichodu;
+    }
+
+    public void setCasPrichodu(double casPrichodu) {
+        this.casPrichodu = casPrichodu;
+    }
+}
+package simulation;
+
+import OSPAnimator.AnimItem;
+import OSPAnimator.AnimQueue;
+
+import java.awt.Graphics2D;
+
+public class AnimQueueItem extends AnimItem {
+	private final AnimQueue queue;
+
+	public AnimQueueItem(AnimQueue queue) {
+		super();
+		this.queue = queue;
+		setAlwaysVisible(true);
+	}
+
+	@Override
+	public void drawItem(Graphics2D g2d, double time) {
+		if (queue != null) {
+			queue.draw(g2d);
+		}
+	}
+}
+package simulation;
+
+import OSPABA.*;
+
+public class Id extends OSPABA.IdList
+{
+	//meta! userInfo="Generated code: do not modify", tag="begin"
+	public static final int agentOkolia = 1;
+	public static final int agentModelu = 2;
+	public static final int agentUrgentPrijmu = 3;
+	public static final int agentVstupVysetrenia = 4;
+	public static final int agentOsetrenia = 5;
+	public static final int managerOkolia = 101;
+	public static final int managerModelu = 102;
+	public static final int managerUrgentPrijmu = 103;
+	public static final int managerVstupVysetrenia = 104;
+	public static final int managerOsetrenia = 105;
+	public static final int procesVstupVysetrenia = 1004;
+	public static final int planovacPrichodovSamostatne = 1001;
+	public static final int procesOsetrenia = 1005;
+	public static final int planovacPrichodovSanitkou = 1002;
+	public static final int procesPresunu = 1003;
+	//meta! tag="end"
+}
+package simulation;
+
+import agents.agentosetrenia.*;
+import agents.agentokolia.*;
+import agents.agentvstupvysetrenia.*;
+import statistics.GlobalStatistic;
+import statistics.Statistic;
+import statistics.StatisticWeighted;
+import agents.agenturgentprijmu.*;
+import agents.agentmodelu.*;
+
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
+
+public class MySimulation extends OSPABA.Simulation
+{
+	//#
+	public int configPocetLekarov = 5;
+	public int configPocetSestier = 10;
+
+	public int configZvolenyRezim = 1;
+    public boolean configTurboRezim = false;
+	public boolean configRezervovatSestruAmbulanciuB = false;
+
+	public double trvanieZahrievania = 0.0;
+    private boolean zahriate = false;
+
+	//# CSV warmup
+	public boolean configSledovatZahrievanie = false;
+    private int poslednyZaznamenanyInterval = -1;
+
+
+	public Random masterRandom;
+	
+    public Statistic statCasVSysteme;
+    public GlobalStatistic globalCasVSysteme;
+
+	public Statistic statCasCakaniaVstup;
+    public GlobalStatistic globalCasCakaniaVstupVysVsetci;
+
+    public StatisticWeighted wstatradVstupVysetrenieSanitkou;
+    public GlobalStatistic globalRadVstupVysetrenieSanitkou;
+
+	public StatisticWeighted wstatRadVstupVysSamostatne;
+    public GlobalStatistic globalRadVstupVysSamostatne;
+
+	public Statistic statCakanieSanitka;
+    public GlobalStatistic globalCasCakaniaOsetreniaSanitkou;
+    public Statistic statCakanieSamostatne;
+    public GlobalStatistic globalCasCakaniaOsetreniaSamostatne;
+
+    public StatisticWeighted wstatVyuzitieLekar;
+    public GlobalStatistic globalVyuzitieLekar;
+
+    public StatisticWeighted wstatVyuzitieSestra;
+    public GlobalStatistic globalVyuzitieSestra;
+
+	public Statistic statVybaveniPacienti;
+    public GlobalStatistic globalVybaveniPacienti;
+
+	//** LLM usage, to specify
+	public ConcurrentHashMap<Integer, String[]> aktualniPacienti = new ConcurrentHashMap<>();
+
+	//!! ANIMACIA
+	public OSPAnimator.AnimQueue[] animRadyOsetrenie = new OSPAnimator.AnimQueue[5];
+	public java.awt.geom.Point2D.Double bodVchodSamostatne = new java.awt.geom.Point2D.Double(0, 500);
+    public java.awt.geom.Point2D.Double bodVchodSanitka = new java.awt.geom.Point2D.Double(0, 200);
+    public java.awt.geom.Point2D.Double bodTriageSamostatne = new java.awt.geom.Point2D.Double(400, 300);
+    public java.awt.geom.Point2D.Double bodTriageSanitka = new java.awt.geom.Point2D.Double(400, 450);
+	public OSPAnimator.AnimQueue animRadSanitka;
+	public OSPAnimator.AnimQueue animRadSamostatne;
+
+	public MySimulation()
+	{
+		OSPAnimator.Flags.IgnoreQueueExceptions = true;
+		
+		masterRandom = new Random(12345); //#
+
+        statCasVSysteme = new Statistic();
+        globalCasVSysteme = new GlobalStatistic();
+		statCasCakaniaVstup = new Statistic();
+        globalCasCakaniaVstupVysVsetci = new GlobalStatistic();
+        wstatradVstupVysetrenieSanitkou = new StatisticWeighted();
+        globalRadVstupVysetrenieSanitkou = new GlobalStatistic();
+		wstatRadVstupVysSamostatne = new StatisticWeighted();
+        globalRadVstupVysSamostatne = new GlobalStatistic();
+		statCakanieSanitka = new Statistic();
+        globalCasCakaniaOsetreniaSanitkou = new GlobalStatistic();
+        statCakanieSamostatne = new Statistic();
+        globalCasCakaniaOsetreniaSamostatne = new GlobalStatistic();
+		wstatVyuzitieLekar = new StatisticWeighted();
+        globalVyuzitieLekar = new GlobalStatistic();
+		wstatVyuzitieSestra = new StatisticWeighted();
+        globalVyuzitieSestra = new GlobalStatistic();
+        statVybaveniPacienti = new Statistic();
+        globalVybaveniPacienti = new GlobalStatistic();
+		
+		init();
+
+		createAnimator();
+	}
+
+	@Override
+	public void prepareSimulation()
+	{
+		super.prepareSimulation();
+		// Create global statistcis
+        globalCasVSysteme.clear();
+		globalCasCakaniaVstupVysVsetci.clear();
+        globalRadVstupVysetrenieSanitkou.clear();
+		globalRadVstupVysSamostatne.clear();
+		globalCasCakaniaOsetreniaSanitkou.clear();
+        globalCasCakaniaOsetreniaSamostatne.clear();
+		globalVyuzitieLekar.clear();
+        globalVyuzitieSestra.clear();
+        globalVybaveniPacienti.clear();
+	}
+
+	@Override
+	public void prepareReplication()
+	{
+		super.prepareReplication();
+		// Reset entities, queues, local statistics, etc...
+        statCasVSysteme.clear();
+		statCasCakaniaVstup.clear();
+        wstatradVstupVysetrenieSanitkou.clear();
+		wstatRadVstupVysSamostatne.clear();
+		statCakanieSanitka.clear();
+        statCakanieSamostatne.clear();
+        wstatVyuzitieLekar.clear();
+        wstatVyuzitieSestra.clear();
+        statVybaveniPacienti.clear();
+
+		zahriate = false;
+
+		poslednyZaznamenanyInterval = -1;
+
+		if (animatorExists()) {
+			initStaticAnimation();
+		}
+	}
+
+	@Override
+	public void replicationFinished()
+	{
+		// Collect local statistics into global, update UI, etc...
+		super.replicationFinished();
+
+		globalCasCakaniaOsetreniaSanitkou.addReplicationData(statCakanieSanitka.getAverage(), statCakanieSanitka.getMax());
+        globalCasCakaniaOsetreniaSamostatne.addReplicationData(statCakanieSamostatne.getAverage(), statCakanieSamostatne.getMax());
+		
+        globalCasVSysteme.addReplicationData(statCasVSysteme.getAverage(), statCasVSysteme.getMax());
+		
+		globalCasCakaniaVstupVysVsetci.addReplicationData(statCasCakaniaVstup.getAverage(), statCasCakaniaVstup.getMax());
+        
+        globalRadVstupVysetrenieSanitkou.addReplicationData(wstatradVstupVysetrenieSanitkou.getAverage(currentTime()), 0);
+
+		globalRadVstupVysSamostatne.addReplicationData(wstatRadVstupVysSamostatne.getAverage(currentTime()), 0);
+        //#
+        double vyuzitieLekarPercento = (wstatVyuzitieLekar.getAverage(currentTime()) / configPocetLekarov) * 100.0;
+        globalVyuzitieLekar.addReplicationData(vyuzitieLekarPercento, 0);
+		
+		double vyuzitieSestraPercento = (wstatVyuzitieSestra.getAverage(currentTime()) / configPocetSestier) * 100.0;
+        globalVyuzitieSestra.addReplicationData(vyuzitieSestraPercento, 0);
+
+        globalVybaveniPacienti.addReplicationData(statVybaveniPacienti.getAverage() * statVybaveniPacienti.getCount(), 0);
+
+		//??
+		System.out.println("End of Replication: " + currentReplication());
+        System.out.println("Avg Time in System: " + statCasVSysteme.getAverage() + " seconds");
+	}
+
+	@Override
+	public void simulationFinished()
+	{
+		// Display simulation results
+		super.simulationFinished();
+
+		//??
+		System.out.println("\n====== SIMULATION FINISHED ======");
+        System.out.println("GLOBAL Avg Wait for Treatment Samostatne: " + globalCasCakaniaOsetreniaSamostatne.getGlobalAverage());
+        System.out.println("95% CI Wait for Treatment: +/- " + globalCasCakaniaOsetreniaSamostatne.getConfidenceIntervalHalfWidth());
+
+		System.out.println("GLOBAL Avg Wait for Treatment Sanitka: " + globalCasCakaniaOsetreniaSanitkou.getGlobalAverage());
+        System.out.println("95% CI Wait for Treatment: +/- " + globalCasCakaniaOsetreniaSanitkou.getConfidenceIntervalHalfWidth());
+
+        
+        System.out.println("GLOBAL Avg Time in System: " + globalCasVSysteme.getGlobalAverage());
+        System.out.println("95% CI Time in System: +/- " + globalCasVSysteme.getConfidenceIntervalHalfWidth());
+        System.out.println("=================================");
+	}
+
+	public void refreshUI()
+	{
+		if (_onRefreshUI != null)
+		{
+			_onRefreshUI.accept(this);
+		}
+	}
+
+	//* LLM */
+	public void zahrievanieSkonciloCheck(double currentTime) {
+        if (trvanieZahrievania > 0 && !zahriate && currentTime >= trvanieZahrievania) {
+			statCasVSysteme.clear();
+			statCasCakaniaVstup.clear();
+			statCakanieSanitka.clear();
+			statCakanieSamostatne.clear();
+			statVybaveniPacienti.clear();
+
+			ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) agentVstupVysetrenia().myManager();
+            ManagerUrgentPrijmu manUrgent = (ManagerUrgentPrijmu) agentUrgentPrijmu().myManager();
+            
+            wstatradVstupVysetrenieSanitkou.warmUp(currentTime, manVstup.radSantikouVstupVysetrenie.size());
+			wstatRadVstupVysSamostatne.warmUp(currentTime, manVstup.radVstupVysSamostatne.size());
+            wstatVyuzitieLekar.warmUp(currentTime, configPocetLekarov - manUrgent.volniLekari.size());
+			wstatVyuzitieSestra.warmUp(currentTime, configPocetSestier - manUrgent.volneSestry.size());
+
+            zahriate = true;
+        }
+    }
+
+    public void logWarmupData(double currentTime) {
+        if (!configSledovatZahrievanie) return;
+
+        int aktualnyInterval = (int)(currentTime / 1800); 
+
+        if (aktualnyInterval > poslednyZaznamenanyInterval) {
+            poslednyZaznamenanyInterval = aktualnyInterval;
+            
+            int qSanitka = 0;
+            int qSamostatne = 0;
+            if (agentVstupVysetrenia() != null && agentVstupVysetrenia().myManager() != null) {
+                ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) agentVstupVysetrenia().myManager();
+                if (manVstup.radSantikouVstupVysetrenie != null) qSanitka = manVstup.radSantikouVstupVysetrenie.size();
+                if (manVstup.radVstupVysSamostatne != null) qSamostatne = manVstup.radVstupVysSamostatne.size();
+            }
+
+            try (java.io.FileWriter writer = new java.io.FileWriter("warmup_data.csv", true)) {
+                writer.write(currentTime + "," 
+                     + (currentTime / 3600.0) + "," 
+                     + statCasVSysteme.getAverage() + "," 
+                    //  + statCasCakaniaOsetrenie.getAverage() + "," 
+                     + qSanitka + "," 
+                     + qSamostatne + "\n");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+	public void initStaticAnimation() {
+		try {
+			java.awt.image.BufferedImage pozadie = javax.imageio.ImageIO.read(new java.io.File("./assets/hospital.png"));
+			if (pozadie != null) {
+				animator().setBackgroundImage(pozadie);
+			}
+		} catch (Exception e) {
+			System.err.println("Failed" + e.getMessage());
+		}
+
+		for (int i = 0; i < 5; i++) {
+            double startY = 580.0 + (i * 30.0); 
+            animRadyOsetrenie[i] = new OSPAnimator.AnimQueue(
+                animator(),
+                new java.awt.geom.Point2D.Double(500.0, startY),
+                new java.awt.geom.Point2D.Double(250.0, startY),
+                1.0
+            );
+            animator().register(new AnimQueueItem(animRadyOsetrenie[i]));
+        }
+
+		animRadSamostatne = new OSPAnimator.AnimQueue(
+            animator(),
+            new java.awt.geom.Point2D.Double(500.0, 270.0),
+            new java.awt.geom.Point2D.Double(200.0, 270.0),
+            1.0
+        );
+        animator().register(new AnimQueueItem(animRadSamostatne));
+
+        animRadSanitka = new OSPAnimator.AnimQueue(
+            animator(),
+            new java.awt.geom.Point2D.Double(500.0, bodVchodSanitka.y),
+            new java.awt.geom.Point2D.Double(200.0, bodVchodSanitka.y),
+            1.0
+        );
+        animator().register(new AnimQueueItem(animRadSanitka));
+	}
+
+	//meta! userInfo="Generated code: do not modify", tag="begin"
+	private void init()
+	{
+		setAgentModelu(new AgentModelu(Id.agentModelu, this, null));
+		setAgentUrgentPrijmu(new AgentUrgentPrijmu(Id.agentUrgentPrijmu, this, agentModelu()));
+		setAgentVstupVysetrenia(new AgentVstupVysetrenia(Id.agentVstupVysetrenia, this, agentUrgentPrijmu()));
+		setAgentOsetrenia(new AgentOsetrenia(Id.agentOsetrenia, this, agentUrgentPrijmu()));
+		setAgentOkolia(new AgentOkolia(Id.agentOkolia, this, agentModelu()));
+	}
+
+	private AgentModelu _agentModelu;
+
+public AgentModelu agentModelu()
+	{ return _agentModelu; }
+
+	public void setAgentModelu(AgentModelu agentModelu)
+	{_agentModelu = agentModelu; }
+
+	private AgentUrgentPrijmu _agentUrgentPrijmu;
+
+public AgentUrgentPrijmu agentUrgentPrijmu()
+	{ return _agentUrgentPrijmu; }
+
+	public void setAgentUrgentPrijmu(AgentUrgentPrijmu agentUrgentPrijmu)
+	{_agentUrgentPrijmu = agentUrgentPrijmu; }
+
+	private AgentVstupVysetrenia _agentVstupVysetrenia;
+
+public AgentVstupVysetrenia agentVstupVysetrenia()
+	{ return _agentVstupVysetrenia; }
+
+	public void setAgentVstupVysetrenia(AgentVstupVysetrenia agentVstupVysetrenia)
+	{_agentVstupVysetrenia = agentVstupVysetrenia; }
+
+	private AgentOsetrenia _agentOsetrenia;
+
+public AgentOsetrenia agentOsetrenia()
+	{ return _agentOsetrenia; }
+
+	public void setAgentOsetrenia(AgentOsetrenia agentOsetrenia)
+	{_agentOsetrenia = agentOsetrenia; }
+
+	private AgentOkolia _agentOkolia;
+
+public AgentOkolia agentOkolia()
+	{ return _agentOkolia; }
+
+	public void setAgentOkolia(AgentOkolia agentOkolia)
+	{_agentOkolia = agentOkolia; }
+	//meta! tag="end"
+}
+package simulation;
+
+import OSPABA.*;
+
+public class Mc extends OSPABA.IdList
+{
+	//meta! userInfo="Generated code: do not modify", tag="begin"
+	public static final int pacientOdisiel = 1001;
+	public static final int pacientPrisiel = 1002;
+	public static final int spracovaniePacienta = 1003;
+	public static final int vykonatVstupOsetrenie = 1004;
+	public static final int vykonatOsetrenie = 1005;
+	public static final int prisielSamostatne = 1006;
+	public static final int prisielSanitkou = 1007;
+	//meta! tag="end"
+
+	// 1..1000 range reserved for user
+}
+package simulation;
+
+public class Constants {
+    // Typy pacientov
+    public static final String PACIENT_SAMOSTATNE = "SAMOSTATNE";
+    public static final String PACIENT_SANITKOU = "SANITKOU";
+
+    // Lokácie
+    public static final String LOKACIA_VCHOD_SANITKA = "VCHOD_SANITKA";
+    public static final String LOKACIA_VCHOD_SAMOSTATNE = "VCHOD_SAMOSTATNE";
+    
+    // Typy ambulancií
+    public static final String AMBULANCIA_TYP_A = "A";
+    public static final String AMBULANCIA_TYP_B = "B";
+    
+    // Stavy do GUI
+    public static final String STAV_PRICHADZA_URGENT = "Prichádza na urgent. príjem";
+    public static final String STAV_IDE_URGENT = "Ide na urgent. príjem";
+    public static final String STAV_CAKA_VYSETRENIE = "čaka v rade na vyšetrenie";
+}
+package agents.agentokolia;
+
+import OSPABA.*;
+// import generators.TrojuholnikovyGenerator;
+import generators.UniformGenerator;
+import simulation.*;
+
+//meta! id="1"
+public class ManagerOkolia extends OSPABA.Manager
+{
+private UniformGenerator genCasOdchodu;
+	
+	public ManagerOkolia(int id, Simulation mySim, Agent myAgent)
+	{
+		super(id, mySim, myAgent);
+		init();
+	}
+
+	@Override
+	public void prepareReplication()
+	{		
+		super.prepareReplication();
+		// Setup component for the next replication
+
+		if (petriNet() != null)
+		{
+			petriNet().clear();
+		}
+
+		System.out.println("manager okolia test, time " + mySim().currentTime());
+		System.out.println("Mc.start " + Mc.start);
+		
+		genCasOdchodu = new UniformGenerator(150.0, 240.0, ((MySimulation)mySim()).masterRandom.nextInt());
+		//?? maybe if statement
+		MyMessage startSamostatne = new MyMessage(mySim());
+		startSamostatne.setAddressee(Id.planovacPrichodovSamostatne);
+		//?? apparently mc.start is automatic anyway
+		startSamostatne.setCode(Mc.start);
+		startContinualAssistant(startSamostatne);
+
+		MyMessage startSanitkou = new MyMessage(mySim());
+		startSanitkou.setAddressee(Id.planovacPrichodovSanitkou);
+		startSanitkou.setCode(Mc.start);
+		startContinualAssistant(startSanitkou);
+
+		try {
+			// System.out.println("startContinualAssistant");
+		} catch (Exception e) {
+			System.out.println("ERROR" + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+
+	//meta! sender="AgentModelu", id="15", type="Notice"
+	public void processPacientOdisiel(MessageForm message)
+	{
+		MyMessage pacient = (MyMessage) message;
+		MySimulation sim = (MySimulation) mySim();
+		
+		double casOdchodu = genCasOdchodu.sample();
+		double casVSysteme = mySim().currentTime() + casOdchodu - pacient.casPrichodu;
+
+		sim.zahrievanieSkonciloCheck(sim.currentTime());
+        if (sim.currentTime() >= sim.trvanieZahrievania) {
+            sim.statCasVSysteme.addValue(casVSysteme);
+			sim.statVybaveniPacienti.addValue(1.0);
+        }
+
+		((MySimulation)mySim()).logWarmupData(mySim().currentTime());
+	}
+
+	//meta! sender="PlanovacPrichodovSamostatne", id="26", type="Notice"
+	public void processPrisielSamostatne(MessageForm message)
+	{
+		System.out.println("1 processPrisielSamostatne");
+		message.setAddressee(Id.agentModelu); // ((MySimulation)mySim()).agentModelu()
+		message.setCode(Mc.pacientPrisiel); 
+		notice(message);
+
+		((MySimulation)mySim()).logWarmupData(mySim().currentTime());
+	}
+
+	//meta! sender="PlanovacPrichodovSanitkou", id="27", type="Notice"
+	public void processPrisielSanitkou(MessageForm message)
+	{
+		message.setAddressee(Id.agentModelu);
+		message.setCode(Mc.pacientPrisiel);
+		notice(message);
+
+		((MySimulation)mySim()).logWarmupData(mySim().currentTime());
+	}
+
+	//meta! userInfo="Process messages defined in code", id="0"
+	public void processDefault(MessageForm message)
+	{
+		switch (message.code())
+		{
+		}
+	}
+
+	//meta! userInfo="Generated code: do not modify", tag="begin"
+	public void init()
+	{
+	}
+
+	@Override
+	public void processMessage(MessageForm message)
+	{
+		switch (message.code())
+		{
+		case Mc.pacientOdisiel:
+			processPacientOdisiel(message);
+		break;
+
+		case Mc.prisielSanitkou:
+			processPrisielSanitkou(message);
+		break;
+
+		case Mc.prisielSamostatne:
+			processPrisielSamostatne(message);
+		break;
+
+		default:
+			processDefault(message);
+		break;
+		}
+	}
+	//meta! tag="end"
+
+	@Override
+	public AgentOkolia myAgent()
+	{
+		return (AgentOkolia)super.myAgent();
+	}
+
+}
+package agents.agentokolia.continualassistants;
+
+import OSPABA.*;
+import agents.agentokolia.*;
+import generators.LognormalnyGenerator;
+import simulation.*;
+
+//meta! id="20"
+public class PlanovacPrichodovSamostatne extends OSPABA.Scheduler
+{
+	//## to configure
+	private LognormalnyGenerator prichodSamGen;
+
+	public PlanovacPrichodovSamostatne(int id, Simulation mySim, CommonAgent myAgent)
+	{
+		super(id, mySim, myAgent);
+
+		prichodSamGen = new LognormalnyGenerator(6.05, 0.83, ((MySimulation)mySim()).masterRandom.nextInt());
+	}
+
+	@Override
+	public void prepareReplication()
+	{
+		super.prepareReplication();
+		// Setup component for the next replication
+	}
+
+	//meta! userInfo="Process messages defined in code", id="0"
+	public void processDefault(MessageForm message)
+	{
+		System.out.println("planovac prichodov sam. Kod " + message.code() + ", Mc.start = " + Mc.start);
+		switch (message.code())
+		{
+			case Mc.start:
+				double prvyPrichod = prichodSamGen.sample();
+				System.out.println("Planujem prvy prichod o: " + prvyPrichod + " sekund");
+				//!!
+				message.setCode(Mc.prisielSamostatne);
+				hold(prvyPrichod, message);
+				break;
+				
+			default:
+				System.out.println("čas: " + mySim().currentTime() + ", pacient prisiel");
+				//!!
+				MyMessage novyPacient = new MyMessage(mySim());
+				novyPacient.setTypPacienta(simulation.Constants.PACIENT_SAMOSTATNE); 
+				novyPacient.setCasPrichodu(mySim().currentTime()); 
+
+				//** LLM usage, to specify
+				String[] info = {
+					String.valueOf(novyPacient.idPacienta), 
+					simulation.Constants.PACIENT_SAMOSTATNE,
+					simulation.Constants.STAV_PRICHADZA_URGENT, 
+					String.format("%.2f", mySim().currentTime())
+				};
+				((MySimulation)mySim()).aktualniPacienti.put(novyPacient.idPacienta, info);
+				((MySimulation)mySim()).refreshUI();
+						
+				if (mySim().animatorExists()) {
+                    novyPacient.animaciaPacienta = new OSPAnimator.AnimImageItem("./assets/pacient_samostatne.png");
+                    novyPacient.animaciaPacienta.setPosition(((MySimulation)mySim()).bodVchodSamostatne);
+                    mySim().animator().register(novyPacient.animaciaPacienta);
+                }
+				//!!
+				novyPacient.setAddressee(myAgent());
+				//!!
+				novyPacient.setCode(Mc.prisielSamostatne); 
+				notice(novyPacient);
+
+				//!!
+				hold(prichodSamGen.sample(), message);
+				break;
+		}
+	}
+
+	//meta! userInfo="Generated code: do not modify", tag="begin"
+	@Override
+	public void processMessage(MessageForm message)
+	{
+		switch (message.code())
+		{
+		default:
+			processDefault(message);
+		break;
+		}
+	}
+	//meta! tag="end"
+
+	@Override
+	public AgentOkolia myAgent()
+	{
+		return (AgentOkolia)super.myAgent();
+	}
+
+}
+package agents.agentokolia.continualassistants;
+
+import OSPABA.*;
+import agents.agentokolia.*;
+import generators.ExponencialnyGenerator;
+import simulation.*;
+
+//meta! id="22"
+public class PlanovacPrichodovSanitkou extends OSPABA.Scheduler
+{
+	private ExponencialnyGenerator prichodSanitkouGen;
+
+	public PlanovacPrichodovSanitkou(int id, Simulation mySim, CommonAgent myAgent)
+	{
+		super(id, mySim, myAgent);
+
+		prichodSanitkouGen = new ExponencialnyGenerator(1.0 / 351.0, ((MySimulation)mySim()).masterRandom.nextInt());
+	}
+
+	@Override
+	public void prepareReplication()
+	{
+		super.prepareReplication();
+		// Setup component for the next replication
+	}
+
+	//meta! userInfo="Process messages defined in code", id="0"
+	public void processDefault(MessageForm message)
+	{
+		switch (message.code())
+		{
+			case Mc.start:
+				message.setCode(Mc.prisielSanitkou);
+				hold(prichodSanitkouGen.sample(), message);
+				break;
+			default:
+				System.out.println("Time: " + String.format("%.2f", mySim().currentTime()) + ", pacient prisiel sanitkou");
+
+				MyMessage novyPacient = new MyMessage(mySim());
+				novyPacient.setTypPacienta(simulation.Constants.PACIENT_SANITKOU); 
+				novyPacient.setCasPrichodu(mySim().currentTime()); 
+				
+				String[] info = {
+					String.valueOf(novyPacient.idPacienta), 
+					simulation.Constants.PACIENT_SANITKOU,
+					simulation.Constants.STAV_IDE_URGENT, 
+					String.format("%.2f", mySim().currentTime())
+				};
+				((MySimulation)mySim()).aktualniPacienti.put(novyPacient.idPacienta, info);
+				((MySimulation)mySim()).refreshUI();
+
+				if (mySim().animatorExists()) {
+                    novyPacient.animaciaPacienta = new OSPAnimator.AnimImageItem("./assets/pacient_sanitkou.png");
+                    novyPacient.animaciaPacienta.setPosition(((MySimulation)mySim()).bodVchodSanitka);
+                    mySim().animator().register(novyPacient.animaciaPacienta);
+                }
+
+				novyPacient.setAddressee(myAgent());				
+				novyPacient.setCode(Mc.prisielSanitkou); 
+				notice(novyPacient);
+
+				hold(prichodSanitkouGen.sample(), message);
+				break;
+		}
+	}
+
+	//meta! userInfo="Generated code: do not modify", tag="begin"
+	@Override
+	public void processMessage(MessageForm message)
+	{
+		switch (message.code())
+		{
+		default:
+			processDefault(message);
+		break;
+		}
+	}
+	//meta! tag="end"
+
+	@Override
+	public AgentOkolia myAgent()
+	{
+		return (AgentOkolia)super.myAgent();
+	}
+
+}
+package agents.agentokolia;
+
+import OSPABA.*;
+import simulation.*;
+import agents.agentokolia.continualassistants.*;
+
+//meta! id="1"
+public class AgentOkolia extends OSPABA.Agent
+{
+	public AgentOkolia(int id, Simulation mySim, Agent parent)
+	{
+		super(id, mySim, parent);
+		init();
+	}
+
+	@Override
+	public void prepareReplication()
+	{
+		super.prepareReplication();
+		// Setup component for the next replication
+	}
+
+	//meta! userInfo="Generated code: do not modify", tag="begin"
+	private void init()
+	{
+		new ManagerOkolia(Id.managerOkolia, mySim(), this);
+		new PlanovacPrichodovSanitkou(Id.planovacPrichodovSanitkou, mySim(), this);
+		new PlanovacPrichodovSamostatne(Id.planovacPrichodovSamostatne, mySim(), this);
+		addOwnMessage(Mc.pacientOdisiel);
+		addOwnMessage(Mc.prisielSamostatne);
+		addOwnMessage(Mc.prisielSanitkou);
+	}
+	//meta! tag="end"
+}
+package agents.agentvstupvysetrenia;
+
+import OSPABA.*;
+import agents.agentvstupvysetrenia.continualassistants.*;
+import simulation.*;
+
+//meta! id="4"
+public class AgentVstupVysetrenia extends OSPABA.Agent
+{
+	public AgentVstupVysetrenia(int id, Simulation mySim, Agent parent)
+	{
+		super(id, mySim, parent);
+		init();
+	}
+
+	@Override
+	public void prepareReplication()
+	{
+		super.prepareReplication();
+		// Setup component for the next replication
+	}
+
+	//meta! userInfo="Generated code: do not modify", tag="begin"
+	private void init()
+	{
+		new ManagerVstupVysetrenia(Id.managerVstupVysetrenia, mySim(), this);
+		new ProcesVstupVysetrenia(Id.procesVstupVysetrenia, mySim(), this);
+		addOwnMessage(Mc.vykonatVstupOsetrenie);
+	}
+	//meta! tag="end"
+}
+package agents.agentvstupvysetrenia;
+
+import OSPABA.*;
+import OSPDataStruct.SimQueue;
+import simulation.*;
+
+//meta! id="4"
+public class ManagerVstupVysetrenia extends OSPABA.Manager
+{
+	public SimQueue<MyMessage> radSantikouVstupVysetrenie;
+    public SimQueue<MyMessage> radVstupVysSamostatne;
+
+	public ManagerVstupVysetrenia(int id, Simulation mySim, Agent myAgent)
+	{
+		super(id, mySim, myAgent);
+		init();
+	}
+
+	@Override
+	public void prepareReplication()
+	{
+		super.prepareReplication();
+		// Setup component for the next replication
+
+		if (petriNet() != null)
+		{
+			petriNet().clear();
+		}
+
+		radSantikouVstupVysetrenie = new SimQueue<>();
+        radVstupVysSamostatne = new SimQueue<>();
+	}
+
+	//meta! sender="AgentUrgentPrijmu", id="17", type="Request"
+	public void processVykonatVstupOsetrenie(MessageForm message)
+	{
+		System.out.println("6 processVykonatVstupOsetrenie");
+		message.setAddressee(Id.procesVstupVysetrenia);
+		startContinualAssistant(message);
+	}
+
+	//meta! sender="ProcesVstupVysetrenia", id="35", type="Finish"
+	public void processFinish(MessageForm message)
+	{
+		System.out.println("9 processFinish of ProcesVstupVysetrenia");
+
+		message.setCode(Mc.vykonatVstupOsetrenie);
+		response(message);
+	}
+
+	//meta! userInfo="Process messages defined in code", id="0"
+	public void processDefault(MessageForm message)
+	{
+		switch (message.code())
+		{
+		}
+	}
+
+	//meta! userInfo="Generated code: do not modify", tag="begin"
+	public void init()
+	{
+	}
+
+	@Override
+	public void processMessage(MessageForm message)
+	{
+		switch (message.code())
+		{
+		case Mc.vykonatVstupOsetrenie:
+			processVykonatVstupOsetrenie(message);
+		break;
+
+		case Mc.finish:
+			processFinish(message);
+		break;
+
+		default:
+			processDefault(message);
+		break;
+		}
+	}
+	//meta! tag="end"
+
+	@Override
+	public AgentVstupVysetrenia myAgent()
+	{
+		return (AgentVstupVysetrenia)super.myAgent();
+	}
+
+}
+package agents.agentvstupvysetrenia.continualassistants;
+
+import OSPABA.*;
+import simulation.*;
+import agents.agentvstupvysetrenia.*;
+import generators.RovnomernyDisktretnyGenerator;
+import generators.SpojityEmpirickyGenerator;
+import generators.UniformGenerator;
+import OSPABA.Process;
+
+//meta! id="34"
+public class ProcesVstupVysetrenia extends OSPABA.Process
+{
+	// private TrojuholnikovyGenerator genCasPresunuPersonalu;
+	private SpojityEmpirickyGenerator casVstupVysSamostatneGen;
+    private RovnomernyDisktretnyGenerator casVstupVysSanitkouGen;
+	private UniformGenerator prioritaGen;
+
+	public ProcesVstupVysetrenia(int id, Simulation mySim, CommonAgent myAgent)
+	{
+		super(id, mySim, myAgent);
+
+		// genCasPresunuPersonalu = new TrojuholnikovyGenerator(15.0, 20.0, 45.0, ((MySimulation)mySim()).masterRandom.nextInt());
+	}
+
+	@Override
+	public void prepareReplication()
+	{
+		super.prepareReplication();
+		// Setup component for the next replication
+		double[] pravdepodobnosti = {0.6, 0.4};
+		double[] minCas = {3.0, 5.0};
+		double[] maxCas = {5.0, 9.0};
+
+		casVstupVysSamostatneGen = new SpojityEmpirickyGenerator(pravdepodobnosti, minCas, maxCas, ((MySimulation)mySim()).masterRandom.nextInt());
+		casVstupVysSanitkouGen = new RovnomernyDisktretnyGenerator(4, 8, ((MySimulation)mySim()).masterRandom.nextInt());
+		prioritaGen = new UniformGenerator(0.0, 1.0, ((MySimulation)mySim()).masterRandom.nextInt());
+	}
+
+	//meta! sender="AgentVstupVysetrenia", id="35", type="Start"
+	public void processStart(MessageForm message)
+	{
+		System.out.println("7 processStart of ProcesVstupVysetrenia");
+		MyMessage pacient = (MyMessage) message;
+		double casVstupVysetreniaSekundy;
+
+		if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
+            casVstupVysetreniaSekundy = casVstupVysSamostatneGen.sample() * 60.0;
+        } else {
+            casVstupVysetreniaSekundy = casVstupVysSanitkouGen.sample() * 60.0;
+        }
+
+		// double casPresunuPersonalu = genCasPresunuPersonalu.sample();
+		// double celkovyCas = casVstupVysetreniaSekundy + casPresunuPersonalu;
+
+		//!! ANIMACIA VSTUP VYSETRENIE
+		if (mySim().animatorExists() && pacient.animaciaPacienta != null && pacient.priradenaSestra != null) {
+            
+            double t0 = mySim().currentTime();
+            double dt = pacient.casPresunu / 3.0;
+            double dtFinal = pacient.casPresunu - (2.0 * dt);
+            double epsilon = 0.0001;
+
+            double targetY = (pacient.priradenaMiestnost.id - 1) * 66.0;
+            double corridorX = 830.0;
+
+            java.awt.geom.Point2D posPacient = pacient.animaciaPacienta.getPosition(t0);
+            java.awt.geom.Point2D p1Pac = new java.awt.geom.Point2D.Double(corridorX, posPacient.getY());
+            java.awt.geom.Point2D p2Pac = new java.awt.geom.Point2D.Double(corridorX, targetY);
+            java.awt.geom.Point2D p3Pac = new java.awt.geom.Point2D.Double(corridorX - 48.0, targetY);
+
+            pacient.animaciaPacienta.moveTo(t0, dt, p1Pac);
+            pacient.animaciaPacienta.moveTo(t0 + dt + epsilon, dt, p2Pac);
+            pacient.animaciaPacienta.moveTo(t0 + 2.0 * dt + (2.0 * epsilon), dtFinal, p3Pac);
+
+
+            java.awt.geom.Point2D posSestra = pacient.priradenaSestra.animaciaPracovnika.getPosition(t0);
+            java.awt.geom.Point2D p1Ses = new java.awt.geom.Point2D.Double(corridorX, posSestra.getY());
+            java.awt.geom.Point2D p2Ses = new java.awt.geom.Point2D.Double(corridorX, targetY);
+            java.awt.geom.Point2D p3Ses = new java.awt.geom.Point2D.Double(corridorX + 10.0, targetY);
+
+            pacient.priradenaSestra.animaciaPracovnika.moveTo(t0, dt, p1Ses);
+            pacient.priradenaSestra.animaciaPracovnika.moveTo(t0 + dt + epsilon, dt, p2Ses);
+            pacient.priradenaSestra.animaciaPracovnika.moveTo(t0 + 2.0 * dt + (2.0 * epsilon), dtFinal, p3Ses);
+        }
+
+		message.setCode(Mc.finish);
+		hold(casVstupVysetreniaSekundy + pacient.casPresunu, message);
+	}
+
+	//meta! userInfo="Process messages defined in code", id="0"
+	public void processDefault(MessageForm message)
+	{
+		// switch (message.code())
+		// {
+		// }
+		System.out.println("8 processDefault of ProcesVstupVysetrenia. Runs after hold() expires");
+		MyMessage pacient = (MyMessage) message;
+            
+		double p = prioritaGen.sample();
+
+		if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
+			if (p < 0.10) {
+				pacient.priorita = 1;
+			} else if (p < 0.30) {
+				pacient.priorita = 2;
+			} else if (p < 0.45) {
+				pacient.priorita = 3;
+			} else if (p < 0.70) {
+				pacient.priorita = 4;
+			} else {
+				pacient.priorita = 5;
+			}
+		} 
+		else {
+			if (p < 0.30) {
+				pacient.priorita = 1;
+			} else if (p < 0.55) {
+				pacient.priorita = 2;
+			} else if (p < 0.75) {
+				pacient.priorita = 3;
+			} else if (p < 0.90) {
+				pacient.priorita = 4;
+			} else {
+				pacient.priorita = 5;
+			}
+		}
+		
+		assistantFinished(message);
+	}
+
+	//meta! userInfo="Generated code: do not modify", tag="begin"
+	@Override
+	public void processMessage(MessageForm message)
+	{
+		switch (message.code())
+		{
+		case Mc.start:
+			processStart(message);
+			break;
+
+		default:
+			processDefault(message);
+			break;
+		}
+	}
+	//meta! tag="end"
+
+	@Override
+	public AgentVstupVysetrenia myAgent()
+	{
+		return (AgentVstupVysetrenia)super.myAgent();
+	}
+
+}
+package agents.agentmodelu;
+
+import OSPABA.*;
+import simulation.*;
+
+//meta! id="2"
+public class ManagerModelu extends OSPABA.Manager
+{
+	public ManagerModelu(int id, Simulation mySim, Agent myAgent)
+	{
+		super(id, mySim, myAgent);
+		init();
+	}
+
+	@Override
+	public void prepareReplication()
+	{
+		super.prepareReplication();
+		// Setup component for the next replication
+
+		if (petriNet() != null)
+		{
+			petriNet().clear();
+		}
+	}
+
+	//meta! sender="AgentOkolia", id="13", type="Notice"
+	public void processPacientPrisiel(MessageForm message)
+	{
+		System.out.println("2 processPacientPrisiel");
+		message.setAddressee(Id.agentUrgentPrijmu); //((MySimulation)mySim()).agentUrgentPrijmu()
+		message.setCode(Mc.spracovaniePacienta);
+		request(message);
+	}
+
+	//meta! sender="AgentUrgentPrijmu", id="16", type="Response"
+	public void processSpracovaniePacienta(MessageForm message)
+	{
+		System.out.println("14 throwing patient out through AgentModelu" + message);
+		message.setAddressee(Id.agentOkolia); //((MySimulation)mySim()).agentOkolia()
+		message.setCode(Mc.pacientOdisiel);
+		notice(message);
+	}
+
+	//meta! userInfo="Process messages defined in code", id="0"
+	public void processDefault(MessageForm message)
+	{
+		switch (message.code())
+		{
+		}
+	}
+
+	//meta! userInfo="Generated code: do not modify", tag="begin"
+	public void init()
+	{
+	}
+
+	@Override
+	public void processMessage(MessageForm message)
+	{
+		switch (message.code())
+		{
+		case Mc.spracovaniePacienta:
+			processSpracovaniePacienta(message);
+		break;
+
+		case Mc.pacientPrisiel:
+			processPacientPrisiel(message);
+		break;
+
+		default:
+			processDefault(message);
+		break;
+		}
+	}
+	//meta! tag="end"
+
+	@Override
+	public AgentModelu myAgent()
+	{
+		return (AgentModelu)super.myAgent();
+	}
+
+}
+package agents.agentmodelu;
+
+import OSPABA.*;
+import simulation.*;
+
+//meta! id="2"
+public class AgentModelu extends OSPABA.Agent
+{
+	public AgentModelu(int id, Simulation mySim, Agent parent)
+	{
+		super(id, mySim, parent);
+		init();
+	}
+
+	@Override
+	public void prepareReplication()
+	{
+		super.prepareReplication();
+		// Setup component for the next replication
+	}
+
+	//meta! userInfo="Generated code: do not modify", tag="begin"
+	private void init()
+	{
+		new ManagerModelu(Id.managerModelu, mySim(), this);
+		addOwnMessage(Mc.pacientPrisiel);
+		addOwnMessage(Mc.spracovaniePacienta);
+	}
+	//meta! tag="end"
+}
+package agents.agentosetrenia.continualassistants;
+
+import OSPABA.*;
+import agents.agentosetrenia.*;
+import generators.SpojityEmpirickyGenerator;
+import generators.UniformGenerator;
+import simulation.*;
+import OSPABA.Process;
+
+//meta! id="36"
+public class ProcesOsetrenia extends OSPABA.Process
+{
+	// private TrojuholnikovyGenerator genCasPresunuPersonalu;
+	private SpojityEmpirickyGenerator casOsetreniaSamostatneGen;
+    private UniformGenerator casOsetreniaSanitkouGen;
+
+	public ProcesOsetrenia(int id, Simulation mySim, CommonAgent myAgent)
+	{
+		super(id, mySim, myAgent);
+
+		// genCasPresunuPersonalu = new TrojuholnikovyGenerator(15.0, 20.0, 45.0, ((MySimulation)mySim()).masterRandom.nextInt());
+	}
+
+	@Override
+	public void prepareReplication()
+	{
+		super.prepareReplication();
+		// Setup component for the next replication
+
+		double[] pravdepodobnosti = {0.1, 0.6, 0.3};
+		double[] minCas = {10.0, 12.0, 14.0};
+		double[] maxCas = {12.0, 14.0, 18.0};
+
+		casOsetreniaSamostatneGen = new SpojityEmpirickyGenerator(pravdepodobnosti, minCas, maxCas, ((MySimulation)mySim()).masterRandom.nextInt());
+		casOsetreniaSanitkouGen = new UniformGenerator(15.0, 30.0, ((MySimulation)mySim()).masterRandom.nextInt());
+	}
+
+	//meta! sender="AgentOsetrenia", id="37", type="Start"
+	public void processStart(MessageForm message)
+	{
+		MyMessage pacient = (MyMessage) message;
+        double casOsetreniaSekundy;
+		//!! ANIMACIA
+		if (mySim().animatorExists() && pacient.animaciaPacienta != null) {
+            ((MySimulation)mySim()).animRadyOsetrenie[pacient.priorita - 1].remove(pacient.animaciaPacienta);
+        }
+		
+		if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
+            casOsetreniaSekundy = casOsetreniaSamostatneGen.sample() * 60.0; 
+			System.out.println("11 ProcesOsetrenia SAM");
+		} else {
+			casOsetreniaSekundy = casOsetreniaSanitkouGen.sample() * 60.0;
+			System.out.println("11 ProcesOsetrenia SANITKOU");
+		}
+
+		// double casPresunuPersonalu = genCasPresunuPersonalu.sample();
+		// double celkovyCas = casOsetreniaSekundy + casPresunuPersonalu;
+
+		//!! ANIMACIA OSETRENIE
+		if (mySim().animatorExists() && pacient.animaciaPacienta != null) {
+            double t0 = mySim().currentTime();
+            double dt = pacient.casPresunu / 3.0;
+            double dtFinal = pacient.casPresunu - (2.0 * dt);
+            double epsilon = 0.0001;
+            double corridorX = 830.0; 
+
+            double targetY;
+            if (pacient.priradenaMiestnost.typ.equals("A")) {
+                targetY = 478.0 + ((pacient.priradenaMiestnost.id - 1) * 66.0);
+            } else {
+                targetY = (pacient.priradenaMiestnost.id - 1) * 66.0 + 4;
+            }
+
+            java.awt.geom.Point2D p1Pac = new java.awt.geom.Point2D.Double(corridorX, pacient.animaciaPacienta.getPosition(t0).getY());
+            java.awt.geom.Point2D p2Pac = new java.awt.geom.Point2D.Double(corridorX, targetY);
+            java.awt.geom.Point2D p3Pac = new java.awt.geom.Point2D.Double(corridorX - 48.0, targetY);
+            
+            pacient.animaciaPacienta.moveTo(t0, dt, p1Pac);
+            pacient.animaciaPacienta.moveTo(t0 + dt + epsilon, dt, p2Pac);
+            pacient.animaciaPacienta.moveTo(t0 + 2.0 * dt + (2.0 * epsilon), dtFinal, p3Pac);
+
+            if (pacient.priradenaSestra != null && pacient.priradenaSestra.animaciaPracovnika != null) {
+                java.awt.geom.Point2D posSestra = pacient.priradenaSestra.animaciaPracovnika.getPosition(t0);
+                java.awt.geom.Point2D p1Ses = new java.awt.geom.Point2D.Double(corridorX, posSestra.getY());
+                java.awt.geom.Point2D p2Ses = new java.awt.geom.Point2D.Double(corridorX, targetY);
+                java.awt.geom.Point2D p3Ses = new java.awt.geom.Point2D.Double(corridorX + 10.0, targetY);
+
+                pacient.priradenaSestra.animaciaPracovnika.moveTo(t0, dt, p1Ses);
+                pacient.priradenaSestra.animaciaPracovnika.moveTo(t0 + dt + epsilon, dt, p2Ses);
+                pacient.priradenaSestra.animaciaPracovnika.moveTo(t0 + 2.0 * dt + (2.0 * epsilon), dtFinal, p3Ses);
+            }
+
+            if (pacient.priradenyLekar != null && pacient.priradenyLekar.animaciaPracovnika != null) {
+                java.awt.geom.Point2D posLekar = pacient.priradenyLekar.animaciaPracovnika.getPosition(t0);
+                java.awt.geom.Point2D p1Doc = new java.awt.geom.Point2D.Double(corridorX, posLekar.getY());
+                java.awt.geom.Point2D p2Doc = new java.awt.geom.Point2D.Double(corridorX, targetY);
+                java.awt.geom.Point2D p3Doc = new java.awt.geom.Point2D.Double(corridorX + 72.0, targetY);
+
+                pacient.priradenyLekar.animaciaPracovnika.moveTo(t0, dt, p1Doc);
+                pacient.priradenyLekar.animaciaPracovnika.moveTo(t0 + dt + epsilon, dt, p2Doc);
+                pacient.priradenyLekar.animaciaPracovnika.moveTo(t0 + 2.0 * dt + (2.0 * epsilon), dtFinal, p3Doc);
+            }
+        }
+
+		message.setCode(Mc.finish);
+        hold(casOsetreniaSekundy + pacient.casPresunu, message);
+	}
+
+	//meta! userInfo="Process messages defined in code", id="0"
+	public void processDefault(MessageForm message)
+	{
+		// switch (message.code())
+		// {
+		// }
+		System.out.println("11.5 ProcesOsetrenia IS FINISHING");
+		assistantFinished(message);
+	}
+
+	//meta! userInfo="Generated code: do not modify", tag="begin"
+	@Override
+	public void processMessage(MessageForm message)
+	{
+		switch (message.code())
+		{
+		case Mc.start:
+			processStart(message);
+		break;
+
+		default:
+			processDefault(message);
+		break;
+		}
+	}
+	//meta! tag="end"
+
+	@Override
+	public AgentOsetrenia myAgent()
+	{
+		return (AgentOsetrenia)super.myAgent();
+	}
+
+}
+package agents.agentosetrenia;
+
+import OSPABA.*;
+import OSPDataStruct.SimQueue;
+import simulation.*;
+
+//meta! id="5"
+public class ManagerOsetrenia extends OSPABA.Manager
+{
+	private SimQueue<MyMessage>[] radyPodlaPriority;
+	
+	public ManagerOsetrenia(int id, Simulation mySim, Agent myAgent)
+	{
+		super(id, mySim, myAgent);
+		init();
+	}
+
+	@Override
+	public void prepareReplication()
+	{
+		super.prepareReplication();
+		// Setup component for the next replication
+
+		if (petriNet() != null)
+		{
+			petriNet().clear();
+		}
+
+		radyPodlaPriority = new SimQueue[5];
+		//** LLM */
+		for (int i = 0; i < 5; i++) {
+            radyPodlaPriority[i] = new SimQueue<>();
+        }
+	}
+
+	public void pridatDoRadu(MyMessage pacient) {
+		int index = pacient.priorita - 1;
+		radyPodlaPriority[index].enqueue(pacient);
+	}
+
+	public boolean cakajuciPacienti() {
+		for (int i = 0; i < radyPodlaPriority.length; i++) {
+			if (!radyPodlaPriority[i].isEmpty()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public MyMessage dalsiPacient() {
+		for (int i = 0; i < radyPodlaPriority.length; i++) {
+			if (!radyPodlaPriority[i].isEmpty()) {
+				return radyPodlaPriority[i].dequeue();
+			}
+		}
+		return null;
+	}
+
+	public MyMessage peekDalsiPacient() {
+		for (int i = 0; i < radyPodlaPriority.length; i++) {
+			if (!radyPodlaPriority[i].isEmpty()) {
+				return radyPodlaPriority[i].peek();
+			}
+		}
+		return null;
+	}
+
+	public int pocetCakajucichPriorita(int priorita) {
+        int index = priorita - 1;
+        return radyPodlaPriority[index].size();
+    }
+
+	//meta! sender="AgentUrgentPrijmu", id="18", type="Request"
+	public void processVykonatOsetrenie(MessageForm message)
+	{
+		System.out.println("10 processVykonatOsetrenie");
+		message.setAddressee(Id.procesOsetrenia);
+		startContinualAssistant(message);
+	}
+
+	//meta! sender="ProcesOsetrenia", id="37", type="Finish"
+	public void processFinish(MessageForm message)
+	{
+		System.out.println("12 ProcesOsetrenia IS FINISHED");
+
+		message.setCode(Mc.vykonatOsetrenie);
+		response(message);
+	}
+
+	//meta! userInfo="Process messages defined in code", id="0"
+	public void processDefault(MessageForm message)
+	{
+		switch (message.code())
+		{
+		}
+	}
+
+	//meta! userInfo="Generated code: do not modify", tag="begin"
+	public void init()
+	{
+	}
+
+	@Override
+	public void processMessage(MessageForm message)
+	{
+		switch (message.code())
+		{
+		case Mc.finish:
+			processFinish(message);
+		break;
+
+		case Mc.vykonatOsetrenie:
+			processVykonatOsetrenie(message);
+		break;
+
+		default:
+			processDefault(message);
+		break;
+		}
+	}
+	//meta! tag="end"
+
+	@Override
+	public AgentOsetrenia myAgent()
+	{
+		return (AgentOsetrenia)super.myAgent();
+	}
+
+}
+package agents.agentosetrenia;
+
+import OSPABA.*;
+import agents.agentosetrenia.continualassistants.*;
+import simulation.*;
+
+//meta! id="5"
+public class AgentOsetrenia extends OSPABA.Agent
+{
+	public AgentOsetrenia(int id, Simulation mySim, Agent parent)
+	{
+		super(id, mySim, parent);
+		init();
+	}
+
+	@Override
+	public void prepareReplication()
+	{
+		super.prepareReplication();
+		// Setup component for the next replication
+	}
+
+	//meta! userInfo="Generated code: do not modify", tag="begin"
+	private void init()
+	{
+		new ManagerOsetrenia(Id.managerOsetrenia, mySim(), this);
+		new ProcesOsetrenia(Id.procesOsetrenia, mySim(), this);
+		addOwnMessage(Mc.vykonatOsetrenie);
+	}
+	//meta! tag="end"
+}
+package agents.agenturgentprijmu;
+
+import java.util.List; 
+import java.util.ArrayList;
+
+import OSPABA.*;
+import agents.agentosetrenia.ManagerOsetrenia;
+import agents.agentvstupvysetrenia.ManagerVstupVysetrenia;
+import simulation.*;
+import entities.*;
+import generators.TrojuholnikovyGenerator;
+import generators.UniformGenerator;
+
+//meta! id="3"
+public class ManagerUrgentPrijmu extends OSPABA.Manager
+{
+	private TrojuholnikovyGenerator genPresunZVchoduSamostatne;
+    private UniformGenerator genPresunZVchoduSanitkou;
+	private TrojuholnikovyGenerator genPresunMedziMiestnostami;
+
+
+	public List<Lekar> volniLekari;
+		public List<Sestra> volneSestry;
+		public List<Ambulancia> volneAmbulancieA;
+		public List<Ambulancia> volneAmbulancieB;
+
+	public ManagerUrgentPrijmu(int id, Simulation mySim, Agent myAgent)
+	{
+		super(id, mySim, myAgent);
+		init();
+	}
+
+	@Override
+	public void prepareReplication()
+	{
+		super.prepareReplication();
+		// Setup component for the next replication
+
+		if (petriNet() != null)
+		{
+			petriNet().clear();
+		}
+
+		genPresunZVchoduSamostatne = new TrojuholnikovyGenerator(120.0, 150.0, 300.0, ((MySimulation)mySim()).masterRandom.nextInt());
+		genPresunZVchoduSanitkou = new UniformGenerator(90.0, 200.0, ((MySimulation)mySim()).masterRandom.nextInt());
+		genPresunMedziMiestnostami = new TrojuholnikovyGenerator(15.0, 20.0, 45.0, ((MySimulation)mySim()).masterRandom.nextInt());
+
+		//** LLM
+		volniLekari = new ArrayList<>();
+        volneSestry = new ArrayList<>();
+        volneAmbulancieA = new ArrayList<>();
+        volneAmbulancieB = new ArrayList<>();
+
+		MySimulation sim = (MySimulation) mySim();
+
+		int pocetLekarov = sim.configPocetLekarov;
+		int pocetSestier = sim.configPocetSestier;
+
+		// for (int i = 0; i < pocetLekarov; i++) {
+        //     volniLekari.add(new Lekar(i, simulation.Constants.LOKACIA_VCHOD_SANITKA));
+        // }
+
+		// for (int i = 0; i < pocetSestier; i++) {
+        //     volneSestry.add(new Sestra(i, simulation.Constants.LOKACIA_VCHOD_SANITKA));
+        // }
+
+		for (int i = 0; i < pocetLekarov; i++) {
+            Lekar lekar = new Lekar(i, simulation.Constants.LOKACIA_VCHOD_SANITKA);
+            if (mySim().animatorExists()) {
+                lekar.animaciaPracovnika = new OSPAnimator.AnimImageItem("./assets/lekar.png");
+                lekar.animaciaPracovnika.setPosition(((MySimulation)mySim()).bodVchodSanitka);
+                mySim().animator().register(lekar.animaciaPracovnika);
+            }
+            volniLekari.add(lekar);
+        }
+
+        for (int i = 0; i < pocetSestier; i++) {
+            Sestra sestra = new Sestra(i, simulation.Constants.LOKACIA_VCHOD_SANITKA);
+            if (mySim().animatorExists()) {
+                sestra.animaciaPracovnika = new OSPAnimator.AnimImageItem("./assets/sestra.png");
+                sestra.animaciaPracovnika.setPosition(((MySimulation)mySim()).bodVchodSanitka);
+                mySim().animator().register(sestra.animaciaPracovnika);
+            }
+            volneSestry.add(sestra);
+        }
+
+		for (int i = 1; i <= 5; i++) {
+            volneAmbulancieA.add(new Ambulancia(i, simulation.Constants.AMBULANCIA_TYP_A, "A" + i)); //# CONFIG LOCACIU
+        }
+
+		for (int i = 1; i <= 7; i++) {
+            volneAmbulancieB.add(new Ambulancia(i, simulation.Constants.AMBULANCIA_TYP_B, "B" + i));
+        }
+	}
+
+	//meta! sender="AgentVstupVysetrenia", id="17", type="Response"
+	public void processVykonatVstupOsetrenie(MessageForm message)
+	{
+		MyMessage pacient = (MyMessage) message;
+		MySimulation sim = (MySimulation) mySim();
+
+		volneSestry.add(pacient.priradenaSestra);
+
+		sim.zahrievanieSkonciloCheck(sim.currentTime());
+        if (sim.currentTime() >= sim.trvanieZahrievania) {
+            int busySestry = sim.configPocetSestier - volneSestry.size();
+            sim.wstatVyuzitieSestra.update(sim.currentTime(), busySestry);
+        }
+
+		if (pacient.priradenaMiestnost != null) {
+			volneAmbulancieB.add(pacient.priradenaMiestnost);
+		}
+
+		pacient.priradenaSestra = null;
+        pacient.priradenaMiestnost = null;
+		
+		ManagerOsetrenia manOsetrenia = (ManagerOsetrenia) ((MySimulation)mySim()).agentOsetrenia().myManager();
+		//!! ANIMACIA
+		if (sim.animatorExists() && pacient.animaciaPacienta != null) {
+            sim.animRadyOsetrenie[pacient.priorita - 1].insert(pacient.animaciaPacienta);
+        }
+        manOsetrenia.pridatDoRadu(pacient);
+
+		//!! ANIMACIA
+		if (sim.animatorExists() && pacient.animaciaPacienta != null) {
+            int pocetVrade = manOsetrenia.pocetCakajucichPriorita(1) + 
+                             manOsetrenia.pocetCakajucichPriorita(2) + 
+                             manOsetrenia.pocetCakajucichPriorita(3) + 
+                             manOsetrenia.pocetCakajucichPriorita(4) + 
+                             manOsetrenia.pocetCakajucichPriorita(5) - 1;
+            
+            if (pocetVrade < 0) pocetVrade = 0;
+
+            double frontX = 730.0;
+            double targetX = frontX - (pocetVrade * 60.0);
+            double targetY = (7 * 66.0) + 200.0; 
+            
+            if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
+                targetY += 40.0; 
+            }
+
+            pacient.animaciaPacienta.setPosition(new java.awt.geom.Point2D.Double(targetX, targetY));
+        }
+
+		pridelitZdroje();	
+	}
+
+	//meta! sender="AgentOsetrenia", id="18", type="Response"
+	public void processVykonatOsetrenie(MessageForm message)
+	{
+		System.out.println("13 response is sent from AgentOsetrenia");
+
+		MyMessage pacient = (MyMessage) message;
+		MySimulation sim = (MySimulation) mySim();
+
+		volniLekari.add(pacient.priradenyLekar);
+        volneSestry.add(pacient.priradenaSestra);
+
+		sim.zahrievanieSkonciloCheck(sim.currentTime());
+        if (sim.currentTime() >= sim.trvanieZahrievania) {
+            int busyDoctors = sim.configPocetLekarov - volniLekari.size();
+            sim.wstatVyuzitieLekar.update(sim.currentTime(), busyDoctors);
+			int busySestry = sim.configPocetSestier - volneSestry.size();
+            sim.wstatVyuzitieSestra.update(sim.currentTime(), busySestry);
+        }
+
+		if (pacient.priradenaMiestnost != null) {
+			if ("A".equals(pacient.priradenaMiestnost.typ)) {
+				volneAmbulancieA.add(pacient.priradenaMiestnost);
+			} else if ("B".equals(pacient.priradenaMiestnost.typ)) {
+				volneAmbulancieB.add(pacient.priradenaMiestnost);
+			}
+		}
+
+		pacient.priradenyLekar = null;
+        pacient.priradenaSestra = null;
+		pacient.priradenaMiestnost = null;
+
+		message.setCode(Mc.spracovaniePacienta);
+		response(message);
+
+		pridelitZdroje();
+	}
+
+	//meta! sender="ProcesPresunu", id="30", type="Finish"
+	public void processFinish(MessageForm message)
+	{
+		System.out.println("5 processFinish runs after procesPresunu");
+
+		MyMessage pacient = (MyMessage) message;
+		ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) ((MySimulation)mySim()).agentVstupVysetrenia().myManager();
+		MySimulation sim = (MySimulation) mySim();
+
+		if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
+			manVstup.radVstupVysSamostatne.enqueue(pacient);
+			sim.zahrievanieSkonciloCheck(sim.currentTime());
+			
+			if (sim.currentTime() >= sim.trvanieZahrievania) {
+                sim.wstatRadVstupVysSamostatne.update(sim.currentTime(), manVstup.radVstupVysSamostatne.size());
+            }
+
+			if (sim.animatorExists() && pacient.animaciaPacienta != null) {
+				if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
+					sim.animRadSamostatne.insert(pacient.animaciaPacienta);
+				} else {
+					sim.animRadSanitka.insert(pacient.animaciaPacienta);
+				}
+			}
+
+		} else {
+			manVstup.radSantikouVstupVysetrenie.enqueue(pacient);
+
+			sim.zahrievanieSkonciloCheck(sim.currentTime());
+            if (sim.currentTime() >= sim.trvanieZahrievania) {
+                sim.wstatradVstupVysetrenieSanitkou.update(sim.currentTime(), manVstup.radSantikouVstupVysetrenie.size());
+            }
+
+			if (sim.animatorExists() && pacient.animaciaPacienta != null) {
+				if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
+					sim.animRadSamostatne.insert(pacient.animaciaPacienta);
+				} else {
+					sim.animRadSanitka.insert(pacient.animaciaPacienta);
+				}
+			}
+		}
+		
+		//# GUI
+		if (((MySimulation)mySim()).aktualniPacienti.containsKey(pacient.idPacienta)) {
+			((MySimulation)mySim()).aktualniPacienti.get(pacient.idPacienta)[2] = "čaka v rade na vyšetrenie";
+		}
+		((MySimulation)mySim()).refreshUI();
+		
+		pridelitZdroje();
+	}
+
+	//meta! sender="AgentModelu", id="16", type="Request"
+	public void processSpracovaniePacienta(MessageForm message)
+	{
+		System.out.println("3 processSpracovaniePacienta");
+		//!! PROCESS PRESUNU
+		message.setAddressee(Id.procesPresunu);
+		startContinualAssistant(message);
+	}
+
+	//meta! userInfo="Process messages defined in code", id="0"
+	public void processDefault(MessageForm message)
+	{
+		switch (message.code())
+		{
+		}
+	}
+
+	private double casPresunu(String od, String kam)
+	{
+		if (od == null || kam == null) {
+			return 0.0;
+		}
+
+		if (od.equals(kam)) {
+			return 0.0;
+		}
+        //??
+		if (simulation.Constants.LOKACIA_VCHOD_SAMOSTATNE.equals(od) || simulation.Constants.LOKACIA_VCHOD_SAMOSTATNE.equals(kam)) {
+			return genPresunZVchoduSamostatne.sample();
+		} else if (simulation.Constants.LOKACIA_VCHOD_SANITKA.equals(od) || simulation.Constants.LOKACIA_VCHOD_SANITKA.equals(kam)) {
+            return genPresunZVchoduSanitkou.sample();
+        }
+
+		return genPresunMedziMiestnostami.sample();
+	}
+
+    private Lekar najdiLekaraPreLokaciu(String cielovaLokacia) {
+        for (int i = 0; i < volniLekari.size(); i++) {
+            if (volniLekari.get(i).lokacia.equals(cielovaLokacia)) {
+                return volniLekari.remove(i);
+            }
+        }
+        return volniLekari.remove(0);
+    }
+
+    private Sestra najdiSestruPreLokaciu(String cielovaLokacia) {
+        for (int i = 0; i < volneSestry.size(); i++) {
+            if (volneSestry.get(i).lokacia.equals(cielovaLokacia)) {
+                return volneSestry.remove(i);
+            }
+        }
+        return volneSestry.remove(0);
+    }
+
+
+	public void pridelitZdroje() 
+	{
+		boolean pracoval = true;  //#
+        MySimulation sim = (MySimulation) mySim();
+
+        while (pracoval) {
+            pracoval = false;
+            
+            switch (sim.configZvolenyRezim) {
+                case 1:
+                    pracoval = strategies.StrategiePrideleniaZdrojov.pridelitZdrojeRezim1(this);
+                    break;
+                case 2:
+                    pracoval = strategies.StrategiePrideleniaZdrojov.pridelitZdrojeRezim2(this);
+                    break;
+                case 3:
+                    pracoval = strategies.StrategiePrideleniaZdrojov.pridelitZdrojeRezim3(this);
+                    break;
+                case 5:
+                    pracoval = strategies.StrategiePrideleniaZdrojov.pridelitZdrojeRezim5(this);
+                    break;
+                default:
+                    pracoval = strategies.StrategiePrideleniaZdrojov.pridelitZdrojeRezim1(this);
+                    break;
+            }
+        }
+	}
+
+	//#
+    public void startOsetrenie(MyMessage pacient, String typAmbulancie) {
+        Ambulancia miestnost = typAmbulancie.equals("A") ? volneAmbulancieA.remove(0) : volneAmbulancieB.remove(0);
+        Lekar lekar = najdiLekaraPreLokaciu(miestnost.lokacia);
+        Sestra sestra = najdiSestruPreLokaciu(miestnost.lokacia);
+
+        double casPresunuLekar = casPresunu(lekar.lokacia, miestnost.lokacia);
+        double casPresunuSestra = casPresunu(sestra.lokacia, miestnost.lokacia);
+
+        pacient.casPresunu = Math.max(casPresunuLekar, casPresunuSestra);
+
+        lekar.lokacia = miestnost.lokacia;
+        sestra.lokacia = miestnost.lokacia;
+
+        pacient.priradenyLekar = lekar;
+        pacient.priradenaSestra = sestra;
+        pacient.priradenaMiestnost = miestnost;
+
+		MySimulation sim = (MySimulation) mySim();
+		sim.zahrievanieSkonciloCheck(sim.currentTime());
+
+        if (sim.currentTime() >= sim.trvanieZahrievania) {
+            double casCakania = sim.currentTime() - pacient.casPrichodu;
+            
+			if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
+                sim.statCakanieSamostatne.addValue(casCakania);
+            } else {
+                sim.statCakanieSanitka.addValue(casCakania);
+            }
+
+			int busyDoctors = sim.configPocetLekarov - volniLekari.size();
+            sim.wstatVyuzitieLekar.update(sim.currentTime(), busyDoctors);
+			int busySestry = sim.configPocetSestier - volneSestry.size();
+			sim.wstatVyuzitieSestra.update(sim.currentTime(), busySestry);
+        }
+
+        pacient.setAddressee(Id.agentOsetrenia);
+        pacient.setCode(Mc.vykonatOsetrenie);
+        request(pacient);
+    }
+
+    public void startVstupVysetrenie(MyMessage pacient) {
+		//!!
+		MySimulation sim = (MySimulation) mySim();
+        if (sim.animatorExists() && pacient.animaciaPacienta != null) {
+            if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
+                sim.animRadSamostatne.remove(pacient.animaciaPacienta);
+            } else {
+                sim.animRadSanitka.remove(pacient.animaciaPacienta);
+            }
+        }
+
+        Ambulancia miestnost = volneAmbulancieB.remove(0);
+        Sestra sestra = najdiSestruPreLokaciu(miestnost.lokacia);
+
+        double casPresunuSestry = casPresunu(sestra.lokacia, miestnost.lokacia);
+        pacient.casPresunu = casPresunuSestry;
+        sestra.lokacia = miestnost.lokacia;
+        pacient.priradenaSestra = sestra;
+        pacient.priradenaMiestnost = miestnost;
+
+		// MySimulation sim = (MySimulation) mySim();
+        ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) ((MySimulation)mySim()).agentVstupVysetrenia().myManager();
+        
+        sim.zahrievanieSkonciloCheck(sim.currentTime());
+
+        if (sim.currentTime() >= sim.trvanieZahrievania) {
+            double casCakaniaTriage = sim.currentTime() - pacient.casPrichodu;
+            sim.statCasCakaniaVstup.addValue(casCakaniaTriage);
+            
+            if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
+                sim.wstatRadVstupVysSamostatne.update(sim.currentTime(), manVstup.radVstupVysSamostatne.size());
+            } else {
+                sim.wstatradVstupVysetrenieSanitkou.update(sim.currentTime(), manVstup.radSantikouVstupVysetrenie.size());
+            }
+			
+			int busySestry = sim.configPocetSestier - volneSestry.size();
+			sim.wstatVyuzitieSestra.update(sim.currentTime(), busySestry);
+        }
+
+
+        pacient.setAddressee(Id.agentVstupVysetrenia);
+        pacient.setCode(Mc.vykonatVstupOsetrenie);
+        request(pacient);
+    }
+
+	//meta! userInfo="Generated code: do not modify", tag="begin"
+	public void init()
+	{
+	}
+
+	@Override
+	public void processMessage(MessageForm message)
+	{
+		switch (message.code())
+		{
+		case Mc.spracovaniePacienta:
+			processSpracovaniePacienta(message);
+		break;
+
+		case Mc.vykonatOsetrenie:
+			processVykonatOsetrenie(message);
+		break;
+
+		case Mc.finish:
+			processFinish(message);
+		break;
+
+		case Mc.vykonatVstupOsetrenie:
+			processVykonatVstupOsetrenie(message);
+		break;
+
+		default:
+			processDefault(message);
+		break;
+		}
+	}
+	//meta! tag="end"
+
+	@Override
+	public AgentUrgentPrijmu myAgent()
+	{
+		return (AgentUrgentPrijmu)super.myAgent();
+	}
+
+}
+package agents.agenturgentprijmu.continualassistants;
+
+import OSPABA.*;
+import simulation.*;
+import agents.agenturgentprijmu.*;
+import OSPABA.Process;
+import generators.TrojuholnikovyGenerator;
+import generators.UniformGenerator;
+import agents.agentvstupvysetrenia.ManagerVstupVysetrenia;
+
+//meta! id="29"
+public class ProcesPresunu extends OSPABA.Process
+{
+	private TrojuholnikovyGenerator genCasPresunuSamostatne;
+    private UniformGenerator genCasPresunuSanitkou;
+	
+	public ProcesPresunu(int id, Simulation mySim, CommonAgent myAgent)
+	{
+		super(id, mySim, myAgent);
+	}
+
+	@Override
+	public void prepareReplication()
+	{
+		super.prepareReplication();
+		// Setup component for the next replication
+		genCasPresunuSamostatne = new TrojuholnikovyGenerator(120.0, 150.0, 300.0, ((MySimulation)mySim()).masterRandom.nextInt());
+        genCasPresunuSanitkou = new UniformGenerator(90.0, 200.0, ((MySimulation)mySim()).masterRandom.nextInt());
+	}
+
+	//meta! sender="AgentUrgentPrijmu", id="30", type="Start"
+	public void processStart(MessageForm message)
+	{
+		System.out.println( "4 processStart ProcesPresunu. Time: " + mySim().currentTime());
+
+		MyMessage pacient = (MyMessage) message;
+        double casPresunu = 0.0;
+
+		if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
+            casPresunu = genCasPresunuSamostatne.sample();
+        } else {
+            casPresunu = genCasPresunuSanitkou.sample();
+        }
+
+		//!! ANIMACIA
+		if (mySim().animatorExists() && pacient.animaciaPacienta != null) {
+            double t0 = mySim().currentTime();
+            double dt = casPresunu / 3.0;
+            double dtFinal = casPresunu - (2.0 * dt); 
+
+            if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
+                double startX = ((MySimulation) mySim()).bodVchodSamostatne.x;
+                double startY = ((MySimulation) mySim()).bodVchodSamostatne.y;
+
+                //!! animacia. Right, up, right to the waiting room 
+                java.awt.geom.Point2D p1 = new java.awt.geom.Point2D.Double(startX + 100.0, startY);
+                java.awt.geom.Point2D p2 = new java.awt.geom.Point2D.Double(startX + 100.0, 200.0);
+                java.awt.geom.Point2D p3 = new java.awt.geom.Point2D.Double(500.0, 270.0); 
+
+                pacient.animaciaPacienta.moveTo(t0, dt, p1);
+                pacient.animaciaPacienta.moveTo(t0 + dt, dt, p2);
+                pacient.animaciaPacienta.moveTo(t0 + 2.0 * dt, dtFinal, p3);
+                
+            } else {
+                double cielX = 500.0;
+                java.awt.geom.Point2D ciel = new java.awt.geom.Point2D.Double(cielX, ((MySimulation) mySim()).bodVchodSanitka.y);
+                pacient.animaciaPacienta.moveTo(t0, casPresunu, ciel);
+            }
+        }
+
+		message.setCode(Mc.finish);
+		hold(casPresunu, message);
+	}
+
+	//meta! userInfo="Process messages defined in code", id="0"
+	public void processDefault(MessageForm message)
+	{
+		System.out.println("4.5");
+
+		assistantFinished(message);
+	}
+
+	//meta! userInfo="Generated code: do not modify", tag="begin"
+	@Override
+	public void processMessage(MessageForm message)
+	{
+		switch (message.code())
+		{
+		case Mc.start:
+			processStart(message);
+		break;
+
+		default:
+			processDefault(message);
+		break;
+		}
+	}
+	//meta! tag="end"
+
+	@Override
+	public AgentUrgentPrijmu myAgent()
+	{
+		return (AgentUrgentPrijmu)super.myAgent();
+	}
+}
+package agents.agenturgentprijmu;
+
+import OSPABA.*;
+import simulation.*;
+import agents.agenturgentprijmu.continualassistants.*;
+
+//meta! id="3"
+public class AgentUrgentPrijmu extends OSPABA.Agent
+{
+	public AgentUrgentPrijmu(int id, Simulation mySim, Agent parent)
+	{
+		super(id, mySim, parent);
+		init();
+	}
+
+	@Override
+	public void prepareReplication()
+	{
+		super.prepareReplication();
+		// Setup component for the next replication
+	}
+
+	//meta! userInfo="Generated code: do not modify", tag="begin"
+	private void init()
+	{
+		new ManagerUrgentPrijmu(Id.managerUrgentPrijmu, mySim(), this);
+		new ProcesPresunu(Id.procesPresunu, mySim(), this);
+		addOwnMessage(Mc.vykonatVstupOsetrenie);
+		addOwnMessage(Mc.vykonatOsetrenie);
+		addOwnMessage(Mc.spracovaniePacienta);
+	}
+	//meta! tag="end"
+}
+package gui;
+
+import javax.swing.JFrame;
+
+//** LLM */
+public class OknoGrafu extends JFrame {
+    public PanelGrafu panelGrafu;
+
+    public OknoGrafu() {
+        setTitle("Graf Ustaľovania s Intervalom Spoľahlivosti");
+        setSize(1000, 700);
+        panelGrafu = new PanelGrafu();
+        add(panelGrafu);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);
+    }
+}package gui;
+
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.lang.reflect.Method;
+import java.util.EventObject;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+import simulation.MySimulation;
+import OSPABA.Simulation;
+
+public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
+
+    private Gui _gui;
+    private SimThread _simThread;
+    private MySimulation _mySim;
+
+    private boolean _simMaxSpeedPressed = false;
+    private boolean _animMaxSpeedPressed = false;
+
+    public static int SELECTED_IMAGE_TYPE = 1; 
+
+    private class Prepravka {
+        public Object[] data = null;
+    }
+
+    public GuiLogic(Gui gui) {
+        _gui = gui;
+        _mySim = new MySimulation();
+
+        if (_gui.animatorPanel != null) {
+            _gui.animatorPanel.add(_mySim.animator().canvas());
+            _gui.animatorPanel.revalidate();
+            _gui.animatorPanel.repaint();
+        }
+
+        gui.btnStart.addActionListener(this);
+        gui.btnPause.addActionListener(this);
+        gui.btnStop.addActionListener(this);
+
+        gui.rdioBttonImgType1.addActionListener(e -> SELECTED_IMAGE_TYPE = 1);
+        gui.rdioBttonImgType2.addActionListener(e -> SELECTED_IMAGE_TYPE = 2);
+
+        gui.btnSimMaxSpeed.addActionListener(this);
+        gui.btnCreateAnim.addActionListener(this);
+        gui.btnRemoveAnim.addActionListener(this);
+
+        gui.sliderSimDur.addChangeListener(this);
+        gui.sliderSimInt.addChangeListener(this);
+        gui.chckBoxCreateAnimAfterStart.addItemListener(this);
+    }
+
+    private boolean callActionMethod(EventObject ae, JComponent component, String methodName) {
+        if (ae.getSource() == component) {
+            try {
+                Method method = getClass().getDeclaredMethod(methodName, new Class[]{});
+                method.invoke(this, new Object[]{});
+                return true;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent ae) {
+        if (callActionMethod(ae, _gui.btnStart, "btnStart")) return;
+        if (callActionMethod(ae, _gui.btnPause, "btnPause")) return;
+        if (callActionMethod(ae, _gui.btnStop, "btnStop")) return;
+        if (callActionMethod(ae, _gui.btnSimMaxSpeed, "btnSimMaxSpeed")) return;
+        if (callActionMethod(ae, _gui.btnCreateAnim, "btnCreateAnim")) return;
+        if (callActionMethod(ae, _gui.btnRemoveAnim, "btnRemoveAnim")) return;
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent che) {
+        if (callActionMethod(che, _gui.sliderSimDur, "sliderSimDur")) return;
+        if (callActionMethod(che, _gui.sliderSimInt, "sliderSimInt")) return;
+    }
+
+    @Override
+    public void itemStateChanged(ItemEvent arg0) {}
+
+    public Object[] getSettings() {
+        Prepravka prepravka = new Prepravka();
+
+        invokeInEventDispatchThread(() -> {
+            try {
+                prepravka.data = new Object[17];
+                prepravka.data[0] = Double.parseDouble(_gui.txtTrvanie.getText());
+                prepravka.data[1] = Integer.parseInt(_gui.txtReplikacii.getText());
+                prepravka.data[2] = _gui.sliderSimDur.getValue();
+                prepravka.data[3] = _gui.sliderSimInt.getValue();
+                prepravka.data[6] = _simMaxSpeedPressed;
+                prepravka.data[7] = _animMaxSpeedPressed;
+                prepravka.data[8] = _gui.chckBoxCreateAnimAfterStart.isSelected();
+                prepravka.data[9] = Integer.parseInt(_gui.txtPocetLekarov.getText());
+                prepravka.data[10] = Integer.parseInt(_gui.txtPocetSestier.getText());
+                prepravka.data[11] = Integer.parseInt(_gui.txtZvolenyRezim.getText());
+                prepravka.data[12] = Double.parseDouble(_gui.txtZahrievanie.getText());
+                prepravka.data[13] = _gui.chckBoxTurboRezim.isSelected();
+                prepravka.data[14] = _gui.chckBoxSledovatZahrievanie.isSelected();
+                prepravka.data[15] = _gui.chckBoxMinPocet.isSelected();
+                prepravka.data[16] = _gui.chckBoxRezervSestruAmbulanciuB.isSelected();
+
+            } catch (NumberFormatException e) {
+            }
+        });
+
+        return prepravka.data;
+    }
+
+    public void invokeInEventDispatchThread(Runnable code) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            code.run();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(() -> { code.run(); });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void showResults(String results) {
+        invokeInEventDispatchThread(() -> {
+            _gui.lblResult.setText(results);
+        });
+    }
+
+    @SuppressWarnings("unused")
+    private void btnStart() {
+        if (_simThread != null) {
+            _simThread.stopSim();
+            setGuiDefaultVisage();
+        }
+        _simThread = new SimThread(this, _mySim);
+        _simThread.start();
+    }
+
+    @SuppressWarnings("unused")
+    private void btnPause() {
+        if (_simThread != null) {
+            if (_simThread.getSim().isPaused()) {
+                _simThread.resumeSim();
+                _gui.btnPause.setText("Pause");
+            } else {
+                _simThread.pauseSim();
+                _gui.btnPause.setText("Resume");
+            }
+        }
+    }
+
+    @SuppressWarnings("unused")
+    private void btnStop() {
+        if (_simThread != null) _simThread.stopSim();
+    }
+
+    private void setSimSpeed() {
+        if (_simThread != null) {
+            _simThread.setSimSpeed(
+                    _gui.sliderSimDur.getValue(),
+                    _gui.sliderSimInt.getValue(),
+                    _simMaxSpeedPressed);
+        }
+    }
+
+    @SuppressWarnings("unused")
+    private void btnSimMaxSpeed() {
+        _simMaxSpeedPressed = true;
+        setButtonTextCollor(_gui.btnSimMaxSpeed, Color.RED);
+        setSimSpeed();
+    }
+
+    @SuppressWarnings("unused")
+    public void btnCreateAnim() {
+    }
+
+    @SuppressWarnings("unused")
+    private void btnRemoveAnim() {
+    }
+
+    @SuppressWarnings("unused")
+    private void sliderSimDur() {
+        _simMaxSpeedPressed = false;
+        setButtonTextCollor(_gui.btnSimMaxSpeed, Color.BLACK);
+        setSimSpeed();
+    }
+
+    @SuppressWarnings("unused")
+    private void sliderSimInt() {
+        _simMaxSpeedPressed = false;
+        setButtonTextCollor(_gui.btnSimMaxSpeed, Color.BLACK);
+        setSimSpeed();
+    }
+
+    private void setButtonTextCollor(JButton button, Color color) {
+        button.setForeground(color);
+    }
+
+    private void setGuiDefaultVisage() {
+        _gui.lblSimTime.setText("Simulacny cas:");
+        _gui.btnPause.setText("Pause");
+    }
+
+    public void onRefreshUI(Simulation sim) {
+        //** LLM usage, to specify
+        invokeInEventDispatchThread(() -> {
+            MySimulation simulacia = (MySimulation) sim;
+
+            if (_gui.tableModel != null) {
+                _gui.tableModel.setRowCount(0);
+                for (String[] riadok : simulacia.aktualniPacienti.values()) {
+                    _gui.tableModel.addRow(riadok);
+                }
+            }
+
+            _gui.lblSimTime.setText("Čas: " + formatSimTime(sim.currentTime()));
+        });
+    }
+
+    private String formatSimTime(double timeInSeconds) {
+        long totalSeconds = (long) timeInSeconds;
+        
+        long days = totalSeconds / 86400;
+        long hours = (totalSeconds % 86400) / 3600;
+        long minutes = (totalSeconds % 3600) / 60;
+        long seconds = totalSeconds % 60;
+
+        if (days > 0) {
+            return String.format("%d dni, %02d:%02d:%02d", days, hours, minutes, seconds);
+        } else {
+            return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+        }
+    }
+
+    public void updateProgressBar(int percent) {
+        invokeInEventDispatchThread(() -> {
+            _gui.progressBar.setValue(percent);
+        });
+    }
+}package gui;
+
+import simulation.MySimulation;
+import java.util.ArrayList;
+import java.util.List;
+
+public class SimThread extends Thread {
+
+    private GuiLogic _guiLogic;
+    private MySimulation _sim;
+    private List<Double> dataSanitka;
+    private List<Double> ciSanitka;
+    private List<Double> dataSamostatne;
+    private List<Double> ciSamostatne;
+
+    public SimThread(GuiLogic guiLogic, MySimulation sim) {
+        _guiLogic = guiLogic;
+        _sim = sim;
+        dataSanitka = new ArrayList<>();
+        ciSanitka = new ArrayList<>();
+        dataSamostatne = new ArrayList<>();
+        ciSamostatne = new ArrayList<>();
+    }
+
+    @Override
+    public void run() {
+        try {
+            Object[] settings = _guiLogic.getSettings();
+
+            _sim.onRefreshUI((sim) -> {
+                if (!_sim.configTurboRezim) {
+                    _guiLogic.onRefreshUI(sim);
+                }
+
+                double totalTime = (int) settings[1] * (double) settings[0];
+                double currentOverallTime = (_sim.currentReplication() * (double) settings[0]) + sim.currentTime();
+                int percent = (int) ((currentOverallTime / totalTime) * 100);
+                
+                _guiLogic.updateProgressBar(percent);
+            });
+
+            _sim.onReplicationWillStart((sim) -> {
+                Object[] guiSettings = _guiLogic.getSettings();
+                int duration = (int) guiSettings[2];
+                int interval = (int) guiSettings[3];
+                boolean maxSpeed = (boolean) guiSettings[6];
+
+                if (_sim.configTurboRezim) {
+                    setSimSpeed(duration, interval, true);
+                } else {
+                    setSimSpeed(duration, interval, maxSpeed);
+                }
+            });
+            
+            _sim.onReplicationDidFinish((sim) -> {
+                if (!_sim.configTurboRezim) {
+                    _guiLogic.onRefreshUI(sim);
+                }
+
+                double totalTime = (int) settings[1] * (double) settings[0];
+                double currentOverallTime = ((_sim.currentReplication() + 1) * (double) settings[0]);
+                int percent = (int) ((currentOverallTime / totalTime) * 100);
+                
+                _guiLogic.updateProgressBar(percent);
+
+                if (!(boolean) settings[15]) {
+                    dataSanitka.add(_sim.globalCasCakaniaOsetreniaSanitkou.getGlobalAverage());
+                    ciSanitka.add(_sim.globalCasCakaniaOsetreniaSanitkou.getConfidenceIntervalHalfWidth());
+                    
+                    dataSamostatne.add(_sim.globalCasCakaniaOsetreniaSamostatne.getGlobalAverage());
+                    ciSamostatne.add(_sim.globalCasCakaniaOsetreniaSamostatne.getConfidenceIntervalHalfWidth());
+                }
+            });
+
+            boolean jeOptimalizacnyRezim = (boolean) settings[15];
+
+            _sim.onSimulationDidFinish((sim) -> {
+                if (!jeOptimalizacnyRezim) {
+                    String results = String.format("<html><b>Výsledky (%d replikácií):</b><br>" +
+                        "Vybavení pacienti (priemerne): %.0f<br>" +
+                        "Čas v systéme: %.2f &plusmn; %.2f s<br>" +
+                        "Čakanie na ošetrenie sanitka: %.2f &plusmn; %.2f s<br>" +
+                        "Čakanie na ošetrenie samostatne: %.2f &plusmn; %.2f s<br>" +
+                        "Čakanie na vstup. vyš.: %.2f &plusmn; %.2f s<br>" +
+                        "Dĺžka radu Sanitka: %.2f ľudí<br>" +
+                        "Dĺžka radu Samostatne: %.2f ľudí<br>" +
+                        "Využitie Lekárov: %.2f %%<br>" +
+                        "Využitie Sestier: %.2f %% <br></html>",
+                        (int) settings[1],
+                        _sim.globalVybaveniPacienti.getGlobalAverage(),
+                        _sim.globalCasVSysteme.getGlobalAverage(), _sim.globalCasVSysteme.getConfidenceIntervalHalfWidth(),
+                        _sim.globalCasCakaniaOsetreniaSanitkou.getGlobalAverage(), _sim.globalCasCakaniaOsetreniaSanitkou.getConfidenceIntervalHalfWidth(),
+                        _sim.globalCasCakaniaOsetreniaSamostatne.getGlobalAverage(), _sim.globalCasCakaniaOsetreniaSamostatne.getConfidenceIntervalHalfWidth(),
+                        _sim.globalCasCakaniaVstupVysVsetci.getGlobalAverage(), _sim.globalCasCakaniaVstupVysVsetci.getConfidenceIntervalHalfWidth(),
+                        _sim.globalRadVstupVysetrenieSanitkou.getGlobalAverage(),
+                        _sim.globalRadVstupVysSamostatne.getGlobalAverage(),
+                        _sim.globalVyuzitieLekar.getGlobalAverage(),
+                        _sim.globalVyuzitieSestra.getGlobalAverage()
+                    );
+            
+                    _guiLogic.showResults(results);
+
+                    _guiLogic.invokeInEventDispatchThread(() -> {
+                        OknoGrafu oknoGrafu = new OknoGrafu();
+                        oknoGrafu.panelGrafu.nastavData(dataSanitka, ciSanitka, dataSamostatne, ciSamostatne);
+                        oknoGrafu.setVisible(true);
+                    });
+                }
+            });
+
+            _sim.configRezervovatSestruAmbulanciuB = (boolean) settings[16];
+            _sim.configTurboRezim = (boolean) settings[13];
+            _sim.configSledovatZahrievanie = (boolean) settings[14];
+            _sim.trvanieZahrievania = (double) settings[12];
+            _sim.configZvolenyRezim = (int) settings[11];
+
+            if (!jeOptimalizacnyRezim) {
+                _sim.configPocetLekarov = (int) settings[9];
+                _sim.configPocetSestier = (int) settings[10];
+                dataSanitka.clear();
+                ciSanitka.clear();
+                dataSamostatne.clear();
+                ciSamostatne.clear();
+                _sim.simulate((int) settings[1], (double) settings[0]);
+
+            } else {
+                int pocetLekarov = 1;
+                int pocetSestier = 25;
+
+                StringBuilder log = new StringBuilder();
+                log.append("<html><div style='font-size: 11px;'>");
+                log.append("<b>Priebeh optimalizácie (Limit: San 15m, Sam 30m):</b><br>");
+
+                while (true) {
+                    _guiLogic.showResults(log.toString() + "<i>▶ Hľadám min. lekárov: " + pocetLekarov + " Lek, " + pocetSestier + " Ses...</i></div></html>");
+                    
+                    _sim.configPocetLekarov = pocetLekarov;
+                    _sim.configPocetSestier = pocetSestier;
+                    _sim.simulate((int) settings[1], (double) settings[0]);
+
+                    if (podmienkySplnene(_sim)) {
+                        log.append(String.format("<span style='color:blue;'>Nájdené min. lekárov: %d (pri dočasných %d sestrách)</span><br>", pocetLekarov, pocetSestier));
+                        break;
+                    }
+                    pocetLekarov++;
+                }
+
+                pocetSestier = 1;
+                while (true) {
+                    _guiLogic.showResults(log.toString() + "<i>▶ Hľadám min. sestry: " + pocetLekarov + " Lek, " + pocetSestier + " Ses...</i></div></html>");
+                    
+                    _sim.configPocetLekarov = pocetLekarov;
+                    _sim.configPocetSestier = pocetSestier;
+                    _sim.simulate((int) settings[1], (double) settings[0]);
+
+                    double cakanieSanitka = _sim.globalCasCakaniaOsetreniaSanitkou.getGlobalAverage() / 60.0;
+                    double cakanieSamostatne = _sim.globalCasCakaniaOsetreniaSamostatne.getGlobalAverage() / 60.0;
+
+                    if (podmienkySplnene(_sim)) {
+                        log.append(String.format("<span style='color:green;'>✓ PASS: %d Lek, %d Ses (San: %.1fm, Sam: %.1fm)</span><br>", pocetLekarov, pocetSestier, cakanieSanitka, cakanieSamostatne));
+                        break;
+                    } else {
+                        log.append(String.format("<span style='color:red;'>✗ FAIL: %d Lek, %d Ses (San: %.1fm, Sam: %.1fm)</span><br>", pocetLekarov, pocetSestier, cakanieSanitka, cakanieSamostatne));
+                    }
+                    pocetSestier++;
+                }
+
+                log.append(String.format("<br><div style='background-color:#e6ffe6; padding:8px; border:1px solid green;'><b>VÍŤAZ: %d Lekárov, %d Sestier</b></div></div></html>", pocetLekarov, pocetSestier));
+                _guiLogic.showResults(log.toString());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean podmienkySplnene(MySimulation sim) {
+        boolean sanitkaPass = sim.globalCasCakaniaOsetreniaSanitkou.getGlobalAverage() < 900.0;
+        boolean samostatnePass = sim.globalCasCakaniaOsetreniaSamostatne.getGlobalAverage() < 1800.0;
+        return sanitkaPass && samostatnePass;
+    }
+
+    public MySimulation getSim() {
+        return _sim;
+    }
+
+    public void pauseSim() {
+        if (_sim != null) _sim.pauseSimulation();
+    }
+
+    public void resumeSim() {
+        if (_sim != null) _sim.resumeSimulation();
+    }
+
+    public void stopSim() {
+        if (_sim != null) _sim.stopSimulation();
+    }
+
+    public void setSimSpeed(int duration, int interval, boolean maxSpeed) {
+        if (_sim == null) return;
+
+        if (maxSpeed) {
+            _sim.setMaxSimSpeed();
+        } else {
+            _sim.setSimSpeed(interval, duration);
+        }
+    }
+}package gui;
+
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Polygon;
+import java.awt.RenderingHints;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JPanel;
+
+//** LLM */
+public class PanelGrafu extends JPanel {
+    private List<Double> dataSanitka;
+    private List<Double> ciSanitka;
+    private List<Double> dataSamostatne;
+    private List<Double> ciSamostatne;
+
+    public PanelGrafu() {
+        this.dataSanitka = new ArrayList<>();
+        this.ciSanitka = new ArrayList<>();
+        this.dataSamostatne = new ArrayList<>();
+        this.ciSamostatne = new ArrayList<>();
+    }
+
+    public void nastavData(List<Double> dataSanitka, List<Double> ciSanitka, List<Double> dataSamostatne, List<Double> ciSamostatne) {
+        this.dataSanitka = dataSanitka;
+        this.ciSanitka = ciSanitka;
+        this.dataSamostatne = dataSamostatne;
+        this.ciSamostatne = ciSamostatne;
+        repaint();
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        int sirka = getWidth();
+        int vyska = getHeight();
+        int okraj = 60;
+
+        g2.setColor(Color.WHITE);
+        g2.fillRect(0, 0, sirka, vyska);
+
+        g2.setColor(Color.LIGHT_GRAY);
+        for (int i = 0; i <= 10; i++) {
+            int y = vyska - okraj - (i * (vyska - 2 * okraj) / 10);
+            g2.drawLine(okraj, y, sirka - okraj, y);
+        }
+
+        g2.setColor(Color.BLACK);
+        g2.drawLine(okraj, vyska - okraj, sirka - okraj, vyska - okraj);
+        g2.drawLine(okraj, vyska - okraj, okraj, okraj);
+
+        if (dataSanitka.isEmpty() || dataSamostatne.isEmpty()) {
+            return;
+        }
+
+        double maxHodnota = 0;
+        for (int i = 0; i < dataSanitka.size(); i++) {
+            maxHodnota = Math.max(maxHodnota, dataSanitka.get(i) + ciSanitka.get(i));
+        }
+        for (int i = 0; i < dataSamostatne.size(); i++) {
+            maxHodnota = Math.max(maxHodnota, dataSamostatne.get(i) + ciSamostatne.get(i));
+        }
+        maxHodnota *= 1.1;
+
+        g2.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        FontMetrics fontMetrics = g2.getFontMetrics();
+
+        for (int i = 0; i <= 10; i++) {
+            int y = vyska - okraj - (i * (vyska - 2 * okraj) / 10);
+            String hodnotaLabel = String.format("%.0f", (maxHodnota / 10) * i);
+            int labelSirka = fontMetrics.stringWidth(hodnotaLabel);
+            g2.drawString(hodnotaLabel, okraj - labelSirka - 10, y + (fontMetrics.getAscent() / 2));
+        }
+
+        int pocetBodov = dataSanitka.size();
+        double xKrok = (double) (sirka - 2 * okraj) / Math.max(1, pocetBodov - 1);
+        double yKrok = (vyska - 2 * okraj) / maxHodnota;
+
+        Polygon polySanitka = new Polygon();
+        for (int i = 0; i < pocetBodov; i++) {
+            int x = okraj + (int) (i * xKrok);
+            int y = vyska - okraj - (int) ((dataSanitka.get(i) + ciSanitka.get(i)) * yKrok);
+            polySanitka.addPoint(x, y);
+        }
+        for (int i = pocetBodov - 1; i >= 0; i--) {
+            int x = okraj + (int) (i * xKrok);
+            int y = vyska - okraj - (int) (Math.max(0, dataSanitka.get(i) - ciSanitka.get(i)) * yKrok);
+            polySanitka.addPoint(x, y);
+        }
+        
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.2f));
+        g2.setColor(Color.BLUE);
+        g2.fillPolygon(polySanitka);
+
+        Polygon polySamostatne = new Polygon();
+        for (int i = 0; i < pocetBodov; i++) {
+            int x = okraj + (int) (i * xKrok);
+            int y = vyska - okraj - (int) ((dataSamostatne.get(i) + ciSamostatne.get(i)) * yKrok);
+            polySamostatne.addPoint(x, y);
+        }
+        for (int i = pocetBodov - 1; i >= 0; i--) {
+            int x = okraj + (int) (i * xKrok);
+            int y = vyska - okraj - (int) (Math.max(0, dataSamostatne.get(i) - ciSamostatne.get(i)) * yKrok);
+            polySamostatne.addPoint(x, y);
+        }
+
+        g2.setColor(Color.RED);
+        g2.fillPolygon(polySamostatne);
+
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+
+        g2.setColor(Color.BLUE);
+        for (int i = 0; i < pocetBodov - 1; i++) {
+            int x1 = okraj + (int) (i * xKrok);
+            int y1 = vyska - okraj - (int) (dataSanitka.get(i) * yKrok);
+            int x2 = okraj + (int) ((i + 1) * xKrok);
+            int y2 = vyska - okraj - (int) (dataSanitka.get(i + 1) * yKrok);
+            g2.drawLine(x1, y1, x2, y2);
+        }
+
+        g2.setColor(Color.RED);
+        for (int i = 0; i < pocetBodov - 1; i++) {
+            int x1 = okraj + (int) (i * xKrok);
+            int y1 = vyska - okraj - (int) (dataSamostatne.get(i) * yKrok);
+            int x2 = okraj + (int) ((i + 1) * xKrok);
+            int y2 = vyska - okraj - (int) (dataSamostatne.get(i + 1) * yKrok);
+            g2.drawLine(x1, y1, x2, y2);
+        }
+
+        g2.setColor(Color.BLUE);
+        g2.fillRect(sirka / 2 - 120, 20, 15, 15);
+        g2.setColor(Color.BLACK);
+        g2.drawString("Sanitka (Priemer + 95% IS)", sirka / 2 - 100, 32);
+
+        g2.setColor(Color.RED);
+        g2.fillRect(sirka / 2 + 50, 20, 15, 15);
+        g2.setColor(Color.BLACK);
+        g2.drawString("Samostatne (Priemer + 95% IS)", sirka / 2 + 70, 32);
+    }
+}package gui;
+
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Toolkit;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JSlider;
+import javax.swing.JTextField;
+import javax.swing.plaf.DimensionUIResource;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.JProgressBar;
+import java.awt.BorderLayout;
+
+@SuppressWarnings("serial")
+public class Gui extends JFrame {
+
+    JButton btnStart;
+    JButton btnPause;
+    JButton btnStop;
+
+    JTextField txtTrvanie;
+    JTextField txtReplikacii;
+    JTextField txtZahrievanie;
+    JCheckBox chckBoxTurboRezim;
+    JCheckBox chckBoxRezervSestruAmbulanciuB;
+    JCheckBox chckBoxSledovatZahrievanie;
+    JCheckBox chckBoxMinPocet;
+    JTextField txtPocetLekarov;
+    JTextField txtPocetSestier;
+    JTextField txtZvolenyRezim;
+    JCheckBox chckBoxRezim1Aktivny;
+
+    JRadioButton rdioBttonImgType1;
+    JRadioButton rdioBttonImgType2;
+
+    JLabel lblResult;
+    JLabel lblSimTime;
+
+    JSlider sliderSimDur;
+    JSlider sliderSimInt;
+    JButton btnSimMaxSpeed;
+
+    JSlider sliderAnimDur;
+    JSlider sliderAnimInt;
+    JButton btnAnimMaxSpeed;
+
+    JCheckBox chckBoxCreateAnimAfterStart;
+    JButton btnCreateAnim;
+    JButton btnRemoveAnim;
+
+    DefaultTableModel tableModel;
+    JTable tablePacienti;
+    JProgressBar progressBar;
+
+    JPanel animatorPanel;
+
+    public Gui() {
+        setTitle("Simulácia Urgentného Príjmu");
+        setSize(1600, 800);
+        setMinimumSize(new Dimension(1100, 600));
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setResizable(true);
+        buidGui();
+        setValues();
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+        this.setLocation(dim.width / 2 - this.getSize().width / 2, dim.height / 2 - this.getSize().height / 2);
+    }
+
+    private void setValues() {
+        txtTrvanie.setText("2419200");
+        txtReplikacii.setText("20");
+        txtPocetLekarov.setText("8");
+        txtPocetSestier.setText("10");
+        txtZvolenyRezim.setText("1");
+        txtZahrievanie.setText("1152000"); 
+        chckBoxTurboRezim.setSelected(false);
+        chckBoxRezervSestruAmbulanciuB.setSelected(false);
+        sliderSimDur.setValue(1);
+        sliderSimInt.setValue(500);
+    }
+
+    private void buidGui() {
+        Container container = getContentPane();
+        setLayout(new BoxLayout(container, BoxLayout.PAGE_AXIS));
+
+        container.add(buidTopPanel());
+        container.add(buidBottomPanel());
+    }
+
+    private JPanel createPanel(float xAligment, float yAligment, int layOut) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, layOut));
+        panel.setAlignmentX(xAligment);
+        panel.setAlignmentY(yAligment);
+        return panel;
+    }
+
+    private JPanel buidTopPanel() {
+        JPanel panel = createPanel(0f, 0f, BoxLayout.LINE_AXIS);
+
+        btnStart = new JButton("Start");
+        panel.add(btnStart);
+        panel.add(Box.createRigidArea(new DimensionUIResource(10, 0)));
+
+        btnPause = new JButton("Pauza");
+        panel.add(btnPause);
+        panel.add(Box.createRigidArea(new DimensionUIResource(10, 0)));
+
+        btnStop = new JButton("Stop");
+        panel.add(btnStop);
+        panel.add(Box.createRigidArea(new DimensionUIResource(10, 0)));
+
+        JPanel vstupyPanel = createPanel(0f, 0.5f, BoxLayout.PAGE_AXIS);
+        vstupyPanel.add(createTextInputPanel());
+        vstupyPanel.add(Box.createRigidArea(new DimensionUIResource(0, 5)));
+        vstupyPanel.add(createAnimObjectType());
+
+        panel.add(vstupyPanel);
+        panel.add(Box.createRigidArea(new DimensionUIResource(5, 0)));
+
+        JPanel vystupPanel = createPanel(0f, 0.5f, BoxLayout.PAGE_AXIS);
+
+        JPanel simTimePanel = createPanel(0f, 0f, BoxLayout.LINE_AXIS);
+        simTimePanel.add(Box.createRigidArea(new DimensionUIResource(12, 0)));
+        lblSimTime = new JLabel("Simulacny cas:");
+        lblSimTime.setFont(new Font("SansSerif", Font.BOLD, 22));
+        simTimePanel.add(lblSimTime);
+        simTimePanel.add(Box.createRigidArea(new DimensionUIResource(20, 0)));
+        vystupPanel.add(simTimePanel);
+        vystupPanel.add(Box.createRigidArea(new DimensionUIResource(0, 5)));
+        
+        progressBar = new JProgressBar(0, 100);
+        progressBar.setStringPainted(true);
+        progressBar.setPreferredSize(new Dimension(300, 25));
+        progressBar.setMaximumSize(new Dimension(300, 25));
+        vystupPanel.add(progressBar);
+
+        lblResult = new JLabel("<html><br>Čaká sa na simuláciu...</html>");
+        lblResult.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        vystupPanel.add(lblResult);
+        panel.add(Box.createRigidArea(new DimensionUIResource(0, 15)));
+
+        panel.add(vystupPanel);
+        return panel;
+    }
+
+    private JPanel createTextInputPanel() {
+        JPanel panel = createPanel(0.5f, 0f, BoxLayout.LINE_AXIS);
+
+        panel.add(new JLabel("Trvanie simulacie:"));
+        panel.add(Box.createRigidArea(new DimensionUIResource(5, 0)));
+
+        txtTrvanie = new JTextField();
+        txtTrvanie.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        txtTrvanie.setPreferredSize(new Dimension(100, 20));
+        txtTrvanie.setMaximumSize(new Dimension(100, 20));
+        panel.add(txtTrvanie);
+        panel.add(Box.createRigidArea(new DimensionUIResource(5, 0)));
+
+        panel.add(new JLabel("Pocet replikacii:"));
+        panel.add(Box.createRigidArea(new DimensionUIResource(5, 0)));
+
+        txtReplikacii = new JTextField();
+        txtReplikacii.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        txtReplikacii.setPreferredSize(new Dimension(70, 20));
+        txtReplikacii.setMaximumSize(new Dimension(70, 20));
+        panel.add(txtReplikacii);
+
+        panel.add(Box.createRigidArea(new DimensionUIResource(10, 0)));
+
+        panel.add(new JLabel("Pocet lekarov:"));
+        panel.add(Box.createRigidArea(new DimensionUIResource(5, 0)));
+
+        txtPocetLekarov = new JTextField();
+        txtPocetLekarov.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        txtPocetLekarov.setPreferredSize(new Dimension(70, 20));
+        txtPocetLekarov.setMaximumSize(new Dimension(70, 20));
+        panel.add(txtPocetLekarov);
+
+        panel.add(Box.createRigidArea(new DimensionUIResource(10, 0)));
+
+        panel.add(new JLabel("Pocet sestier:"));
+        panel.add(Box.createRigidArea(new DimensionUIResource(5, 0)));
+
+        txtPocetSestier = new JTextField();
+        txtPocetSestier.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        txtPocetSestier.setPreferredSize(new Dimension(70, 20));
+        txtPocetSestier.setMaximumSize(new Dimension(70, 20));
+        panel.add(txtPocetSestier);
+
+        panel.add(Box.createRigidArea(new DimensionUIResource(10, 0)));
+
+        panel.add(new JLabel("Zahrievanie (s):"));
+        panel.add(Box.createRigidArea(new DimensionUIResource(5, 0)));
+
+        txtZahrievanie = new JTextField();
+        txtZahrievanie.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        txtZahrievanie.setPreferredSize(new Dimension(70, 20));
+        txtZahrievanie.setMaximumSize(new Dimension(70, 20));
+        panel.add(txtZahrievanie);
+
+        return panel;
+    }
+
+    private JPanel createAnimObjectType() {
+        JPanel panel = createPanel(0.5f, 0f, BoxLayout.LINE_AXIS);
+
+        rdioBttonImgType1 = new JRadioButton("Obrázok Typ 1 (Samostatne)");
+        panel.add(rdioBttonImgType1);
+        rdioBttonImgType1.setSelected(true);
+
+        panel.add(Box.createRigidArea(new DimensionUIResource(5, 0)));
+
+        rdioBttonImgType2 = new JRadioButton("Obrázok Typ 2 (Sanitka)");
+        panel.add(rdioBttonImgType2);
+
+        ButtonGroup group = new ButtonGroup();
+        group.add(rdioBttonImgType1);
+        group.add(rdioBttonImgType2);
+
+        return panel;
+    }
+
+    private JPanel buidBottomPanel() {
+        JPanel panel = createPanel(0f, 0f, BoxLayout.LINE_AXIS);
+        JPanel leftPanel = createPanel(0f, 0f, BoxLayout.PAGE_AXIS);
+
+        txtZvolenyRezim = new JTextField();
+        txtZvolenyRezim.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        txtZvolenyRezim.setPreferredSize(new Dimension(70, 20));
+        txtZvolenyRezim.setMaximumSize(new Dimension(70, 20));
+        leftPanel.add(txtZvolenyRezim);
+
+        chckBoxTurboRezim = new JCheckBox("Turbo Režim");
+        chckBoxTurboRezim.setAlignmentX(0.5f);
+        leftPanel.add(chckBoxTurboRezim);
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+
+        chckBoxRezervSestruAmbulanciuB = new JCheckBox("Rezerv. sestru a Ambulanciu B");
+        chckBoxRezervSestruAmbulanciuB.setAlignmentX(0.5f);
+        leftPanel.add(chckBoxRezervSestruAmbulanciuB);
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+
+        chckBoxMinPocet = new JCheckBox("Min. počet analýza");
+        leftPanel.add(chckBoxMinPocet);
+        leftPanel.add(Box.createRigidArea(new DimensionUIResource(10, 0)));
+
+        chckBoxSledovatZahrievanie = new JCheckBox("Analýza Zahrievania (CSV)");
+        leftPanel.add(chckBoxSledovatZahrievanie);
+        leftPanel.add(Box.createRigidArea(new DimensionUIResource(10, 0)));
+
+        JLabel lblSimDur = new JLabel("Sim. trvanie pauzy");
+        lblSimDur.setAlignmentX(0.5f);
+        leftPanel.add(lblSimDur);
+
+        sliderSimDur = new JSlider(JSlider.HORIZONTAL, 1, 10, 10);
+        sliderSimDur.setMajorTickSpacing(2);
+        sliderSimDur.setPaintTicks(true);
+        sliderSimDur.setPaintLabels(true);
+        sliderSimDur.setMaximumSize(new Dimension(150, 50));
+        leftPanel.add(sliderSimDur);
+
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+
+        JLabel lblSimInt = new JLabel("Sim. interval mdzi pauzami");
+        lblSimInt.setAlignmentX(0.5f);
+        leftPanel.add(lblSimInt);
+
+        sliderSimInt = new JSlider(JSlider.HORIZONTAL, 1, 1000, 100);
+        sliderSimInt.setMajorTickSpacing(200);
+        sliderSimInt.setPaintTicks(true);
+        sliderSimInt.setPaintLabels(true);
+        sliderSimInt.setMaximumSize(new Dimension(150, 50));
+        leftPanel.add(sliderSimInt);
+
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+
+        btnSimMaxSpeed = new JButton("Sim. max. speed");
+        btnSimMaxSpeed.setAlignmentX(0.5f);
+        leftPanel.add(btnSimMaxSpeed);
+
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+
+        JLabel lblAnimDur = new JLabel("Anim. trvanie interevalu");
+        lblAnimDur.setAlignmentX(0.5f);
+        leftPanel.add(lblAnimDur);
+
+        sliderAnimDur = new JSlider(JSlider.HORIZONTAL, 0, 100, 100);
+        sliderAnimDur.setMajorTickSpacing(20);
+        sliderAnimDur.setPaintTicks(true);
+        sliderAnimDur.setPaintLabels(true);
+        sliderAnimDur.setMaximumSize(new Dimension(150, 50));
+        leftPanel.add(sliderAnimDur);
+
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+
+        chckBoxCreateAnimAfterStart = new JCheckBox("Vytvor Anim. po starte");
+        chckBoxCreateAnimAfterStart.setAlignmentX(0.5f);
+        chckBoxCreateAnimAfterStart.setVisible(false);
+        leftPanel.add(chckBoxCreateAnimAfterStart);
+
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+
+        btnCreateAnim = new JButton("Vytvor Animator");
+        btnCreateAnim.setAlignmentX(0.5f);
+        leftPanel.add(btnCreateAnim);
+
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+
+        btnRemoveAnim = new JButton("Vymaz Animator");
+        btnRemoveAnim.setAlignmentX(0.5f);
+        leftPanel.add(btnRemoveAnim);
+
+        panel.add(leftPanel);
+
+    animatorPanel = new JPanel(new BorderLayout());
+    animatorPanel.setAlignmentY(0f);
+    panel.add(animatorPanel);
+
+        //** LLM usage, to specify
+        // String[] stlpce = {"ID Pacienta", "Typ", "Aktuálny Stav", "Čas Príchodu"};
+        // tableModel = new DefaultTableModel(stlpce, 0);
+        // tablePacienti = new JTable(tableModel);
+        // JScrollPane scrollPane = new JScrollPane(tablePacienti);
+        // scrollPane.setAlignmentY(0f);
+        // panel.add(scrollPane);
+
+        return panel;
+    }
+}import gui.Gui;
+import gui.GuiLogic;
+
+public class App {
+    public static void main(String[] args) {
+        Gui mainWindow = new Gui();
+        new GuiLogic(mainWindow);
+        mainWindow.setVisible(true);
+    }
+}package generators;
+
+import java.util.Random;
+
+public class ExponencialnyGenerator {
+    private Random random;
+    private double lambda;
+
+    public ExponencialnyGenerator(double lambda, int seed) {
+        this.random = new Random(seed);
+        this.lambda = lambda;
+    }
+
+    public double sample() {
+        return Math.log(1 - random.nextDouble()) / (-lambda);
+    }
+}package generators;
+import java.util.Random;
+
+//** Na Vytvorenie Kódu Bol Použitý LLM */
+public class LognormalnyGenerator {
+    private Random random;
+    private double mu;
+    private double sigma;
+
+    public LognormalnyGenerator(double mu, double sigma, int seed) {
+        this.random = new Random(seed);
+        this.mu = mu;
+        this.sigma = sigma;
+    }
+
+    public double sample() {
+        double normalValue = mu + sigma * random.nextGaussian();
+        
+        return Math.exp(normalValue);
+    }
+}package generators;
+
+import java.util.Random;
+
+/// Na Vytvorenie Kódu Bol Použitý LLM. Kapitola 1.A /// 
+public class TrojuholnikovyGenerator {
+    private Random random;
+    private double min;
+    private double mode;
+    private double max;
+
+    public TrojuholnikovyGenerator(double min, double mode, double max, int seed) {
+        this.random = new Random(seed);
+        this.min = min;
+        this.mode = mode;
+        this.max = max;
+    }
+
+    public double sample() {
+        double u = random.nextDouble();
+        double f = (mode - min) / (max - min);
+        if (u < f) {
+            return min + Math.sqrt(u * (max - min) * (mode - min));
+        } else {
+            return max - Math.sqrt((1 - u) * (max - min) * (max - mode));
+        }
+    }
+}package generators;
+import java.util.Random;
+
+//** Na Vytvorenie Kódu Bol Použitý LLM */
+public class EmpirickyGenerator {
+    private Random random;
+    private double[] cumulativeProbs;
+    private double[] values;
+
+    public EmpirickyGenerator(double[] probabilities, double[] values, int seed) {
+        this.random = new Random(seed);
+        this.values = values;
+        
+        this.cumulativeProbs = new double[probabilities.length];
+        double suma = 0.0;
+        for (int i = 0; i < probabilities.length; i++) {
+            suma += probabilities[i];
+            this.cumulativeProbs[i] = suma;
+        }
+    }
+
+    public double sample() {
+        double val = random.nextDouble();
+        
+        for (int i = 0; i < cumulativeProbs.length; i++) {
+            if (val < cumulativeProbs[i]) {
+                return values[i];
+            }
+        }
+        return values[values.length - 1]; 
+    }
+}package generators;
+import java.util.Random;
+
+public class RovnomernyDisktretnyGenerator {
+    private Random random;
+    private int min;
+    private int max;
+
+    public RovnomernyDisktretnyGenerator(int min, int max, int seed) {
+        this.random = new Random(seed);
+        this.min = min;
+        this.max = max;
+    }
+
+    public int sample() {
+        return random.nextInt((max - min) + 1) + min;
+    }
+}package generators;
+import java.util.Random;
+
+public class SpojityEmpirickyGenerator {
+    private Random random;
+    private double[] cumulativeProbs;
+    private double[] minValues;
+    private double[] maxValues;
+
+    public SpojityEmpirickyGenerator(double[] probabilities, double[] minValues, double[] maxValues, int seed) {
+        this.random = new Random(seed);
+        this.minValues = minValues;
+        this.maxValues = maxValues;
+        
+        this.cumulativeProbs = new double[probabilities.length];
+        double sum = 0.0;
+        for (int i = 0; i < probabilities.length; i++) {
+            sum += probabilities[i];
+            this.cumulativeProbs[i] = sum;
+        }
+    }
+
+    public double sample() {
+        double val = random.nextDouble();
+        
+        for (int i = 0; i < cumulativeProbs.length; i++) {
+            if (val < cumulativeProbs[i]) {
+                double min = minValues[i];
+                double max = maxValues[i];
+                return min + (random.nextDouble() * (max - min));
+            }
+        }
+        
+        double minFallback = minValues[minValues.length - 1];
+        double maxFallback = maxValues[maxValues.length - 1];
+        return minFallback + (random.nextDouble() * (maxFallback - minFallback));
+    }
+}package generators;
+
+import java.util.Random;
+
+public class UniformGenerator {
+    private Random random;
+    private double min;
+    private double max;
+
+    public UniformGenerator(double min, double max, int seed) {
+        this.random = new Random(seed);
+        this.min = min;
+        this.max = max;
+    }
+
+    public double sample() {
+        return min + (max - min) * random.nextDouble();
+    }
+}package entities;
+
+public abstract class Pracovnik {
+    public int id;
+    public String lokacia;
+    public OSPAnimator.AnimItem animaciaPracovnika;
+
+    public Pracovnik(int id, String lokacia) {
+        this.id = id;
+        this.lokacia = lokacia;
+    }
+}
+package entities;
+
+public class Lekar extends Pracovnik {
+    public Lekar(int id, String lokacia) {
+        super(id, lokacia);
+    }
+    
+}
+package entities;
+
+public class Sestra extends Pracovnik {
+    public Sestra(int id, String lokacia) {
+        super(id, lokacia);
+    }
+    
+}
+package entities;
+
+public class Ambulancia {
+    public int id;
+    public String typ;
+    public String lokacia;
+
+    public Ambulancia(int id, String typ, String lokacia) {
+        this.id = id;
+        this.typ = typ;
+        this.lokacia = lokacia;
+    }
+}

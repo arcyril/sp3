@@ -26,6 +26,16 @@ public class SimThread extends Thread {
     public void run() {
         try {
             Object[] settings = _guiLogic.getSettings();
+            // boolean isTurbo = (boolean) settings[13];
+            // boolean isMinPocet = (boolean) settings[15];
+            // boolean isZahrievanie = (boolean) settings[14];
+
+            // if (isTurbo || isMinPocet || isZahrievanie) {
+            //     _guiLogic.invokeInEventDispatchThread(() -> {
+            //         // Force the UI to switch to the Tabuľka stavov (Index 1)
+            //         _guiLogic._gui.tabbedPane.setSelectedIndex(1);
+            //     });
+            // }
 
             _sim.onRefreshUI((sim) -> {
                 if (!_sim.configTurboRezim) {
