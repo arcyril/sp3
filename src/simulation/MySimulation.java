@@ -60,6 +60,7 @@ public class MySimulation extends OSPABA.Simulation
 
 	//** LLM usage, to specify
 	public ConcurrentHashMap<Integer, String[]> aktualniPacienti = new ConcurrentHashMap<>();
+	public java.util.concurrent.ConcurrentHashMap<String, String> stavAmbulancii = new java.util.concurrent.ConcurrentHashMap<>();
 
 	//!! ANIMACIA
 	public OSPAnimator.AnimQueue[] animRadyOsetrenie = new OSPAnimator.AnimQueue[5];
@@ -130,9 +131,12 @@ public class MySimulation extends OSPABA.Simulation
         wstatVyuzitieLekar.clear();
         wstatVyuzitieSestra.clear();
         statVybaveniPacienti.clear();
+		stavAmbulancii.clear();
+        for (int i = 1; i <= 5; i++) stavAmbulancii.put("A" + i, "Voľná");
+        for (int i = 1; i <= 7; i++) stavAmbulancii.put("B" + i, "Voľná");
 
+		//!!
 		zahriate = false;
-
 		poslednyZaznamenanyInterval = -1;
 
 		if (animatorExists()) {
@@ -166,8 +170,8 @@ public class MySimulation extends OSPABA.Simulation
         globalVybaveniPacienti.addReplicationData(statVybaveniPacienti.getAverage() * statVybaveniPacienti.getCount(), 0);
 
 		//??
-		System.out.println("End of Replication: " + currentReplication());
-        System.out.println("Avg Time in System: " + statCasVSysteme.getAverage() + " seconds");
+		// System.out.println("End of Replication: " + currentReplication());
+        // System.out.println("Avg Time in System: " + statCasVSysteme.getAverage() + " seconds");
 	}
 
 	@Override
@@ -177,17 +181,17 @@ public class MySimulation extends OSPABA.Simulation
 		super.simulationFinished();
 
 		//??
-		System.out.println("\n====== SIMULATION FINISHED ======");
-        System.out.println("GLOBAL Avg Wait for Treatment Samostatne: " + globalCasCakaniaOsetreniaSamostatne.getGlobalAverage());
-        System.out.println("95% CI Wait for Treatment: +/- " + globalCasCakaniaOsetreniaSamostatne.getConfidenceIntervalHalfWidth());
+		// System.out.println("\n====== SIMULATION FINISHED ======");
+        // System.out.println("GLOBAL Avg Wait for Treatment Samostatne: " + globalCasCakaniaOsetreniaSamostatne.getGlobalAverage());
+        // System.out.println("95% CI Wait for Treatment: +/- " + globalCasCakaniaOsetreniaSamostatne.getConfidenceIntervalHalfWidth());
 
-		System.out.println("GLOBAL Avg Wait for Treatment Sanitka: " + globalCasCakaniaOsetreniaSanitkou.getGlobalAverage());
-        System.out.println("95% CI Wait for Treatment: +/- " + globalCasCakaniaOsetreniaSanitkou.getConfidenceIntervalHalfWidth());
+		// System.out.println("GLOBAL Avg Wait for Treatment Sanitka: " + globalCasCakaniaOsetreniaSanitkou.getGlobalAverage());
+        // System.out.println("95% CI Wait for Treatment: +/- " + globalCasCakaniaOsetreniaSanitkou.getConfidenceIntervalHalfWidth());
 
         
-        System.out.println("GLOBAL Avg Time in System: " + globalCasVSysteme.getGlobalAverage());
-        System.out.println("95% CI Time in System: +/- " + globalCasVSysteme.getConfidenceIntervalHalfWidth());
-        System.out.println("=================================");
+        // System.out.println("GLOBAL Avg Time in System: " + globalCasVSysteme.getGlobalAverage());
+        // System.out.println("95% CI Time in System: +/- " + globalCasVSysteme.getConfidenceIntervalHalfWidth());
+        // System.out.println("=================================");
 	}
 
 	public void refreshUI()

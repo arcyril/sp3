@@ -108,47 +108,36 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
         }
 
 		if (pacient.priradenaMiestnost != null) {
-			volneAmbulancieB.add(pacient.priradenaMiestnost);
-		}
+            volneAmbulancieB.add(pacient.priradenaMiestnost);
+            sim.stavAmbulancii.put(pacient.priradenaMiestnost.typ + pacient.priradenaMiestnost.id, "Voľná");
+        }
+
+        if (sim.aktualniPacienti.containsKey(pacient.idPacienta)) {
+            sim.aktualniPacienti.get(pacient.idPacienta)[2] = "Čaká v rade na ošetrenie";
+        }
 
 		pacient.priradenaSestra = null;
         pacient.priradenaMiestnost = null;
 		
 		ManagerOsetrenia manOsetrenia = (ManagerOsetrenia) ((MySimulation)mySim()).agentOsetrenia().myManager();
-		//!! ANIMACIA
-		if (sim.animatorExists() && pacient.animaciaPacienta != null) {
-            sim.animRadyOsetrenie[pacient.priorita - 1].insert(pacient.animaciaPacienta);
-        }
-        manOsetrenia.pridatDoRadu(pacient);
+		
+		manOsetrenia.pridatDoRadu(pacient);
 
-		//!! ANIMACIA
-		if (sim.animatorExists() && pacient.animaciaPacienta != null) {
-            int pocetVrade = manOsetrenia.pocetCakajucichPriorita(1) + 
-                             manOsetrenia.pocetCakajucichPriorita(2) + 
-                             manOsetrenia.pocetCakajucichPriorita(3) + 
-                             manOsetrenia.pocetCakajucichPriorita(4) + 
-                             manOsetrenia.pocetCakajucichPriorita(5) - 1;
-            
-            if (pocetVrade < 0) pocetVrade = 0;
+		int pocetVrade = manOsetrenia.pocetCakajucichPriorita(1) + 
+                         manOsetrenia.pocetCakajucichPriorita(2) + 
+                         manOsetrenia.pocetCakajucichPriorita(3) + 
+                         manOsetrenia.pocetCakajucichPriorita(4) + 
+                         manOsetrenia.pocetCakajucichPriorita(5) - 1;
+                         
+        simulation.AnimationHelper.pridatDoRaduOsetrenia(sim, pacient, pocetVrade);
 
-            double frontX = 730.0;
-            double targetX = frontX - (pocetVrade * 60.0);
-            double targetY = (7 * 66.0) + 200.0; 
-            
-            if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
-                targetY += 40.0; 
-            }
-
-            pacient.animaciaPacienta.setPosition(new java.awt.geom.Point2D.Double(targetX, targetY));
-        }
-
-		pridelitZdroje();	
+        pridelitZdroje();	
 	}
 
 	//meta! sender="AgentOsetrenia", id="18", type="Response"
 	public void processVykonatOsetrenie(MessageForm message)
 	{
-		System.out.println("13 response is sent from AgentOsetrenia");
+		// System.out.println("13 response is sent from AgentOsetrenia");
 
 		MyMessage pacient = (MyMessage) message;
 		MySimulation sim = (MySimulation) mySim();
@@ -172,20 +161,22 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 			}
 		}
 
+		sim.stavAmbulancii.put(pacient.priradenaMiestnost.typ + pacient.priradenaMiestnost.id, "Voľná");
+
 		pacient.priradenyLekar = null;
         pacient.priradenaSestra = null;
 		pacient.priradenaMiestnost = null;
+		
+		pridelitZdroje();
 
 		message.setCode(Mc.spracovaniePacienta);
 		response(message);
-
-		pridelitZdroje();
 	}
 
 	//meta! sender="ProcesPresunu", id="30", type="Finish"
 	public void processFinish(MessageForm message)
 	{
-		System.out.println("5 processFinish runs after procesPresunu");
+		// System.out.println("5 processFinish runs after procesPresunu");
 
 		MyMessage pacient = (MyMessage) message;
 		ManagerVstupVysetrenia manVstup = (ManagerVstupVysetrenia) ((MySimulation)mySim()).agentVstupVysetrenia().myManager();
@@ -236,7 +227,7 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 	//meta! sender="AgentModelu", id="16", type="Request"
 	public void processSpracovaniePacienta(MessageForm message)
 	{
-		System.out.println("3 processSpracovaniePacienta");
+		// System.out.println("3 processSpracovaniePacienta");
 		//!! PROCESS PRESUNU
 		message.setAddressee(Id.procesPresunu);
 		startContinualAssistant(message);
@@ -352,6 +343,11 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 			sim.wstatVyuzitieSestra.update(sim.currentTime(), busySestry);
         }
 
+		sim.stavAmbulancii.put(miestnost.typ + miestnost.id, "Obsadená (Pacient ID: " + pacient.idPacienta + ")");
+        if (sim.aktualniPacienti.containsKey(pacient.idPacienta)) {
+            sim.aktualniPacienti.get(pacient.idPacienta)[2] = "Ošetrenie (" + miestnost.typ + miestnost.id + ")";
+        }
+
         pacient.setAddressee(Id.agentOsetrenia);
         pacient.setCode(Mc.vykonatOsetrenie);
         request(pacient);
@@ -396,6 +392,7 @@ public class ManagerUrgentPrijmu extends OSPABA.Manager
 			sim.wstatVyuzitieSestra.update(sim.currentTime(), busySestry);
         }
 
+		sim.stavAmbulancii.put(miestnost.typ + miestnost.id, "Obsadená (Pacient ID: " + pacient.idPacienta + ")");
 
         pacient.setAddressee(Id.agentVstupVysetrenia);
         pacient.setCode(Mc.vykonatVstupOsetrenie);

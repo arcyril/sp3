@@ -105,4 +105,23 @@ public class AnimationHelper {
             }
         }
     }
+
+    public static void pridatDoRaduOsetrenia(MySimulation sim, MyMessage pacient, int pocetVrade) {
+        if (sim.animatorExists() && pacient.animaciaPacienta != null) {
+            sim.animRadyOsetrenie[pacient.priorita - 1].insert(pacient.animaciaPacienta);
+
+            if (pocetVrade < 0) pocetVrade = 0;
+
+            double frontX = 730.0;
+            double targetX = frontX - (pocetVrade * 60.0);
+            double targetY = (7 * 66.0) + 200.0; 
+            
+            if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
+                targetY += 40.0; 
+            }
+
+            // Okamžite ho presunie na správnu pozíciu
+            pacient.animaciaPacienta.setPosition(new java.awt.geom.Point2D.Double(targetX, targetY));
+        }
+    }
 }

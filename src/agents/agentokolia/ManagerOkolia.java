@@ -27,8 +27,8 @@ private UniformGenerator genCasOdchodu;
 			petriNet().clear();
 		}
 
-		System.out.println("manager okolia test, time " + mySim().currentTime());
-		System.out.println("Mc.start " + Mc.start);
+		// System.out.println("manager okolia test, time " + mySim().currentTime());
+		// System.out.println("Mc.start " + Mc.start);
 		
 		genCasOdchodu = new UniformGenerator(150.0, 240.0, ((MySimulation)mySim()).masterRandom.nextInt());
 		//?? maybe if statement
@@ -66,13 +66,15 @@ private UniformGenerator genCasOdchodu;
 			sim.statVybaveniPacienti.addValue(1.0);
         }
 
+		((MySimulation)mySim()).aktualniPacienti.remove(pacient.idPacienta);
+
 		((MySimulation)mySim()).logWarmupData(mySim().currentTime());
 	}
 
 	//meta! sender="PlanovacPrichodovSamostatne", id="26", type="Notice"
 	public void processPrisielSamostatne(MessageForm message)
 	{
-		System.out.println("1 processPrisielSamostatne");
+		// System.out.println("1 processPrisielSamostatne");
 		message.setAddressee(Id.agentModelu); // ((MySimulation)mySim()).agentModelu()
 		message.setCode(Mc.pacientPrisiel); 
 		notice(message);

@@ -43,10 +43,10 @@ public class ProcesOsetrenia extends OSPABA.Process
 		
 		if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
             casOsetreniaSekundy = casOsetreniaSamostatneGen.sample() * 60.0; 
-			System.out.println("11 ProcesOsetrenia SAM");
+			// System.out.println("11 ProcesOsetrenia SAM");
 		} else {
 			casOsetreniaSekundy = casOsetreniaSanitkouGen.sample() * 60.0;
-			System.out.println("11 ProcesOsetrenia SANITKOU");
+			// System.out.println("11 ProcesOsetrenia SANITKOU");
 		}
 
 		// double casPresunuPersonalu = genCasPresunuPersonalu.sample();
@@ -65,7 +65,7 @@ public class ProcesOsetrenia extends OSPABA.Process
 		// switch (message.code())
 		// {
 		// }
-		System.out.println("11.5 ProcesOsetrenia IS FINISHING");
+		// System.out.println("11.5 ProcesOsetrenia IS FINISHING");
 		assistantFinished(message);
 	}
 

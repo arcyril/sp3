@@ -31,7 +31,7 @@ public class ProcesPresunu extends OSPABA.Process
 	//meta! sender="AgentUrgentPrijmu", id="30", type="Start"
 	public void processStart(MessageForm message)
 	{
-		System.out.println( "4 processStart ProcesPresunu. Time: " + mySim().currentTime());
+		// System.out.println( "4 processStart ProcesPresunu. Time: " + mySim().currentTime());
 
 		MyMessage pacient = (MyMessage) message;
         double casPresunu = 0.0;
@@ -52,7 +52,7 @@ public class ProcesPresunu extends OSPABA.Process
 	//meta! userInfo="Process messages defined in code", id="0"
 	public void processDefault(MessageForm message)
 	{
-		System.out.println("4.5");
+		// System.out.println("4.5");
 
 		assistantFinished(message);
 	}

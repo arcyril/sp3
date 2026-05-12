@@ -34,7 +34,7 @@ public class ManagerVstupVysetrenia extends OSPABA.Manager
 	//meta! sender="AgentUrgentPrijmu", id="17", type="Request"
 	public void processVykonatVstupOsetrenie(MessageForm message)
 	{
-		System.out.println("6 processVykonatVstupOsetrenie");
+		// System.out.println("6 processVykonatVstupOsetrenie");
 		message.setAddressee(Id.procesVstupVysetrenia);
 		startContinualAssistant(message);
 	}
@@ -42,7 +42,7 @@ public class ManagerVstupVysetrenia extends OSPABA.Manager
 	//meta! sender="ProcesVstupVysetrenia", id="35", type="Finish"
 	public void processFinish(MessageForm message)
 	{
-		System.out.println("9 processFinish of ProcesVstupVysetrenia");
+		// System.out.println("9 processFinish of ProcesVstupVysetrenia");
 
 		message.setCode(Mc.vykonatVstupOsetrenie);
 		response(message);

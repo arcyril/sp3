@@ -34,7 +34,7 @@ public class PlanovacPrichodovSanitkou extends OSPABA.Scheduler
 				hold(prichodSanitkouGen.sample(), message);
 				break;
 			default:
-				System.out.println("Time: " + String.format("%.2f", mySim().currentTime()) + ", pacient prisiel sanitkou");
+				// System.out.println("Time: " + String.format("%.2f", mySim().currentTime()) + ", pacient prisiel sanitkou");
 
 				MyMessage novyPacient = new MyMessage(mySim());
 				novyPacient.setTypPacienta(simulation.Constants.PACIENT_SANITKOU); 

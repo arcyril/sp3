@@ -28,19 +28,19 @@ public class PlanovacPrichodovSamostatne extends OSPABA.Scheduler
 	//meta! userInfo="Process messages defined in code", id="0"
 	public void processDefault(MessageForm message)
 	{
-		System.out.println("planovac prichodov sam. Kod " + message.code() + ", Mc.start = " + Mc.start);
+		// System.out.println("planovac prichodov sam. Kod " + message.code() + ", Mc.start = " + Mc.start);
 		switch (message.code())
 		{
 			case Mc.start:
 				double prvyPrichod = prichodSamGen.sample();
-				System.out.println("Planujem prvy prichod o: " + prvyPrichod + " sekund");
+				// System.out.println("Planujem prvy prichod o: " + prvyPrichod + " sekund");
 				//!!
 				message.setCode(Mc.prisielSamostatne);
 				hold(prvyPrichod, message);
 				break;
 				
 			default:
-				System.out.println("čas: " + mySim().currentTime() + ", pacient prisiel");
+				// System.out.println("čas: " + mySim().currentTime() + ", pacient prisiel");
 				//!!
 				MyMessage novyPacient = new MyMessage(mySim());
 				novyPacient.setTypPacienta(simulation.Constants.PACIENT_SAMOSTATNE); 

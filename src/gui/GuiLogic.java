@@ -25,7 +25,7 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
     private boolean _simMaxSpeedPressed = false;
     private boolean _animMaxSpeedPressed = false;
 
-    public static int SELECTED_IMAGE_TYPE = 1; 
+    // public static int SELECTED_IMAGE_TYPE = 1; 
 
     private class Prepravka {
         public Object[] data = null;
@@ -45,8 +45,8 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
         gui.btnPause.addActionListener(this);
         gui.btnStop.addActionListener(this);
 
-        gui.rdioBttonImgType1.addActionListener(e -> SELECTED_IMAGE_TYPE = 1);
-        gui.rdioBttonImgType2.addActionListener(e -> SELECTED_IMAGE_TYPE = 2);
+        // gui.rdioBttonImgType1.addActionListener(e -> SELECTED_IMAGE_TYPE = 1);
+        // gui.rdioBttonImgType2.addActionListener(e -> SELECTED_IMAGE_TYPE = 2);
 
         gui.btnSimMaxSpeed.addActionListener(this);
         gui.btnCreateAnim.addActionListener(this);
@@ -215,15 +215,30 @@ public class GuiLogic implements ActionListener, ChangeListener, ItemListener {
         //** LLM usage, to specify
         invokeInEventDispatchThread(() -> {
             MySimulation simulacia = (MySimulation) sim;
+            _gui.lblSimTime.setText("Čas: " + formatSimTime(sim.currentTime()));
 
-            if (_gui.tableModel != null) {
-                _gui.tableModel.setRowCount(0);
-                for (String[] riadok : simulacia.aktualniPacienti.values()) {
-                    _gui.tableModel.addRow(riadok);
+            if (_gui.tabbedPane != null && _gui.tabbedPane.getSelectedIndex() == 1) {
+                
+                if (_gui.tableModel != null) {
+                    _gui.tableModel.setRowCount(0);
+                    for (String[] riadok : simulacia.aktualniPacienti.values()) {
+                        _gui.tableModel.addRow(riadok);
+                    }
+                }
+                
+                if (_gui.tableAmbulancieModel != null) {
+                    _gui.tableAmbulancieModel.setRowCount(0);
+                    for (int i = 1; i <= 5; i++) {
+                        String key = "A" + i;
+                        _gui.tableAmbulancieModel.addRow(new Object[]{key, simulacia.stavAmbulancii.getOrDefault(key, "Voľná")});
+                    }
+                    for (int i = 1; i <= 7; i++) {
+                        String key = "B" + i;
+                        _gui.tableAmbulancieModel.addRow(new Object[]{key, simulacia.stavAmbulancii.getOrDefault(key, "Voľná")});
+                    }
                 }
             }
 
-            _gui.lblSimTime.setText("Čas: " + formatSimTime(sim.currentTime()));
         });
     }
 

@@ -73,7 +73,7 @@ public class ManagerOsetrenia extends OSPABA.Manager
 	//meta! sender="AgentUrgentPrijmu", id="18", type="Request"
 	public void processVykonatOsetrenie(MessageForm message)
 	{
-		System.out.println("10 processVykonatOsetrenie");
+		// System.out.println("10 processVykonatOsetrenie");
 		message.setAddressee(Id.procesOsetrenia);
 		startContinualAssistant(message);
 	}
@@ -81,7 +81,7 @@ public class ManagerOsetrenia extends OSPABA.Manager
 	//meta! sender="ProcesOsetrenia", id="37", type="Finish"
 	public void processFinish(MessageForm message)
 	{
-		System.out.println("12 ProcesOsetrenia IS FINISHED");
+		// System.out.println("12 ProcesOsetrenia IS FINISHED");
 
 		message.setCode(Mc.vykonatOsetrenie);
 		response(message);

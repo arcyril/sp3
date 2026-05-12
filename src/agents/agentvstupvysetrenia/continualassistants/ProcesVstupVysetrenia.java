@@ -40,9 +40,13 @@ public class ProcesVstupVysetrenia extends OSPABA.Process
 	//meta! sender="AgentVstupVysetrenia", id="35", type="Start"
 	public void processStart(MessageForm message)
 	{
-		System.out.println("7 processStart of ProcesVstupVysetrenia");
+		// System.out.println("7 processStart of ProcesVstupVysetrenia");
 		MyMessage pacient = (MyMessage) message;
 		double casVstupVysetreniaSekundy;
+
+		if (((MySimulation)mySim()).aktualniPacienti.containsKey(pacient.idPacienta)) {
+            ((MySimulation)mySim()).aktualniPacienti.get(pacient.idPacienta)[2] = "Vstupné vyšetrenie (" + pacient.priradenaMiestnost.typ + pacient.priradenaMiestnost.id + ")";
+        }
 
 		if (pacient.typPacienta.equals(simulation.Constants.PACIENT_SAMOSTATNE)) {
             casVstupVysetreniaSekundy = casVstupVysSamostatneGen.sample() * 60.0;
@@ -66,7 +70,7 @@ public class ProcesVstupVysetrenia extends OSPABA.Process
 		// switch (message.code())
 		// {
 		// }
-		System.out.println("8 processDefault of ProcesVstupVysetrenia. Runs after hold() expires");
+		// System.out.println("8 processDefault of ProcesVstupVysetrenia. Runs after hold() expires");
 		MyMessage pacient = (MyMessage) message;
             
 		double p = prioritaGen.sample();

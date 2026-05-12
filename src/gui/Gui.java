@@ -43,8 +43,8 @@ public class Gui extends JFrame {
     JTextField txtZvolenyRezim;
     JCheckBox chckBoxRezim1Aktivny;
 
-    JRadioButton rdioBttonImgType1;
-    JRadioButton rdioBttonImgType2;
+    // JRadioButton rdioBttonImgType1;
+    // JRadioButton rdioBttonImgType2;
 
     JLabel lblResult;
     JLabel lblSimTime;
@@ -62,10 +62,13 @@ public class Gui extends JFrame {
     JButton btnRemoveAnim;
 
     DefaultTableModel tableModel;
+    DefaultTableModel tableAmbulancieModel;
+    JTable tableAmbulancie;
     JTable tablePacienti;
     JProgressBar progressBar;
 
     JPanel animatorPanel;
+    javax.swing.JTabbedPane tabbedPane;
 
     public Gui() {
         setTitle("Simulácia Urgentného Príjmu");
@@ -126,7 +129,7 @@ public class Gui extends JFrame {
         JPanel vstupyPanel = createPanel(0f, 0.5f, BoxLayout.PAGE_AXIS);
         vstupyPanel.add(createTextInputPanel());
         vstupyPanel.add(Box.createRigidArea(new DimensionUIResource(0, 5)));
-        vstupyPanel.add(createAnimObjectType());
+        // vstupyPanel.add(createAnimObjectType());
 
         panel.add(vstupyPanel);
         panel.add(Box.createRigidArea(new DimensionUIResource(5, 0)));
@@ -215,24 +218,24 @@ public class Gui extends JFrame {
         return panel;
     }
 
-    private JPanel createAnimObjectType() {
-        JPanel panel = createPanel(0.5f, 0f, BoxLayout.LINE_AXIS);
+    // private JPanel createAnimObjectType() {
+    //     JPanel panel = createPanel(0.5f, 0f, BoxLayout.LINE_AXIS);
 
-        rdioBttonImgType1 = new JRadioButton("Obrázok Typ 1 (Samostatne)");
-        panel.add(rdioBttonImgType1);
-        rdioBttonImgType1.setSelected(true);
+    //     rdioBttonImgType1 = new JRadioButton("Obrázok Typ 1 (Samostatne)");
+    //     panel.add(rdioBttonImgType1);
+    //     rdioBttonImgType1.setSelected(true);
 
-        panel.add(Box.createRigidArea(new DimensionUIResource(5, 0)));
+    //     panel.add(Box.createRigidArea(new DimensionUIResource(5, 0)));
 
-        rdioBttonImgType2 = new JRadioButton("Obrázok Typ 2 (Sanitka)");
-        panel.add(rdioBttonImgType2);
+    //     rdioBttonImgType2 = new JRadioButton("Obrázok Typ 2 (Sanitka)");
+    //     panel.add(rdioBttonImgType2);
 
-        ButtonGroup group = new ButtonGroup();
-        group.add(rdioBttonImgType1);
-        group.add(rdioBttonImgType2);
+    //     ButtonGroup group = new ButtonGroup();
+    //     group.add(rdioBttonImgType1);
+    //     group.add(rdioBttonImgType2);
 
-        return panel;
-    }
+    //     return panel;
+    // }
 
     private JPanel buidBottomPanel() {
         JPanel panel = createPanel(0f, 0f, BoxLayout.LINE_AXIS);
@@ -326,18 +329,27 @@ public class Gui extends JFrame {
 
         panel.add(leftPanel);
 
-    animatorPanel = new JPanel(new BorderLayout());
-    animatorPanel.setAlignmentY(0f);
-    panel.add(animatorPanel);
+        animatorPanel = new JPanel(new BorderLayout());
+        animatorPanel.setAlignmentY(0f);
 
-        //** LLM usage, to specify
-        // String[] stlpce = {"ID Pacienta", "Typ", "Aktuálny Stav", "Čas Príchodu"};
-        // tableModel = new DefaultTableModel(stlpce, 0);
-        // tablePacienti = new JTable(tableModel);
-        // JScrollPane scrollPane = new JScrollPane(tablePacienti);
-        // scrollPane.setAlignmentY(0f);
-        // panel.add(scrollPane);
+        JPanel tabulkaPanel = new JPanel(new java.awt.GridLayout(2, 1));
+        
+        String[] stlpcePacienti = {"ID Pacienta", "Typ", "Aktuálny Stav", "Čas Príchodu"};
+        tableModel = new DefaultTableModel(stlpcePacienti, 0);
+        tablePacienti = new JTable(tableModel);
+        tabulkaPanel.add(new javax.swing.JScrollPane(tablePacienti));
 
+        String[] stlpceAmbulancie = {"Ambulancia", "Stav"};
+        tableAmbulancieModel = new DefaultTableModel(stlpceAmbulancie, 0);
+        tableAmbulancie = new JTable(tableAmbulancieModel);
+        tabulkaPanel.add(new javax.swing.JScrollPane(tableAmbulancie));
+
+        tabbedPane = new javax.swing.JTabbedPane();
+        tabbedPane.addTab("Animácia", animatorPanel);
+        tabbedPane.addTab("Tabuľka stavov", tabulkaPanel);
+
+        panel.add(tabbedPane);
+        
         return panel;
     }
 }
