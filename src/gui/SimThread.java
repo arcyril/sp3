@@ -96,11 +96,11 @@ public class SimThread extends Thread {
                     String results = String.format("___Výsledky (%d replikácií)___\n\n" +
                         "Priem. celkový počet vybavených:  %.0f ± %.0f osôb\n" +
                         "Priem. čas v systéme:             %s ± %s\n" +
-                        "Priem. čas čakania (Sanitka):     %s ± %s\n" +
-                        "Priem. čas čakania (Samostatne):  %s ± %s\n" +
-                        "Priem. čas čakania na Triage:     %s ± %s\n" +
-                        "Priem. dĺžka radu (Sanitka):      %.2f ± %.2f ľudí\n" +
-                        "Priem. dĺžka radu (Samostatne):   %.2f ± %.2f ľudí\n" +
+                        "Priem. čas čakania na ošetrenie (Sanitka):     %s ± %s\n" +
+                        "Priem. čas čakania na ošetrenie (Samostatne):  %s ± %s\n" +
+                        "Priem. čas čakania na vstupné vyšetrenie (všetci):     %s ± %s\n" +
+                        "Priem. dĺžka radu, na vstupné vyšetrenie (Sanitka):      %.2f ± %.2f ľudí\n" +
+                        "Priem. dĺžka radum, na vstupné vyšetrenie(Samostatne):   %.2f ± %.2f ľudí\n" +
                         "Priem. využitie Lekárov:          %.2f ± %.2f %%\n" +
                         "Priem. využitie Sestier:          %.2f ± %.2f %%\n",
                         (int) settings[1],

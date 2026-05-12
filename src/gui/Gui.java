@@ -87,7 +87,7 @@ public class Gui extends JFrame {
 
     private void setValues() {
         txtTrvanie.setText("672");
-        txtReplikacii.setText("3");
+        txtReplikacii.setText("100");
         txtPocetLekarov.setText("7");
         txtPocetSestier.setText("9");
         txtZahrievanie.setText("320"); 

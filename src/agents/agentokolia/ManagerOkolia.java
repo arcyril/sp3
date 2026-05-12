@@ -56,6 +56,11 @@ private UniformGenerator genCasOdchodu;
 	{
 		MyMessage pacient = (MyMessage) message;
 		MySimulation sim = (MySimulation) mySim();
+
+		if (sim.animatorExists() && pacient.animaciaPacienta != null) {
+			sim.animator().remove(pacient.animaciaPacienta);
+			pacient.animaciaPacienta = null;
+		}
 		
 		double casOdchodu = genCasOdchodu.sample();
 		double casVSysteme = mySim().currentTime() + casOdchodu - pacient.casPrichodu;

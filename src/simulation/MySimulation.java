@@ -98,7 +98,7 @@ public class MySimulation extends OSPABA.Simulation
 		
 		init();
 
-		createAnimator();
+		// createAnimator();
 	}
 
 	@Override
@@ -134,6 +134,8 @@ public class MySimulation extends OSPABA.Simulation
 		stavAmbulancii.clear();
         for (int i = 1; i <= 5; i++) stavAmbulancii.put("A" + i, "Voľná");
         for (int i = 1; i <= 7; i++) stavAmbulancii.put("B" + i, "Voľná");
+
+		aktualniPacienti.clear();
 
 		//!!
 		zahriate = false;
